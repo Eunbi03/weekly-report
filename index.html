@@ -8,6 +8,7 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#e8ecf1}
+html.mob,body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 body{color:#15181d;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums lining-nums}
 /* 191mm : 339mm = 16:9 고정 무대. 화면 크기에 맞춰 자동 축소 */
@@ -15,7 +16,7 @@ body{color:#15181d;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sys
   --top-h:50px; --nav1-h:42px; --navrow-h:38px; --kbar-h:132px; --card-h:754px;
   --chart-pad-t:12px; --chart-pad-b:10px; --chd-h:38px; --plot-margin-t:52px }
 #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-#stage{width:var(--W);height:var(--H);background:#f3f5f8;transform-origin:center center;
+#stage{width:var(--W);height:var(--H);flex:none;background:#f3f5f8;transform-origin:center center;
   display:flex;flex-direction:column;gap:var(--gap);padding:var(--pad-v) var(--pad-h);overflow:hidden}
 /* 고정영역(제목·카테고리·상단요약) — 그냥 위쪽에 자리 잡는 일반 블록. */
 .fixed-zone{flex:0 0 auto;display:flex;flex-direction:column;gap:var(--fixed-gap)}
@@ -53,7 +54,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .nav2 button.on{color:#fff}
 .nav2 .pip{width:7px;height:7px;border-radius:2px}
 .seg{display:flex;background:#e2e7ee;border-radius:8px;padding:3px;height:38px}
-.seg button{padding:0 18px;border-radius:6px;font-size:15.5px;font-weight:700;background:transparent;color:#7a828d}
+.seg button{padding:0 18px;border-radius:6px;font-size:15.5px;font-weight:700;background:transparent;color:#7a828d;white-space:nowrap}
 .seg button.on{background:#2A6FDB;color:#fff}
 .seg.sm{background:#eceff4}
 .seg.sm button{padding:0 16px;font-size:15.5px}
@@ -62,15 +63,14 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 /* KPI - 3줄(라벨/값/증감), 왼쪽 정렬, 3칸 모두 동일 폭(grid 1fr×3) */
 /* KPI - 카드 3개(또는 KSUB는 2개)가 나란히, 각각 독립된 카드 느낌 */
-/* KPI - 기본(컴퓨터/가로)은 원래대로 1줄. 모바일 세로일 때만 4개는 2x2로, 3개는 값 글씨를 줄인다 */
+/* KPI - 기본(컴퓨터/가로)은 원래대로 1줄. 모바일 세로는 진짜 모바일 레이아웃(#stage.portrait)에서 2열 그리드로 */
 .kbar{display:flex;gap:10px;flex:0 0 var(--kbar-h);overflow:hidden}
-#stage.portrait .kbar.g3 .kc .v{font-size:30px}
-#stage.portrait .kbar.g4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
-#stage.portrait .kbar.g4 .kc{padding:0 16px 0 24px;justify-content:center}
-#stage.portrait .kbar.g4 .kc .l{font-size:12px}
-#stage.portrait .kbar.g4 .kc .v{font-size:21px;margin-top:1px}
-#stage.portrait .kbar.g4 .kc .v small{font-size:12px}
-#stage.portrait .kbar.g4 .kc .d{font-size:10.5px;margin-top:1px}
+#stage.portrait .kbar{height:auto;flex:none;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+#stage.portrait .kc{padding:14px 16px;height:auto;border:1px solid #eef1f5;border-radius:10px}
+#stage.portrait .kc .l{font-size:13px}
+#stage.portrait .kc .v{font-size:23px;margin-top:3px}
+#stage.portrait .kc .v small{font-size:13px}
+#stage.portrait .kc .d{font-size:11.5px;margin-top:3px}
 .kc{flex:1;min-width:0;padding:0 20px 0 44px;display:flex;flex-direction:column;height:100%;
   justify-content:center;align-items:flex-start;text-align:left;overflow:hidden}
 .kc .l{font-size:16px;color:#8b93a0;font-weight:700;white-space:nowrap}
@@ -176,6 +176,73 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 #stage.portrait .navrow{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap}
 #stage.portrait .nav2{flex:0 0 auto}
 #stage.portrait .nav2 button{flex:0 0 auto}
+
+/* ══════════════════════ 진짜 모바일 전용 레이아웃 ══════════════════════
+   예전엔 1920px 데스크탑 화면을 그대로 축소(transform:scale)해서 넣다 보니
+   글씨까지 전부 20% 크기로 쪼그라들어 사실상 안 보였다. 이제 모바일에서는
+   축소를 아예 하지 않고(scale:none) 원래 폰트 크기를 그대로 쓰면서,
+   가로 폭에 안 맞는 요소만 세로로 쌓거나 가로 스크롤 되도록 다시 배치한다.
+   화면 하나에 다 우겨넣지 않고 페이지 자체가 세로로 스크롤된다. */
+body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
+#viewport.mob{position:static;display:block;height:auto;padding:0}
+#stage.portrait{width:100%!important;height:auto!important;transform:none!important;
+  overflow:visible;padding:14px 12px 24px}
+#stage.portrait .fixed-zone{gap:10px}
+#stage.portrait .top{height:auto;flex-wrap:wrap;row-gap:6px}
+#stage.portrait .brand h1{font-size:21px}
+#stage.portrait .brand .unit{font-size:12px}
+#stage.portrait .stepper .lbl{font-size:14px;min-width:92px}
+#stage.portrait .navrow{height:auto;padding-bottom:2px}
+#stage.portrait .nav2 button{height:36px;font-size:14px;padding:0 12px}
+#stage.portrait .seg{height:36px}
+#stage.portrait .seg button{font-size:13px;padding:0 11px}
+#stage.portrait .kc .d{white-space:normal;text-overflow:clip;overflow:visible;line-height:1.4}
+/* "전월 대비 ~" 와 "목표 ~"가 한 줄에 억지로 같이 있으면 "목표"가 중간에 잘려 다음 줄로
+   넘어간다. 모바일에서는 가운뎃점 구분자 대신 아예 줄바꿈으로 분리한다. */
+#stage.portrait .kc .d .d-sep{display:none}
+#stage.portrait .kc .d .d-note{display:block;margin-top:2px}
+#stage.portrait .chart,#stage.portrait .tcard{height:auto;flex:none;padding:12px 14px 16px}
+#stage.portrait .chd h2{font-size:16px}
+#stage.portrait .tw{max-height:65vh;scroll-snap-type:x mandatory;scroll-padding-left:71px}
+/* scroll-padding-left: 고정된 "구분" 칸 폭만큼 여유를 줘야, 스냅했을 때 다음 칸이
+   그 고정 칸 뒤에 숨지 않고 바로 옆에 온전히 나타난다. */
+/* 옆으로 스크롤하다 아무 데서나 멈추면 칸이 반쯤 잘려 걸쳐 보인다.
+   그래서 "구분" 바로 다음(요약 칸들의 시작)과, 거래처별 칸 그룹이 시작하는 지점(.sep)에만
+   스냅 포인트를 둬서, 스크롤을 놓으면 항상 칸이 온전히 보이는 위치로 자동으로 붙게 한다. */
+#stage.portrait .tw th:nth-child(2),#stage.portrait .tw td:nth-child(2),
+#stage.portrait .tw .sep{scroll-snap-align:start}
+/* 세로 스크롤 스냅으로 "머리말 2줄(그룹명+목표/매출/달성율) 뒤에 데이터 행을 딱 맞춘다"를
+   시도했지만, 실제 폰 브라우저에서는 스냅이 정확히 안 먹혀서 오히려 데이터 행이 머리말
+   사이에 끼어 보이는 더 심한 문제가 생겼다. 그래서 세로 스냅만 걷어낸다 — 머리말이 스크롤해도
+   계속 위에 떠 있는 기능(position:sticky;top)은 원래 desktop과 똑같이 그대로 살려 둔다.
+   (가로 스크롤 스냅만 유지: 이건 스냅과 세로 위치가 무관해서 문제를 일으키지 않는다.) */
+#stage.portrait table{font-size:14px}
+/* 위 th.r2{top:48px}는 데스크탑 1번째 머리말 줄 높이(48px) 기준인데, 모바일은 글씨가
+   작아져서 1번째 줄 실제 높이가 36px뿐이다. 그 차이(12px)만큼 2번째 줄이 아래로 붕 떠서
+   고정되다 보니, 그 틈으로 스크롤되는 내용이 살짝 비쳐 보였다 — 모바일 실제 높이로 맞춘다. */
+#stage.portrait th.r2{top:36px}
+#stage.portrait th{font-size:11.5px}
+#stage.portrait td,#stage.portrait th{padding:10px 7px}
+#stage.portrait td.sale{font-size:14px}
+#stage.portrait .mask{padding:16px}
+/* 모바일 막대그래프 — 가로 스크롤 대신 항목을 세로로 쌓고, 막대는 가로로 눕혀서
+   한 화면 폭 안에서 값 전체가 겹침 없이 다 보이게 한다(그 대신 글씨는 조금 작게). */
+.hbars{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.hbar-row{cursor:pointer}
+.hbar-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:5px}
+.hbar-lbl{font-size:15px;font-weight:800;color:#15181d}
+.hbar-row.on .hbar-lbl{color:#2A6FDB}
+.hbar-cost{font-size:12px;font-weight:700;color:#c8842a}
+.hbar-yoy{font-size:12px;font-weight:700;color:#9aa3af}
+.hbar-track-wrap{position:relative}
+.hbar-track{position:relative;height:32px;border-radius:2.5px;background:#f0f2f6;overflow:hidden;
+  display:flex}
+.hbar-track span{display:block;height:100%}
+.hbar-track-val{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  font-size:16px;font-weight:800;color:#15181d;letter-spacing:-.2px;white-space:nowrap;z-index:2}
+.hbar-py{position:relative;height:9px;border-radius:1.5px;background:#f5f6f8;overflow:hidden;
+  display:flex;margin-top:4px;border:1px dashed #d3dae4}
+.hbar-py span{display:block;height:100%;opacity:.75}
 @media print{ @page{size:339mm 191mm;margin:0} html,body{background:#fff}
   #viewport{position:static} #stage{transform:none!important} }
 </style>
@@ -184,6 +251,7 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 <div id="viewport"><div id="stage"></div></div>
 <div id="pop"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════
    데이터 — 매주 여기만 고칩니다  (단위: 백만원)
@@ -212,10 +280,18 @@ const LAYOUT = {
 };
 /* 고정영역 전체 높이 = 4줄 + 그 사이 간격 3개 */
 LAYOUT.FIXED_ZONE_H = LAYOUT.TOP_H + LAYOUT.NAV1_H + LAYOUT.NAVROW_H + LAYOUT.KBAR_H + LAYOUT.FIXED_GAP*3;
-/* 차트/표 카드 높이 = 전체 높이 - 상하패딩 - 고정영역 - 그 사이 간격 */
-LAYOUT.CARD_H = LAYOUT.STAGE_H - LAYOUT.PAD_V*2 - LAYOUT.FIXED_ZONE_H - LAYOUT.GAP;
-/* 캔버스(막대그래프 그리는 실제 높이) = 카드 높이에서 카드 안의 나머지 요소(제목·여백·x축·범례) 다 빼고 남는 만큼 */
-LAYOUT.CHART_H = LAYOUT.CARD_H - LAYOUT.CHART_PAD_T - LAYOUT.CHART_PAD_B - LAYOUT.CHD_H - LAYOUT.PLOT_MARGIN_T - LAYOUT.XAX_H - LAYOUT.LGD_H;
+/* 모바일(세로)에서는 화면 하나에 다 우겨넣는 "무대" 개념 자체를 쓰지 않는다 — 카드 높이는
+   내용에 맞춰 자동(auto)으로 늘어나고 페이지가 세로 스크롤된다. 대신 차트 캔버스만은 보기 좋은
+   고정 높이를 직접 지정한다(막대 높이는 % 기반이라 이 값에 맞춰 알아서 다시 그려진다).
+   render()가 HTML을 만들기 "전"에 반드시 먼저 호출해야 캔버스 인라인 높이(px)에 반영된다. */
+const MOBILE_CHART_H = 300;
+function recalcCardLayout(mobile){
+  if(mobile){ LAYOUT.CHART_H = MOBILE_CHART_H; LAYOUT.CARD_H = null; return; }
+  /* 데스크탑(가로) — 무대 전체 높이 기준으로 카드/캔버스 높이를 역산 */
+  LAYOUT.CARD_H = LAYOUT.STAGE_H - LAYOUT.PAD_V*2 - LAYOUT.FIXED_ZONE_H - LAYOUT.GAP;
+  LAYOUT.CHART_H = LAYOUT.CARD_H - LAYOUT.CHART_PAD_T - LAYOUT.CHART_PAD_B - LAYOUT.CHD_H - LAYOUT.PLOT_MARGIN_T - LAYOUT.XAX_H - LAYOUT.LGD_H;
+}
+recalcCardLayout(false);
 
 /* 위 숫자들을 실제 CSS에 그대로 꽂아 넣는다 — CSS 쪽은 전부 var(--xxx)를 참조하므로,
    LAYOUT 값만 바꾸면 CSS까지 자동으로 따라간다. */
@@ -242,389 +318,330 @@ const CO = { blue:'#2A6FDB', blue2:'#6398E4', blue3:'#96BAF0',
 const light=(hex,f=.58)=>{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),
   b=parseInt(hex.slice(5,7),16),m=x=>Math.round(x+(255-x)*f);return `rgb(${m(r)},${m(g)},${m(b)})`;};
 
-const MIDS=['2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03','2026-04',
-            '2026-05','2026-06','2026-07','2026-08'];
-const MLAB={'2025-01':'1월','2025-02':'2월','2025-03':'3월','2025-04':'4월','2025-05':'5월',
-  '2025-06':'6월','2025-07':'7월','2025-08':'8월','2025-09':'9월','2025-10':'10월','2025-11':'11월','2025-12':'12월',
-  '2026-01':'1월','2026-02':'2월','2026-03':'3월','2026-04':'4월','2026-05':'5월','2026-06':'6월','2026-07':'7월','2026-08':'8월'};
-const WIDS=Array.from({length:13},(_,i)=>'W'+(21+i));
+/* ══════════════════════════════════════════════════════════════
+   데이터 — 더 이상 이 파일에 숫자를 직접 넣지 않는다.
+   브라우저가 열릴 때 이 저장소에 들어있는 주간매출자료-26NN.xlsm 파일을
+   SheetJS로 직접 읽어서 D/KSUB를 그 자리에서 만든다.
+   매주 할 일은 xlsm 파일 교체(그 폴더엔 xlsm이 항상 1개만) + git push 뿐,
+   이 파일(index.html)은 시트 구조 자체가 바뀔 때만 CELLMAP을 손본다.
+   (참고: dashboard-data-sync 스킬 문서)
+══════════════════════════════════════════════════════════════ */
+function monthLabel(id){ return (+id.slice(5))+'월'; }
+const MLAB = new Proxy({}, { get:(_,id)=> typeof id==='string' ? monthLabel(id) : undefined });
 
-const D = {
- bo:{ id:'bo', name:'보담', color:'#1566B2',
-  chans:[{n:'이마트',c:'#F6B76A'},{n:'온라인',c:'#7FA6F3'},{n:'에브리데이',c:'#A4ACBA'},
-         {n:'도소매',c:'#D5D5D5'},{n:'케이',c:'#DF81C2'},{n:'홈플러스',c:'#61BB8F'},{n:'쿠팡',c:'#76D0ED'},
-         {n:'F&B',c:'#CF8A72'}],
-  chT:[10200,2100,0,6751.7,2318.3,3730,3600,0],
-  month:[
-   {id:'2025-09',t:3242.6,s:1870.38,c:87.7,ch:[958.12,174.18,0,349.2,177.78,144.74,66.36,0]},
-   {id:'2025-10',t:3121.2,s:1552.59,c:89.8,ch:[784.52,118.52,0,320.84,136.97,130.65,61.09,0]},
-   {id:'2025-11',t:3367.15,s:1935.86,c:83.9,ch:[904.85,173.12,0,470.31,141.97,186.02,59.6,0]},
-   {id:'2025-12',t:3265.5,s:1912.18,c:85.8,ch:[769.26,184.78,0,463.94,143.65,294.4,56.15,0]},
-   {id:'2026-01',t:2270.83,s:1774.46,c:82.44,ch:[767.7,164.83,0,419.87,100.9,250.8,70.36,0]},
-   {id:'2026-02',t:2270.83,s:1652.53,c:74.96,ch:[875.99,117.38,0,206.06,98.77,288.92,65.42,0]},
-   {id:'2026-03',t:2366.67,s:1880.6,c:79.7,ch:[860.61,168.54,0,375.47,110.84,268.85,96.3,0]},
-   {id:'2026-04',t:2366.67,s:1893.5,c:76.12,ch:[827.55,147.85,0,338.95,163.19,328.13,87.82,0]},
-   {id:'2026-05',t:2366.67,s:1561.11,c:78.1,ch:[903.18,143.26,0,202.18,151.43,58.27,102.81,0]},
-   {id:'2026-06',t:2366.67,s:2445.85,c:86.2,ch:[886.91,157.97,0,997.09,295.57,0,108.31,0]},
-   {id:'2026-07',t:2512.5,s:2577.42,c:85.41,ch:[1126.88,247.31,0,849.05,208.59,0,145.58,0]},
-   {id:'2026-08',t:2416.67,s:1391.87,c:82.83,ch:[629.66,93.81,0,226.6,112.06,245.35,74.9,9.5]}],
-  prevM:{'2026-06':{s:1958.92,t:3281.8,c:81.5,ch:[944.87,255.59,0,407.34,93.37,159.63,98.13,0]},'2026-07':{s:2049,t:3185.5,c:79.9,ch:[1007.78,159.52,0,496.97,97.03,181.33,106.36,0]},'2026-08':{s:1922.15,t:3232.5,c:82.4,ch:[803.83,159.36,0,627.27,122.44,131.43,77.82,0]}},
-  week:[
-   {id:'W1',t:219.76,s:230.63,c:85.69,ch:[88.48,21.07,0,61.89,2.12,51.26,5.8,0]},
-   {id:'W2',t:512.77,s:466.99,c:83.91,ch:[173.07,46.38,0,119.16,39.18,71.02,18.19,0]},
-   {id:'W3',t:512.77,s:458.81,c:85.54,ch:[189.17,35.89,0,116.42,30.84,71.39,15.11,0]},
-   {id:'W4',t:512.77,s:353.38,c:74.81,ch:[182.92,35.26,0,77.29,18.53,21.87,17.5,0]},
-   {id:'W5',t:512.77,s:264.66,c:81.83,ch:[134.07,26.22,0,45.1,10.23,35.26,13.77,0]},
-   {id:'W6',t:567.71,s:420.66,c:66.38,ch:[262.28,22.77,0,61.71,27.63,30.05,16.22,0]},
-   {id:'W7',t:567.71,s:578.13,c:77.6,ch:[340.56,37.99,0,61.11,47.32,77.74,13.42,0]},
-   {id:'W8',t:567.71,s:226.16,c:70.21,ch:[147.84,20.74,0,34.25,1.47,7.03,14.83,0]},
-   {id:'W9',t:567.71,s:427.58,c:82.36,ch:[125.31,35.89,0,49,22.35,174.09,20.95,0]},
-   {id:'W10',t:534.41,s:449.31,c:77.7,ch:[313.05,35.6,0,49.41,16.49,18.34,16.43,0]},
-   {id:'W11',t:534.41,s:451.71,c:77.76,ch:[167.36,34.83,0,115.73,39.31,73.93,20.54,0]},
-   {id:'W12',t:534.41,s:461.38,c:78.65,ch:[177.36,46.75,0,100.29,11,101.24,24.74,0]},
-   {id:'W13',t:534.41,s:407.57,c:78.32,ch:[150.33,43.64,0,97.58,34.6,57.7,23.71,0]},
-   {id:'W14',t:544.59,s:389.7,c:77.03,ch:[166.32,39.76,0,46.02,29.82,84.36,23.43,0]},
-   {id:'W15',t:552.22,s:370.7,c:72.6,ch:[159.39,35.24,0,46.42,35.33,71.84,22.48,0]},
-   {id:'W16',t:552.22,s:492.21,c:79.21,ch:[234.34,32.97,0,106.12,30.96,68.89,18.93,0]},
-   {id:'W17',t:552.22,s:369.5,c:70.66,ch:[195.89,24.34,0,56.71,31.96,40.58,20.02,0]},
-   {id:'W18',t:547.13,s:516.63,c:85.89,ch:[215.81,35.69,0,103.51,46.4,96.19,19.04,0]},
-   {id:'W19',t:534.41,s:375.4,c:88.56,ch:[208.06,30.84,0,64.74,22.9,23.58,25.28,0]},
-   {id:'W20',t:534.41,s:340.67,c:78.34,ch:[177.84,36.92,0,34.3,51.92,18.6,21.09,0]},
-   {id:'W21',t:534.41,s:308.39,c:67.39,ch:[193.74,32.54,0,26.57,32.58,0,22.96,0]},
-   {id:'W22',t:534.41,s:359.95,c:83.9,ch:[193.81,30.54,0,69.22,41.95,0,24.42,0]},
-   {id:'W23',t:549.68,s:530.89,c:77.33,ch:[286.91,35.89,0,168.09,15.96,0,24.05,0]},
-   {id:'W24',t:552.22,s:534.72,c:88.2,ch:[166.87,38.49,0,242.69,60.27,0,26.4,0]},
-   {id:'W25',t:552.22,s:534.55,c:87.49,ch:[186.79,38.03,0,245.78,37.4,0,26.55,0]},
-   {id:'W26',t:552.22,s:737.83,c:85.87,ch:[241.83,31.67,0,269.69,171.13,0,23.52,0]},
-   {id:'W27',t:560.86,s:459.97,c:84.01,ch:[193.79,60.33,0,157.51,22.01,0,26.32,0]},
-   {id:'W28',t:567.34,s:571.82,c:86.38,ch:[213.22,66.63,0,205.87,50.33,0,35.76,0]},
-   {id:'W29',t:567.34,s:630.52,c:85.83,ch:[282.43,52.15,0,197.13,64.53,0,34.29,0]},
-   {id:'W30',t:567.34,s:592.95,c:80.89,ch:[303.04,44.38,0,198.55,11.56,0,35.41,0]},
-   {id:'W31',t:564.25,s:545.94,c:85.61,ch:[233,51.49,0,160.84,71.2,0,29.41,0]},
-   {id:'W32',t:545.7,s:528.01,c:77.79,ch:[321.86,36.94,0,71.47,18.91,42.36,33.62,2.85]},
-   {id:'W33',t:545.7,s:790.03,c:89.07,ch:[251.73,43.08,0,155.13,93.15,202.99,37.3,6.65]}],
-  prevW:{} },
+/* ---------- 파일 자동탐색 ---------- */
+async function findWorkbookFile(){
+  const years = [];
+  const now = new Date();
+  const baseYY = now.getFullYear()%100;
+  for(const yy of [baseYY-1, baseYY, baseYY+1]) years.push(String(yy).padStart(2,'0'));
+  const candidates = [];
+  for(const yy of years) for(let w=1; w<=53; w++) candidates.push(`주간매출자료-${yy}${String(w).padStart(2,'0')}.xlsm`);
+  const found = [];
+  await Promise.all(candidates.map(async name=>{
+    try{
+      const res = await fetch(name, {method:'HEAD', cache:'no-store'});
+      if(res.ok) found.push(name);
+    }catch(e){ /* 존재하지 않음 — 무시 */ }
+  }));
+  if(found.length===0) throw new Error('주간매출자료-26NN.xlsm 파일을 찾을 수 없습니다. (이 저장소 폴더에 xlsm 파일이 올라와 있는지 확인해주세요)');
+  if(found.length>1) console.warn('[대시보드] 후보 파일이 여러 개 발견됨(오래된 파일을 지워주세요):', found);
+  return found.sort().slice(-1)[0];
+}
+async function loadWorkbook(){
+  const fname = await findWorkbookFile();
+  const res = await fetch(fname, {cache:'no-store'});
+  if(!res.ok) throw new Error(`${fname} 파일을 불러오지 못했습니다 (HTTP ${res.status})`);
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array', cellFormula:false});
+  return { wb, fname };
+}
 
- bd:{ id:'bd', name:'백두', color:'#259638',
-  chans:[{n:'하이퍼',c:'#ED9272'},{n:'익스프레스',c:'#7FA6F3'},{n:'에브리데이',c:'#A4ACBA'},
-         {n:'도소매',c:'#D5D5D5'},{n:'일반',c:'#A48D75'},{n:'케이',c:'#DF81C2'}],
-  chT:[49796,4800,0,12462.1,2855.8,1342.1],
-  month:[
-   {id:'2025-09',t:6961.5,s:5082.15,c:90.5,ch:[3110.5,256.6,0,879.08,593.02,242.95]},
-   {id:'2025-10',t:5330.5,s:4276.32,c:86,ch:[2727.34,342.03,0,597.9,367.06,242]},
-   {id:'2025-11',t:7141.5,s:5259.26,c:87.5,ch:[3137.33,398.32,0,878.92,504.47,340.21]},
-   {id:'2025-12',t:7201.5,s:5737.52,c:86.7,ch:[2662.34,1254.86,0,853.51,654.42,312.38]},
-   {id:'2026-01',t:5825,s:3777,c:70.12,ch:[2480.12,394.05,0,413.51,342.32,146.99]},
-   {id:'2026-02',t:6910,s:3187.07,c:75.43,ch:[1896.59,391.78,0,311.44,474.69,112.57]},
-   {id:'2026-03',t:6096,s:4083.73,c:78.35,ch:[1912.41,362.45,0,1286.07,353.98,168.81]},
-   {id:'2026-04',t:5283,s:3972.18,c:83.79,ch:[1533.34,562.6,0,1348.36,338.04,189.83]},
-   {id:'2026-05',t:5825,s:3088.39,c:91.39,ch:[769.63,220.95,0,1937.79,66.3,93.72]},
-   {id:'2026-06',t:5554,s:1109.33,c:96.57,ch:[0,225.23,0,856.24,0,27.85]},
-   {id:'2026-07',t:6368,s:608.41,c:107.33,ch:[0,12.56,0,595.31,0,0.54]},
-   {id:'2026-08',t:6096,s:125.61,c:118.89,ch:[0,0,0,125.61,0,0]}],
-  prevM:{'2026-06':{s:4398.9,t:6403.5,c:82.4,ch:[2863.02,531.49,0,515.54,272.73,216.11]},'2026-07':{s:5245.06,t:7516.5,c:81.1,ch:[3752.3,485.95,0,507.99,264.46,234.36]},'2026-08':{s:5305.42,t:7306.5,c:87,ch:[3175.11,527.39,0,633.4,736.09,233.44]}},
-  week:[
-   {id:'W1',t:563.71,s:404.95,c:31.53,ch:[268.58,28.22,0,30.1,65.35,12.71]},
-   {id:'W2',t:1315.32,s:688.85,c:76.17,ch:[361.59,111.12,0,124.3,33.15,58.7]},
-   {id:'W3',t:1315.32,s:1166.67,c:79.7,ch:[788.93,77.91,0,107.95,146.25,45.64]},
-   {id:'W4',t:1315.32,s:904.58,c:71.08,ch:[651.79,115,0,82.06,36.76,18.98]},
-   {id:'W5',t:1315.32,s:611.94,c:69.14,ch:[409.23,61.8,0,69.11,60.82,10.97]},
-   {id:'W6',t:1727.5,s:853.47,c:67.19,ch:[581.58,81.84,0,103.45,53.36,33.25]},
-   {id:'W7',t:1727.5,s:966.86,c:77.29,ch:[565.53,100.43,0,76.53,179.73,44.64]},
-   {id:'W8',t:1727.5,s:303.51,c:66.46,ch:[179.89,93.45,0,28.2,1.26,0.71]},
-   {id:'W9',t:1727.5,s:1063.23,c:83.05,ch:[569.6,116.07,0,103.24,240.34,33.98]},
-   {id:'W10',t:1376.52,s:941.26,c:68.37,ch:[570.07,114.19,0,199.02,25.58,32.41]},
-   {id:'W11',t:1376.52,s:1006.7,c:82.28,ch:[372.16,91.1,0,353.54,138.56,51.34]},
-   {id:'W12',t:1376.52,s:1076.83,c:83.73,ch:[455.11,93.22,0,395.85,104.62,28.02]},
-   {id:'W13',t:1376.52,s:798.53,c:77.45,ch:[397.55,47.69,0,232.52,73.33,47.45]},
-   {id:'W14',t:1294.34,s:765.5,c:83.65,ch:[368.33,106.14,0,178.78,74.89,37.36]},
-   {id:'W15',t:1232.7,s:994.17,c:68.6,ch:[458.3,210.55,0,148.76,124.55,52.02]},
-   {id:'W16',t:1232.7,s:963.74,c:90.26,ch:[313.33,112.96,0,424.66,66.95,45.84]},
-   {id:'W17',t:1232.7,s:836.27,c:84.82,ch:[319.55,83.96,0,361.18,46.97,24.61]},
-   {id:'W18',t:1256.31,s:955.02,c:86.06,ch:[386.74,96.18,0,348.88,75.32,47.91]},
-   {id:'W19',t:1315.32,s:619.56,c:72.4,ch:[329.32,98.08,0,143.21,19.63,29.31]},
-   {id:'W20',t:1315.32,s:1051.47,c:92.65,ch:[244.92,83.89,0,684.71,7.95,30]},
-   {id:'W21',t:1315.32,s:645.53,c:106.46,ch:[0,8.05,0,621.48,0,16.01]},
-   {id:'W22',t:1315.32,s:489.72,c:107.09,ch:[0,0,0,479.64,0,10.08]},
-   {id:'W23',t:1298.7,s:442.29,c:98.42,ch:[0,34.34,0,396.83,0,11.12]},
-   {id:'W24',t:1295.93,s:227.69,c:96.24,ch:[0,47.08,0,180.18,0,0.42]},
-   {id:'W25',t:1295.93,s:205.78,c:90.3,ch:[0,65.81,0,139.69,0,0.28]},
-   {id:'W26',t:1295.93,s:160.49,c:107.13,ch:[0,43.28,0,101.68,0,15.54]},
-   {id:'W27',t:1377.08,s:233.31,c:95.68,ch:[0,47.28,0,185.53,0,0.49]},
-   {id:'W28',t:1437.94,s:109.28,c:109.28,ch:[0,0,0,108.74,0,0.54]},
-   {id:'W29',t:1437.94,s:114.4,c:109.07,ch:[0,0,0,114.4,0,0]},
-   {id:'W30',t:1437.94,s:57.01,c:119.04,ch:[0,0,0,57.01,0,0]},
-   {id:'W31',t:1429.16,s:167.49,c:106.08,ch:[0,0,0,167.49,0,0]},
-   {id:'W32',t:1376.52,s:42.07,c:126.33,ch:[0,0,0,42.07,0,0]},
-   {id:'W33',t:1376.52,s:83.54,c:113.2,ch:[0,0,0,83.54,0,0]}],
-  prevW:{} },
+/* ---------- 시트 → 배열 변환 + 셀 접근 헬퍼 ---------- */
+function aoa(wb, sheetName){
+  const ws = wb.Sheets[sheetName];
+  if(!ws) throw new Error(`시트를 찾을 수 없습니다: ${sheetName}`);
+  return XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+}
+function hasSheet(wb, sheetName){ return !!wb.Sheets[sheetName]; }
+function cellAt(rows, r, c){ const row = rows[r-1]; if(!row) return null; const v = row[c-1]; return (v===undefined)?null:v; }
+function numAt(v){ return (typeof v==='number' && isFinite(v)) ? v : null; }
+function colNum(letter){ return XLSX.utils.decode_col(letter)+1; }
 
- kp:{ id:'kp', name:'케이프라이드', color:'#F28C02',
-  chans:[{n:'MS팀 특정',c:'#8C82B7'},{n:'MS팀',c:'#729BD5'},{n:'I팀',c:'#73C19A'},{n:'임가공',c:'#BBB09E'}],
-  chT:[16650,49133,10000,0],
-  month:[
-   {id:'2025-09',t:9028,s:4961.52,c:64,ch:[1494,2922.9,372.51,171.81]},
-   {id:'2025-10',t:9738,s:3900.72,c:59.4,ch:[1079,2225.1,402.19,194.88]},
-   {id:'2025-11',t:9068,s:3524.91,c:66.1,ch:[583,2335,357.15,249.29]},
-   {id:'2025-12',t:9518,s:4073.08,c:65.7,ch:[677,2452.1,505.27,439.04]},
-   {id:'2026-01',t:5198.7,s:4053.99,c:71.75,ch:[688.16,2734.75,361.95,269.13]},
-   {id:'2026-02',t:5478.7,s:4237.62,c:65.5,ch:[1410.66,2339.95,294.54,192.48]},
-   {id:'2026-03',t:6026.7,s:3621.69,c:68.34,ch:[599.31,2302.8,503.18,216.4]},
-   {id:'2026-04',t:6132.7,s:3668.9,c:68.38,ch:[562.03,2494.33,376.5,236.04]},
-   {id:'2026-05',t:6352.7,s:3443.37,c:68.39,ch:[605.82,2275.35,432.6,129.6]},
-   {id:'2026-06',t:6432.8,s:3683.45,c:68.12,ch:[571.12,2475.51,410.34,226.48]},
-   {id:'2026-07',t:6659.5,s:4221.44,c:74.99,ch:[913.76,2651.83,554.83,101.02]},
-   {id:'2026-08',t:6656.5,s:2737.28,c:65.02,ch:[583.63,1971.13,129.52,53.01]}],
-  prevM:{'2026-06':{s:3568.49,t:8928,c:65.2,ch:[718,2329.7,232.53,288.79]},'2026-07':{s:3745.78,t:9298,c:67.5,ch:[799,2424.3,263.18,259.5]},'2026-08':{s:4114.5,t:9308,c:63.9,ch:[957,2603.8,301.34,251.86]}},
-  week:[
-   {id:'W1',t:503.1,s:397.05,c:67.16,ch:[60.38,296.13,16.19,24.34]},
-   {id:'W2',t:1173.9,s:960.17,c:65.65,ch:[138.41,638.32,112.72,70.72]},
-   {id:'W3',t:1173.9,s:822.13,c:73.11,ch:[144.24,503.94,115.65,58.3]},
-   {id:'W4',t:1173.9,s:929.02,c:77.35,ch:[165.94,659.56,41.22,62.32]},
-   {id:'W5',t:1173.9,s:945.62,c:73.18,ch:[179.19,636.81,76.18,53.45]},
-   {id:'W6',t:1369.67,s:1394.28,c:76.99,ch:[283.66,913.15,153.75,43.71]},
-   {id:'W7',t:1369.67,s:1458.97,c:55.45,ch:[743.93,607.62,42.14,65.28]},
-   {id:'W8',t:1369.67,s:685.6,c:62.74,ch:[269.5,338.19,45.51,32.4]},
-   {id:'W9',t:1369.67,s:698.78,c:66.25,ch:[113.57,480.99,53.14,51.09]},
-   {id:'W10',t:1360.87,s:766.13,c:66.25,ch:[132.53,466.17,119,48.44]},
-   {id:'W11',t:1360.87,s:784.82,c:65.95,ch:[123.62,503.81,100.84,56.54]},
-   {id:'W12',t:1360.87,s:938.12,c:66.96,ch:[137.52,624.19,125.73,50.68]},
-   {id:'W13',t:1360.87,s:803.62,c:68.67,ch:[149.28,501.14,108.01,45.19]},
-   {id:'W14',t:1400.92,s:845.72,c:71.05,ch:[137.15,557.43,99.83,51.31]},
-   {id:'W15',t:1430.96,s:728.17,c:65.19,ch:[134.18,464.78,61.27,67.93]},
-   {id:'W16',t:1430.96,s:919.03,c:67.31,ch:[120.52,670.12,75.07,53.31]},
-   {id:'W17',t:1430.96,s:829.38,c:72.57,ch:[137.15,544.08,104.01,44.14]},
-   {id:'W18',t:1431.97,s:929.82,c:67.79,ch:[149.72,639.73,93.33,47.03]},
-   {id:'W19',t:1434.48,s:820.37,c:66,ch:[156.25,524.57,97.23,42.31]},
-   {id:'W20',t:1434.48,s:829.23,c:64.55,ch:[123.51,526.61,137.46,41.65]},
-   {id:'W21',t:1434.48,s:744.71,c:72.5,ch:[126,496.85,105.77,16.08]},
-   {id:'W22',t:1434.48,s:700.62,c:73.76,ch:[112.65,487.96,84.74,15.27]},
-   {id:'W23',t:1491.49,s:659.08,c:78.14,ch:[133.52,400.81,86.84,37.92]},
-   {id:'W24',t:1500.99,s:827.68,c:79.59,ch:[125.28,571.04,85.12,46.25]},
-   {id:'W25',t:1500.99,s:766.54,c:57.17,ch:[144.15,453.48,122.38,46.53]},
-   {id:'W26',t:1500.99,s:1074.09,c:60.87,ch:[138.92,800.73,60.95,73.5]},
-   {id:'W27',t:1502.57,s:1058.93,c:79.12,ch:[139.85,764.98,116.42,37.69]},
-   {id:'W28',t:1503.76,s:1132.67,c:81.29,ch:[173.78,807.6,127.61,23.68]},
-   {id:'W29',t:1503.76,s:838.55,c:70.27,ch:[218.47,508.21,92.76,19.11]},
-   {id:'W30',t:1503.76,s:688.58,c:75.03,ch:[239.56,392.36,38.98,17.69]},
-   {id:'W31',t:1503.66,s:1218.1,c:59.92,ch:[248.9,704.35,234.11,30.74]},
-   {id:'W32',t:1503.08,s:1159.59,c:71.69,ch:[254.39,850.62,33.66,20.92]},
-   {id:'W33',t:1503.08,s:1312.6,c:63.79,ch:[278.78,909.33,95.86,28.63]}],
-  prevW:{} }
+function readCutoff(wb){
+  const rows = aoa(wb, '집계');
+  const week = numAt(cellAt(rows,2,1)), year = numAt(cellAt(rows,2,2)), month = numAt(cellAt(rows,2,3));
+  if(week==null||year==null||month==null) throw new Error('집계 시트의 주차/년/월(A2/B2/C2) 값을 읽을 수 없습니다');
+  return { week, year, month };
+}
+
+/* chan spec: [name,color,tgtLetter] → 매출 = 목표+1칸  |  [name,color,null,salesLetter] → 목표 없음, 매출은 salesLetter 그대로 */
+function readRow(rows, r, chans, opt){
+  opt = opt||{};
+  const t = opt.noTotal ? null : numAt(cellAt(rows,r,colNum(opt.tCol||'B')));
+  const s = numAt(cellAt(rows,r,colNum(opt.sCol||'C')));
+  const out = {t,s};
+  if(opt.cCol){ const raw = numAt(cellAt(rows,r,colNum(opt.cCol))); out.c = raw!=null ? raw*100 : null; }
+  if(opt.loanCol){ out.loan = numAt(cellAt(rows,r,colNum(opt.loanCol))); }
+  out.ch = chans.map(([,,tgtL,salesL])=>{
+    if(tgtL) return numAt(cellAt(rows, r, colNum(tgtL)+1));
+    return numAt(cellAt(rows, r, colNum(salesL)));
+  });
+  return out;
+}
+function chanTargets(rows, totalRow, chans){
+  return chans.map(([,,tgtL])=> tgtL ? numAt(cellAt(rows, totalRow, colNum(tgtL))) : null);
+}
+/* 채널 합 vs 총매출 실측 검산 — CELLMAP이 실제 구조와 어긋나면 콘솔에 바로 드러나게 */
+function warnIfMismatch(label, r){
+  if(r.s==null) return;
+  const known = r.ch.filter(v=>v!=null);
+  if(!known.length) return;
+  const sum = known.reduce((a,b)=>a+b,0);
+  const pct = Math.abs(r.s-sum)/Math.max(1,Math.abs(r.s))*100;
+  if(pct>8) console.warn(`[대시보드] ${label}: 채널합(${sum.toFixed(1)})이 총매출(${r.s.toFixed(1)})과 ${pct.toFixed(1)}% 차이 — CELLMAP 확인 필요`);
+}
+
+/* ---------- CELLMAP: 법인 통합 3개 + 케이I — 고정 행(4~15월,16합계 / 21~73주,74합계) ---------- */
+const ORG_CELLMAP = {
+  bo: { sheet:'보담통합', legacySheet:y=>`${y}년-보담`, cCol:'E',
+        chans:[['이마트','#F6B76A','F'],['온라인','#7FA6F3','I'],['에브리','#A4ACBA','L'],['쿠팡','#76D0ED','O'],['홈플러스','#61BB8F','R'],['도소매/기타','#D5D5D5','U'],['F&B','#CF8A72','Z']],
+        legacyChans:[['이마트','이마트'],['온라인','에스에스지닷컴'],['에브리','에브리데이'],['쿠팡','쿠팡'],['홈플러스','홈플러스'],['도소매/기타','도소매'],['F&B',null]] },
+  bd: { sheet:'백두통합', legacySheet:y=>`${y}년-백두`, cCol:'E',
+        chans:[['하이퍼','#ED9272','F'],['익스프레스','#7FA6F3','I'],['도소매/기타','#A48D75','L']],
+        legacyChans:[['하이퍼','하이퍼'],['익스프레스','익스프레스'],['도소매/기타','도소매/기타']] },
+  kp: { sheet:'케이통합', legacySheet:y=>`${y}년-케이`, cCol:'E',
+        chans:[['MS팀 특정','#8C82B7','F'],['MS팀','#729BD5','K'],['I팀','#73C19A','N'],['임가공','#BBB09E',null,'Q'],['OEM','#8E6C4B',null,'R']],
+        legacyChans:[['MS팀 특정','MS팀 특정'],['MS팀','MS팀'],['I팀','I팀'],['임가공',null,'V'],['OEM',null,'AA']] },
+  it: { sheet:'케이I', legacySheet:y=>`${y}년-케이I`, cCol:false,
+        chans:[['급식','#1F8A5B','D'],['군납','#5FB08C','G'],['기타(도소매)','#D98A2B','J']],
+        legacyChans:[['급식','급식'],['군납','군납'],['기타(도소매)','기타']] },
 };
+function readFixedCurrent(wb, key, cutoff){
+  const def = ORG_CELLMAP[key];
+  const rows = aoa(wb, def.sheet);
+  const opt = def.cCol ? {cCol:def.cCol} : {};
+  const month=[], week=[];
+  for(let m=1;m<=Math.min(cutoff.month,12);m++){ const r=Object.assign({id:m}, readRow(rows,3+m,def.chans,opt)); warnIfMismatch(`${def.sheet} ${m}월`, r); month.push(r); }
+  for(let w=1;w<=Math.min(cutoff.week,53);w++){ const r=Object.assign({id:w}, readRow(rows,20+w,def.chans,opt)); warnIfMismatch(`${def.sheet} ${w}주`, r); week.push(r); }
+  const chT = chanTargets(rows, 16, def.chans);
+  return {month, week, chT};
+}
 
-/* 케이프라이드 하위 조직 — 12개월 목표·매출은 전부, 거래처 상세는 2026년분만 보유 */
-const KSUB = {
- ms_t:{ name:'MS팀 특정', color:'#2A6FDB', hasLoan:true,
-  chans:[{n:'홈플러스',c:'#61BB8F'},{n:'에브리',c:'#A4ACBA'},{n:'하나로',c:'#5CCDA9'},{n:'현대',c:'#728FB9'},{n:'신세계',c:'#CE655A'},{n:'롯데',c:'#A78C7A'},{n:'GS',c:'#668FDD'},{n:'이마트',c:'#F6B76A'},{n:'킴스',c:'#C7C7C7'},{n:'위탁행사',c:'#B1A897'},{n:'순회행사',c:'#E1E1E1'}],
-  chT:[7200,1320,200,1830,2250,600,0,450,0,2800,0],
-  month:[
-   {id:'2025-01',t:1790,s:1776.87,loan:0,ch:[490.3,20.01,117.63,268.14,560.76,0,0,0,0,283.21,0]},
-   {id:'2025-02',t:1080,s:467.69,loan:0,ch:[242.08,9.54,48.24,66.4,44.25,0,0,0,0,37.37,0]},
-   {id:'2025-03',t:1560,s:694.41,loan:0,ch:[367.72,13.19,56.74,80.7,87.34,0,0,0,0,52.21,0]},
-   {id:'2025-04',t:1340,s:585.29,loan:0,ch:[268.51,14.74,89.42,79.22,80.55,0,0,0,0,22.25,0]},
-   {id:'2025-05',t:1360,s:683.42,loan:0,ch:[316.63,13.25,80.08,85.03,81.36,0,0,0,0,53.64,6.6]},
-   {id:'2025-06',t:1310,s:717.51,loan:0,ch:[288.7,13.72,70.88,81.99,79.8,0,0,0,0,104.92,35.84]},
-   {id:'2025-07',t:1700,s:798.81,loan:0,ch:[292.85,16.53,80.45,74.94,83.88,0,0,0,0,188.48,16.13]},
-   {id:'2025-08',t:1680,s:957.46,loan:0,ch:[300.78,15.87,88.94,106.24,88.78,0,0,0,0,303.91,5.52]},
-   {id:'2025-09',t:1150,s:1494.3,loan:0,ch:[266.79,15.74,83.8,213.9,545.86,0,0,0,0,310.81,9.32]},
-   {id:'2025-10',t:1760,s:1078.56,loan:0,ch:[339.37,20.1,121.56,176.93,221.81,0,0,11.44,0,121.5,19.46]},
-   {id:'2025-11',t:1130,s:583.45,loan:0,ch:[245.11,12.57,58.23,102.24,75.09,0,0,26.05,0,0,8.24]},
-   {id:'2025-12',t:1540,s:676.63,loan:0,ch:[248.09,13.81,66.09,124,105.5,0,0,15.52,0,0,8.21]},
-   {id:'2026-01',t:1135,s:688.16,loan:460.21,ch:[234.09,69.34,14.11,132.21,104.9,43.49,0,16.6,0,48.33,25.09]},
-   {id:'2026-02',t:1445,s:1410.66,loan:705.87,ch:[240.99,118.58,14.68,257.19,642.14,48.31,0,3.38,0,63.1,22.29]},
-   {id:'2026-03',t:1305,s:599.31,loan:316.39,ch:[178.62,59.15,12.81,116.06,110.82,41.61,0,7.21,0,70.3,2.74]},
-   {id:'2026-04',t:1306,s:562.03,loan:313.2,ch:[118.36,61.39,14.5,139.82,91.51,37.24,0,0,0,99.21,0]},
-   {id:'2026-05',t:1426,s:605.82,loan:249.27,ch:[80.41,70.47,15.11,135.64,98.9,43.83,7.8,1.24,0,152.41,0]},
-   {id:'2026-06',t:1406,s:571.12,loan:328.79,ch:[0,68.8,14.32,148.13,93.09,43.18,11.26,3.06,0,189.29,0]},
-   {id:'2026-07',t:1460,s:913.76,loan:548.56,ch:[0,82.26,16.66,154.5,114.91,46.05,9.03,28.93,0,461.42,0]},
-   {id:'2026-08',t:1480,s:583.63,loan:294.78,ch:[11.4,54.39,7.31,78.3,54.62,26.07,0.41,21.54,0,329.59,0]}],
-  week:[
-   {id:'W1',t:109.84,s:60.38,loan:34.51,ch:[27.3,6.83,1.09,8.11,6.99,3.2,0,2.41,0,0,4.44]},
-   {id:'W2',t:256.29,s:138.41,loan:90.68,ch:[51.07,15.05,3.01,27.38,21.02,8.51,0,3.67,0,3.34,5.35]},
-   {id:'W3',t:256.29,s:144.24,loan:81.43,ch:[47.45,15.54,2.39,27.58,19.74,10.52,0,4.41,0,10.86,5.75]},
-   {id:'W4',t:256.29,s:165.94,loan:128.57,ch:[58.12,16.36,3.8,25.91,25.88,10.05,0,3.28,0,17.49,5.05]},
-   {id:'W5',t:256.29,s:179.19,loan:125.02,ch:[50.15,15.56,3.82,43.23,31.27,11.2,0,2.84,0,16.64,4.49]},
-   {id:'W6',t:361.25,s:283.66,loan:264.49,ch:[52.47,18.3,3.06,77.05,99.51,10.89,0,1.06,0,16.58,4.74]},
-   {id:'W7',t:361.25,s:743.93,loan:379.46,ch:[73.36,50.16,4.56,117.17,441.66,21.55,0,0,0,30.1,5.38]},
-   {id:'W8',t:361.25,s:269.5,loan:11.24,ch:[80.07,36.85,5.21,39.82,81.17,7.32,0,1.01,0,10.8,7.24]},
-   {id:'W9',t:361.25,s:113.57,loan:50.68,ch:[35.09,13.27,1.86,23.15,19.79,8.55,0,1.31,0,5.61,4.93]},
-   {id:'W10',t:294.68,s:132.53,loan:60.1,ch:[45.63,12.7,2.91,24.68,18.36,12.38,0,1.82,0,11.3,2.74]},
-   {id:'W11',t:294.68,s:123.62,loan:67.88,ch:[38.65,13.25,2.78,27.01,18.86,7.4,0,1.43,0,14.25,0]},
-   {id:'W12',t:294.68,s:137.52,loan:83.87,ch:[45.49,13.83,3.03,25.83,23.82,7.28,0,1.84,0,16.41,0]},
-   {id:'W13',t:294.68,s:149.28,loan:77.74,ch:[33.71,13.52,2.94,26.87,40.37,9.5,0,1.42,0,20.95,0]},
-   {id:'W14',t:300.42,s:137.15,loan:58.76,ch:[30.65,13.07,3.17,34.83,23.93,12.59,0,0.71,0,18.2,0]},
-   {id:'W15',t:304.73,s:134.18,loan:66.78,ch:[27.86,13.44,3.05,36.91,21.16,9.28,0,0,0,22.49,0]},
-   {id:'W16',t:304.73,s:120.52,loan:70.46,ch:[27.01,14.21,3.09,29.48,19.9,6.22,0,0,0,20.62,0]},
-   {id:'W17',t:304.73,s:137.15,loan:62.1,ch:[30.29,14.86,3.93,29.62,20.7,7.73,0,0,0,30.02,0]},
-   {id:'W18',t:309.67,s:149.72,loan:93.73,ch:[29,17.66,3.58,29.04,24.4,9.86,0,0,0,36.18,0]},
-   {id:'W19',t:322,s:156.25,loan:80.78,ch:[29.96,16.52,3.32,29.21,24.77,8.04,0,0,0,44.42,0]},
-   {id:'W20',t:322,s:123.51,loan:67.34,ch:[21.55,14.59,3.09,30.85,20,6.96,1.79,0,0,24.68,0]},
-   {id:'W21',t:322,s:126,loan:43.9,ch:[17.27,15.43,3.37,29.1,20.67,8.51,2.76,0,0,28.88,0]},
-   {id:'W22',t:322,s:112.65,loan:45.39,ch:[0,15.35,3.52,31.95,20.81,10.65,2.82,0.93,0,26.63,0]},
-   {id:'W23',t:327.2,s:133.52,loan:70.29,ch:[0.33,16.36,4.22,37.6,20.02,12.11,2.94,2.13,0,37.81,0]},
-   {id:'W24',t:328.07,s:125.28,loan:78.42,ch:[0,15.69,3.47,35.17,21.21,7.65,2.95,1.24,0,37.88,0]},
-   {id:'W25',t:328.07,s:144.15,loan:64.81,ch:[0,15.99,2.93,33.17,22.84,10.52,3.25,0,0,55.45,0]},
-   {id:'W26',t:328.07,s:138.92,loan:88.68,ch:[0,16.47,3.39,31.23,22.67,12.37,2.24,0,0,50.57,0]},
-   {id:'W27',t:328.99,s:139.85,loan:66.32,ch:[0,15.01,3.15,36.27,24.64,12.99,1.76,0,0,46.03,0]},
-   {id:'W28',t:329.68,s:173.78,loan:106.09,ch:[0,16.18,3.98,34.69,26.82,7.18,3.02,0,0,81.91,0]},
-   {id:'W29',t:329.68,s:218.47,loan:113.31,ch:[0,17.48,3.35,35.85,24.24,10.95,2.12,0,0,124.48,0]},
-   {id:'W30',t:329.68,s:239.56,loan:166.94,ch:[0,21.71,4.21,35.94,26,13.75,1.46,11.77,0,124.71,0]},
-   {id:'W31',t:330.32,s:248.9,loan:122.48,ch:[0,23.01,3.44,35.48,27.38,11.66,1.13,23.52,0,123.28,0]},
-   {id:'W32',t:334.19,s:254.39,loan:162.49,ch:[0,24.88,3.75,37.65,26.66,13.36,0.27,12.24,0,135.57,0]},
-   {id:'W33',t:334.19,s:278.78,loan:132.29,ch:[11.4,25.24,3.04,34.04,23.62,9.03,0,2.94,0,169.48,0]}] },
+/* ---------- 전년(YYYY년-XX) 비교 시트 — 라벨/서브헤더 텍스트로 직접 찾아 읽는다 (열 고정 X) ---------- */
+function rowLabels(rows, r){
+  const out=[]; const row = rows[r-1]||[];
+  row.forEach((v,i)=>{ if(typeof v==='string' && v.trim()!=='' && i+1>2 && v.trim()!=='구분' && v.trim()!=='종합') out.push({col:i+1, label:v.trim()}); });
+  return out.sort((a,b)=>a.col-b.col);
+}
+function findTextCol(rows, r, fromCol, toCol, want){
+  for(let c=fromCol;c<toCol;c++){ const v=cellAt(rows,r,c); if(typeof v==='string' && v.trim()===want) return c; }
+  return null;
+}
+function readLegacySheet(rows, chanNameMap){
+  const labelRow=2, subRow=3, dataStartRow=4, dataRowCount=12;
+  const labels = rowLabels(rows, labelRow);
+  const firstLabelCol = labels.length ? labels[0].col : 200;
+  const totT = findTextCol(rows, subRow, 2, firstLabelCol, '목표');
+  const totS = findTextCol(rows, subRow, 2, firstLabelCol, '매출');
+  const totC = findTextCol(rows, subRow, 2, firstLabelCol, '매출원가율');
+  const chanCols = {};
+  labels.forEach((lb,i)=>{
+    const nextCol = labels[i+1] ? labels[i+1].col : (rows[subRow-1]||[]).length+1;
+    chanCols[lb.label] = { t: findTextCol(rows, subRow, lb.col, nextCol, '목표'), s: findTextCol(rows, subRow, lb.col, nextCol, '매출') };
+  });
+  const out=[];
+  for(let i=0;i<dataRowCount;i++){
+    const r = dataStartRow+i;
+    const t = totT? numAt(cellAt(rows,r,totT)) : null;
+    const s = totS? numAt(cellAt(rows,r,totS)) : null;
+    const cRaw = totC? numAt(cellAt(rows,r,totC)) : null;
+    const ch = chanNameMap.map(([,legacyLabel,directCol])=>{
+      if(directCol) return numAt(cellAt(rows, r, colNum(directCol)));
+      if(!legacyLabel) return null;
+      const cc = chanCols[legacyLabel];
+      if(!cc || cc.s==null) return null;
+      return numAt(cellAt(rows, r, cc.s));
+    });
+    out.push({ id:i+1, t, s, c: cRaw!=null?cRaw*100:null, ch });
+  }
+  return out;
+}
+function readLegacyOrg(wb, key, cutoff){
+  const def = ORG_CELLMAP[key];
+  const sheetName = def.legacySheet(cutoff.year-1);
+  if(!hasSheet(wb, sheetName)){ console.warn(`[대시보드] 전년 비교 시트 없음: ${sheetName} (1년 흐름/전년비교가 일부 비어 보일 수 있음)`); return null; }
+  return readLegacySheet(aoa(wb, sheetName), def.legacyChans);
+}
 
- ms:{ name:'MS팀', color:'#2A6FDB',
-  chans:[{n:'이마트',c:'#F6B76A'},{n:'에브리데이',c:'#A4ACBA'},{n:'하이퍼',c:'#ED9272'},{n:'익스',c:'#7FA6F3'},{n:'쿠팡',c:'#76D0ED'},{n:'토스',c:'#50A2EB'},{n:'컬리',c:'#9876B5'},{n:'네이버',c:'#5BC438'},{n:'위탁채널',c:'#B1A897'},{n:'기타',c:'#D5D5D5'}],
-  chT:[5300,0,7200,3600,26400,3000,2100,0,144,1389],
-  month:[
-   {id:'2025-01',t:6718,s:2204.95,ch:[0,0,472.1,299.81,1235.93,0,0,0,7.36,189.76]},
-   {id:'2025-02',t:6718,s:1987.56,ch:[0,0,468.93,194.06,1201.09,0,0,0,2.3,121.18]},
-   {id:'2025-03',t:6748,s:1931.17,ch:[0,0,394.28,199.66,1244.48,0,0,0,2.4,90.35]},
-   {id:'2025-04',t:6718,s:2040.58,ch:[0,0,499.81,147.87,1195.37,0,0,0,96.45,101.09]},
-   {id:'2025-05',t:6738,s:2394.47,ch:[0,0,898.08,127.08,1270.25,0,0,0,3.29,95.77]},
-   {id:'2025-06',t:6718,s:2329.67,ch:[0,0,652.91,147.86,1373.28,0,0,0,14.2,141.41]},
-   {id:'2025-07',t:6758,s:2424.29,ch:[0,0,669.54,137.62,1328.64,0,0,0,36.62,251.87]},
-   {id:'2025-08',t:6758,s:2603.84,ch:[0,0,738.19,128.42,1587.85,0,0,0,34.87,114.51]},
-   {id:'2025-09',t:6758,s:2922.9,ch:[0,0,755.69,113.58,1597.46,0,0,0,143.61,312.57]},
-   {id:'2025-10',t:6758,s:2225.09,ch:[0,0,591.66,114.19,1371.28,0,0,0,51.37,96.59]},
-   {id:'2025-11',t:6718,s:2335.02,ch:[0,0,576.4,99.87,1458.54,0,0,0,56.44,143.76]},
-   {id:'2025-12',t:6758,s:2452.14,ch:[0,0,627.22,122.11,1415.05,0,0,0,76.82,210.95]},
-   {id:'2026-01',t:3872,s:2734.75,ch:[169.05,0,355.89,127.94,1674.61,239.4,79.15,0.92,1.39,86.38]},
-   {id:'2026-02',t:3872,s:2339.95,ch:[328.82,10.7,142.65,81.34,1362.86,145.86,96.29,2.95,2.28,166.21]},
-   {id:'2026-03',t:3995,s:2302.8,ch:[145.39,4.72,239.22,92.95,1500.62,135.43,121.96,5.07,2.74,54.7]},
-   {id:'2026-04',t:3972,s:2494.33,ch:[167.05,5.65,289.53,166.42,1456.81,239.45,63.11,2.96,3.28,100.07]},
-   {id:'2026-05',t:3972,s:2275.35,ch:[149.8,0,188.82,137.34,1448.94,138.7,69.86,7.25,0.86,133.78]},
-   {id:'2026-06',t:4072,s:2475.51,ch:[199.95,20.05,0,50.7,1462.2,522.54,44.05,8.28,0.71,167.02]},
-   {id:'2026-07',t:4245,s:2651.83,ch:[63.12,3.62,0,45.73,1534.46,803.13,57.13,9.55,1.93,133.16]},
-   {id:'2026-08',t:4222,s:1971.13,ch:[110.72,46.3,101.14,25.5,868.89,730.04,19.05,4.98,1.01,63.5]}],
-  week:[
-   {id:'W1',t:374.71,s:296.13,ch:[0,0,91.08,36.04,146.95,5.14,12.42,0.05,0.05,4.39]},
-   {id:'W2',t:874.32,s:638.32,ch:[0,0,122.34,39.36,382.08,65.81,12.44,0.25,0.23,15.81]},
-   {id:'W3',t:874.32,s:503.94,ch:[0,0,53.98,16.45,393.55,4.97,17.7,0.19,0.39,16.71]},
-   {id:'W4',t:874.32,s:659.56,ch:[42.98,0,38.28,17.02,403.48,102.24,28.68,0.21,0.36,26.31]},
-   {id:'W5',t:874.32,s:636.81,ch:[126.07,0,50.21,19.08,348.56,61.24,7.9,0.23,0.36,23.15]},
-   {id:'W6',t:968,s:913.15,ch:[214.38,0,42.77,22.82,480.57,70.79,25.55,0.27,1.19,54.81]},
-   {id:'W7',t:968,s:607.62,ch:[67.62,0,31.91,21.08,343.04,38.36,36.64,1.53,0.63,66.81]},
-   {id:'W8',t:968,s:338.19,ch:[0,0,25.4,19.16,225.7,18.34,18.03,0.55,0.18,30.84]},
-   {id:'W9',t:968,s:480.99,ch:[46.83,10.7,42.56,18.28,313.55,18.37,16.07,0.6,0.29,13.75]},
-   {id:'W10',t:902.1,s:466.17,ch:[15.33,2.64,44.56,17.99,333.94,11.03,29.69,1.95,0.35,8.69]},
-   {id:'W11',t:902.1,s:503.81,ch:[0,0,57.59,20.59,337.8,32.1,42.9,1.13,0.23,11.47]},
-   {id:'W12',t:902.1,s:624.19,ch:[78.18,0,51.39,22.65,404.5,13.12,41.64,0.89,0.64,11.19]},
-   {id:'W13',t:902.1,s:501.14,ch:[42.91,0,62.5,21.51,282.35,74.02,5.79,0.68,1.02,10.36]},
-   {id:'W14',t:916.21,s:557.43,ch:[34.85,5.9,56.76,24.31,339.13,43.39,22.67,0.71,1.24,28.47]},
-   {id:'W15',t:926.8,s:464.78,ch:[9,1.82,54.86,24.17,309.19,15.08,19.08,0.62,1.23,29.73]},
-   {id:'W16',t:926.8,s:670.12,ch:[77.21,0,70.93,42.16,404.26,39.37,14.69,0.75,0.92,19.83]},
-   {id:'W17',t:926.8,s:544.08,ch:[54.96,0,66.8,49.36,323.43,26.81,5.16,0.66,0.18,16.72]},
-   {id:'W18',t:918.26,s:639.73,ch:[0,0,88.59,53.02,336.87,119.96,20.22,0.63,0.22,20.22]},
-   {id:'W19',t:896.9,s:524.57,ch:[9.62,0,90.66,49.34,311.51,27.91,5.74,1.37,0.18,28.25]},
-   {id:'W20',t:896.9,s:526.61,ch:[3.79,0,57.46,48.45,356.73,13.7,26.78,3.82,0.31,15.57]},
-   {id:'W21',t:896.9,s:496.85,ch:[68.49,0,15.49,23.17,287.42,27.48,14.9,0.99,0.25,58.65]},
-   {id:'W22',t:896.9,s:487.96,ch:[65.61,0,0,0,333.07,57.82,5.67,1.07,0.12,24.61]},
-   {id:'W23',t:942.53,s:400.81,ch:[4.14,0,0,16.5,304.28,24.22,19.41,0.91,0.2,31.15]},
-   {id:'W24',t:950.13,s:571.04,ch:[0.61,14.11,0,11.31,391.58,109.24,13.68,2.48,0.18,27.86]},
-   {id:'W25',t:950.13,s:453.48,ch:[0.8,3.03,0,12.14,304.5,114.82,5.13,2.4,0.06,10.61]},
-   {id:'W26',t:950.13,s:800.73,ch:[134.33,2.03,0,7.6,355.67,200.41,3.9,1.54,0.27,94.98]},
-   {id:'W27',t:954.94,s:764.98,ch:[96.48,2.49,0,8.49,317.61,306.25,15.73,1.93,0.13,15.87]},
-   {id:'W28',t:958.55,s:807.6,ch:[18.98,2.02,0,9.98,411.82,317.71,12.53,1.49,0.34,32.73]},
-   {id:'W29',t:958.55,s:508.21,ch:[7.79,0,0,9.94,320.52,136.02,10.24,2.98,0.35,20.36]},
-   {id:'W30',t:958.55,s:392.36,ch:[2.23,0,0,11.08,324.77,7.91,4.71,2.1,0.39,39.17]},
-   {id:'W31',t:957.81,s:704.35,ch:[0,0,0,11.21,430.37,203.13,16.85,2.27,0.76,39.76]},
-   {id:'W32',t:953.35,s:850.62,ch:[57.52,22.43,9.29,12.22,386.56,318.74,12.82,2.34,0.55,28.13]},
-   {id:'W33',t:953.35,s:909.33,ch:[53.2,23.87,91.85,11.46,364.05,329.08,5.22,2.36,0.41,27.83]}] },
+/* ---------- CELLMAP: 케이MS 시트 안의 "특정" / "직납" / "온라인 및 그 외" 블록 — 라벨+상대행
+   2026-09-03: "직납/온라인/기타"였던 단일 블록이 "직납"(4채널) + "온라인 및 그 외"(7채널, OEM 포함)
+   두 블록으로 분리됐다 — 매주 xlsm 구조는 바뀔 수 있으니 라벨 텍스트로 찾고, 옛 이름도 폴백으로 남겨둔다. ---------- */
+const MS_T_CHANS = [['홈플러스','#61BB8F','F'],['하나로','#5CCDA9','L'],['에브리','#A4ACBA','R'],['현대','#728FB9','X'],['신세계','#CE655A','AD'],['롯데','#A78C7A','AJ'],['GS','#668FDD','AP'],['이마트','#F6B76A','AV'],['킴스','#C7C7C7','BB'],['위탁행사','#B1A897','BH'],['순회행사','#E1E1E1','BN']];
+const MS_JIKNAP_CHANS = [['이마트','#F6B76A','D'],['에브리데이','#A4ACBA','G'],['하이퍼','#ED9272','J'],['익스','#7FA6F3','M']];
+const MS_ONLINE_CHANS = [['쿠팡','#76D0ED','D'],['토스','#50A2EB','G'],['컬리','#9876B5','J'],['네이버','#5BC438','M'],['위탁채널','#B1A897','P'],['기타','#D5D5D5','S'],['OEM','#8E6C4B','V']];
+const MS_T_LEGACY = [['홈플러스','하이퍼'],['하나로','하나로'],['에브리','에브리데이'],['현대','현대'],['신세계','신세계'],['롯데','롯데'],['GS',null],['이마트','이마트'],['킴스','킴스'],['위탁행사','위탁행사'],['순회행사','순회행사']];
+/* 전년(2025년-케이MS) 시트는 아직 직납/온라인이 한 블록으로 합쳐져 있어서, 현재 11채널(직납4+온라인7) 순서에 맞춰 매핑 */
+const MS_LEGACY = [['이마트',null],['에브리데이',null],['하이퍼','하이퍼 직납'],['익스','익스 직납'],['쿠팡','쿠팡'],['토스',null],['컬리',null],['네이버',null],['위탁채널','위탁채널'],['기타','기타'],['OEM',null,'X']];
 
- it:{ name:'I팀', color:'#1F8A5B',
-  chans:[{n:'급식',c:CO.green},{n:'군납',c:CO.green2},{n:'기타(도소매)',c:CO.amber}],
-  chT:[4726,5220,54],
-  month:[
-   {id:'2025-01',t:205,s:171.18},
-   {id:'2025-02',t:205,s:156.39},
-   {id:'2025-03',t:550,s:283.27},
-   {id:'2025-04',t:750,s:257.8},
-   {id:'2025-05',t:900,s:269.16},
-   {id:'2025-06',t:900,s:232.53},
-   {id:'2025-07',t:840,s:263.18},
-   {id:'2025-08',t:870,s:301.34},
-   {id:'2025-09',t:1120,s:372.51},
-   {id:'2025-10',t:1220,s:402.19},
-   {id:'2025-11',t:1220,s:357.15},
-   {id:'2025-12',t:1220,s:505.27},
-   {id:'2026-01',t:191.7,s:361.95,ch:[10.97,110.14,240.84]},
-   {id:'2026-02',t:161.7,s:294.54,ch:[4.63,153.69,136.22]},
-   {id:'2026-03',t:726.7,s:503.18,ch:[155.65,303.24,44.29]},
-   {id:'2026-04',t:854.7,s:376.5,ch:[165.78,173.23,37.48]},
-   {id:'2026-05',t:954.7,s:432.6,ch:[116.95,261.97,53.68]},
-   {id:'2026-06',t:954.8,s:410.34,ch:[164.44,181.46,64.44]},
-   {id:'2026-07',t:954.5,s:554.83,ch:[93.73,337.58,123.52]},
-   {id:'2026-08',t:954.5,s:129.52,ch:[16.57,68.17,44.78]}],
-  week:[
-   {id:'W1',t:18.55,s:16.19,ch:[1.07,14.16,0.96]},
-   {id:'W2',t:43.29,s:112.72,ch:[6.26,20.62,85.85]},
-   {id:'W3',t:43.29,s:115.65,ch:[2.37,27.42,85.87]},
-   {id:'W4',t:43.29,s:41.22,ch:[0.66,19.1,21.45]},
-   {id:'W5',t:43.29,s:76.18,ch:[0.61,28.84,46.72]},
-   {id:'W6',t:40.42,s:153.75,ch:[2.23,29.21,122.31]},
-   {id:'W7',t:40.42,s:42.14,ch:[0.69,36.86,4.59]},
-   {id:'W8',t:40.42,s:45.51,ch:[0.11,43.98,1.43]},
-   {id:'W9',t:40.42,s:53.14,ch:[1.6,43.65,7.89]},
-   {id:'W10',t:164.09,s:119,ch:[30.69,75.34,12.97]},
-   {id:'W11',t:164.09,s:100.84,ch:[39.13,53.48,8.24]},
-   {id:'W12',t:164.09,s:125.73,ch:[36.81,77.59,11.32]},
-   {id:'W13',t:164.09,s:108.01,ch:[34.43,65.41,8.17]},
-   {id:'W14',t:184.29,s:99.83,ch:[40.45,47.21,12.17]},
-   {id:'W15',t:199.43,s:61.27,ch:[32.38,22.19,6.7]},
-   {id:'W16',t:199.43,s:75.07,ch:[45.85,17.81,11.42]},
-   {id:'W17',t:199.43,s:104.01,ch:[40.37,58.14,5.5]},
-   {id:'W18',t:204.04,s:93.33,ch:[21.32,59.32,12.68]},
-   {id:'W19',t:215.58,s:97.23,ch:[22.82,65.41,9]},
-   {id:'W20',t:215.58,s:137.46,ch:[32.36,95.86,9.24]},
-   {id:'W21',t:215.58,s:105.77,ch:[38.66,50.33,16.78]},
-   {id:'W22',t:215.58,s:84.74,ch:[23.11,50.38,11.25]},
-   {id:'W23',t:221.76,s:86.84,ch:[42.05,30.06,14.72]},
-   {id:'W24',t:222.79,s:85.12,ch:[35.42,41.42,8.28]},
-   {id:'W25',t:222.79,s:122.38,ch:[36.44,78.18,7.76]},
-   {id:'W26',t:222.79,s:60.95,ch:[38.44,16.13,6.38]},
-   {id:'W27',t:218.64,s:116.42,ch:[27,52.97,36.45]},
-   {id:'W28',t:215.53,s:127.61,ch:[40.81,77.69,9.1]},
-   {id:'W29',t:215.53,s:92.76,ch:[22.77,62.25,7.73]},
-   {id:'W30',t:215.53,s:38.98,ch:[14.91,21.17,2.9]},
-   {id:'W31',t:215.53,s:234.11,ch:[0.32,139.16,94.63]},
-   {id:'W32',t:215.53,s:33.66,ch:[0.69,26.93,6.04]},
-   {id:'W33',t:215.53,s:95.86,ch:[15.88,41.25,38.73]}] }
-};
+function findLabelRow(rows, label){
+  for(let r=1;r<=rows.length;r++){
+    const row = rows[r-1]||[];
+    for(let c=1;c<=row.length;c++){ if(typeof row[c-1]==='string' && row[c-1].trim()===label) return r; }
+  }
+  return null;
+}
+function readLabelBlock(rows, labelRow, chans, cutoff, opt){
+  const monthRow = m=>labelRow+2+m, totalMRow=labelRow+15, weekRow=w=>labelRow+19+w;
+  const month=[], week=[];
+  for(let m=1;m<=Math.min(cutoff.month,12);m++){ const r=Object.assign({id:m}, readRow(rows, monthRow(m), chans, opt)); warnIfMismatch(`케이MS ${m}월`, r); month.push(r); }
+  for(let w=1;w<=Math.min(cutoff.week,53);w++){ const r=Object.assign({id:w}, readRow(rows, weekRow(w), chans, opt)); warnIfMismatch(`케이MS ${w}주`, r); week.push(r); }
+  const chT = chanTargets(rows, totalMRow, chans);
+  return {month, week, chT};
+}
+/* 직납 블록 + 온라인 블록을 하나의 "MS팀"으로 합친다 — t/s는 더하고 채널은 이어붙인다 */
+function mergeBlocks(a, b){
+  const mergeRows = (ra, rb) => ra.map((r0,i)=>{
+    const r1 = rb[i];
+    return { id:r0.id, t:(r0.t||0)+(r1.t||0), s:(r0.s||0)+(r1.s||0), ch:r0.ch.concat(r1.ch) };
+  });
+  return { month: mergeRows(a.month,b.month), week: mergeRows(a.week,b.week), chT: a.chT.concat(b.chT) };
+}
+function readKsubCurrent(wb, cutoff){
+  const rows = aoa(wb, '케이MS');
+  const msTRow = findLabelRow(rows, '특정');
+  const jiknapRow = findLabelRow(rows, '직납');
+  const onlineRow = findLabelRow(rows, '온라인 및 그 외') || findLabelRow(rows, '직납/온라인/기타');
+  if(msTRow==null) throw new Error('케이MS 시트에서 "특정" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
+  if(jiknapRow==null) throw new Error('케이MS 시트에서 "직납" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
+  if(onlineRow==null) throw new Error('케이MS 시트에서 "온라인 및 그 외" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
+  const msT = readLabelBlock(rows, msTRow, MS_T_CHANS, cutoff, {tCol:'B', sCol:'C', loanCol:'D'});
+  const jiknap = readLabelBlock(rows, jiknapRow, MS_JIKNAP_CHANS, cutoff, {tCol:'B', sCol:'C'});
+  const online = readLabelBlock(rows, onlineRow, MS_ONLINE_CHANS, cutoff, {tCol:'B', sCol:'C'});
+  return { msT, ms: mergeBlocks(jiknap, online) };
+}
+const MS_ALL_CHANS = MS_JIKNAP_CHANS.concat(MS_ONLINE_CHANS); // 색상/이름 목록용(직납4+온라인7=11채널)
+function readLegacyKsub(wb, cutoff){
+  const yy = cutoff.year-1;
+  const tName = `${yy}년-케이MS특정`, mName = `${yy}년-케이MS`, iName = `${yy}년-케이I`;
+  const safe = (name, map) => hasSheet(wb,name) ? readLegacySheet(aoa(wb,name), map) : (console.warn(`[대시보드] 전년 비교 시트 없음: ${name}`), null);
+  return { msT: safe(tName, MS_T_LEGACY), ms: safe(mName, MS_LEGACY), it: safe(iName, ORG_CELLMAP.it.legacyChans) };
+}
 
-/* 1년치 주별 흐름 — 25년 33주 ~ 26년 32주.
-   21~32주는 실적, 그 외는 해당 월 실적을 주 단위로 배분한 파생값입니다.
-   실제 주별 데이터 확보 시 YEARW 를 직접 채워 넣으면 됩니다. */
-/* 1년 흐름 그래프용. 전년(2025) 33~52주는 아직 주별 실측이 없어 월별 값을 주 단위로
-   나눈 파생값이고, 올해(2026) 1~33주는 마스터 파일의 실측 주별 데이터를 그대로 쓴다. */
+/* ---------- 조립: 트레일링 12개월(법인 3사) / Jan(전년)~cutoff(올해) (KSUB 3팀) ---------- */
+function monthId(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
+function trailingMonths(endY, endM, n){
+  const out=[]; let y=endY, m=endM;
+  for(let i=0;i<n;i++){ out.unshift({y,m}); m--; if(m<1){m=12;y--;} }
+  return out;
+}
+function pickMonth(arr, m){ return arr ? arr.find(r=>r.id===m) : null; }
+
+function buildOrgEntity(key, name, color, cur, curData, legacyData){
+  const def = ORG_CELLMAP[key];
+  const trailing = trailingMonths(cur.year, cur.month, 12);
+  const month = trailing.map(({y,m})=>{
+    const id = monthId(y,m);
+    const rec = (y===cur.year) ? pickMonth(curData.month, m) : pickMonth(legacyData, m);
+    return rec ? {id, t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id, t:null, s:null, c:null, ch:null};
+  });
+  const prevM = {};
+  trailing.slice(-3).forEach(({y,m})=>{
+    if(y!==cur.year) return;
+    const rec = pickMonth(legacyData, m);
+    if(rec) prevM[monthId(y,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
+  });
+  const week = curData.week.map(r=>({id:'W'+r.id, t:r.t, s:r.s, c:r.c, ch:r.ch}));
+  return {
+    id:key, name, color,
+    chans: def.chans.map(([n,c])=>({n,c})),
+    chT: curData.chT,
+    month, week, prevM, prevW:{}
+  };
+}
+function buildKsubEntity(name, color, hasLoan, chansSpec, cur, curData, legacyData){
+  const month=[];
+  for(let m=1;m<=12;m++){
+    const rec = pickMonth(legacyData, m);
+    const y = cur.year-1;
+    const row = { id: monthId(y,m), t: rec?rec.t:null, s: rec?rec.s:null, ch: rec?rec.ch:null };
+    if(hasLoan) row.loan = null; // 전년 대출액 데이터는 원본 시트에 없음(미제공)
+    month.push(row);
+  }
+  for(let m=1;m<=cur.month;m++){
+    const rec = pickMonth(curData.month, m);
+    const row = { id: monthId(cur.year,m), t: rec?rec.t:null, s: rec?rec.s:null, ch: rec?rec.ch:null };
+    if(hasLoan) row.loan = rec && rec.loan!=null ? rec.loan : null;
+    month.push(row);
+  }
+  const week = curData.week.map(r=>{
+    const row = {id:'W'+r.id, t:r.t, s:r.s, ch:r.ch};
+    if(hasLoan) row.loan = r.loan!=null? r.loan : null;
+    return row;
+  });
+  const out = { name, color, chans: chansSpec.map(([n,c])=>({n,c})), chT: curData.chT, month, week };
+  if(hasLoan) out.hasLoan = true;
+  return out;
+}
+
+let D = null, KSUB = null;
+
+async function bootstrapData(){
+  const { wb, fname } = await loadWorkbook();
+  const cutoff = readCutoff(wb);
+  META.updated = `${fname} · ${cutoff.year}년 ${cutoff.month}월 · ${cutoff.week}주차 기준`;
+
+  const boC = readFixedCurrent(wb,'bo',cutoff), bdC = readFixedCurrent(wb,'bd',cutoff),
+        kpC = readFixedCurrent(wb,'kp',cutoff), itC = readFixedCurrent(wb,'it',cutoff);
+  const boL = readLegacyOrg(wb,'bo',cutoff), bdL = readLegacyOrg(wb,'bd',cutoff),
+        kpL = readLegacyOrg(wb,'kp',cutoff);
+  const { msT: msTC, ms: msC } = readKsubCurrent(wb, cutoff);
+  const { msT: msTL, ms: msL, it: itL } = readLegacyKsub(wb, cutoff);
+
+  D = {
+    bo: buildOrgEntity('bo','보담','#1566B2', cutoff, boC, boL),
+    bd: buildOrgEntity('bd','백두','#259638', cutoff, bdC, bdL),
+    kp: buildOrgEntity('kp','케이프라이드','#F28C02', cutoff, kpC, kpL),
+  };
+  KSUB = {
+    ms_t: buildKsubEntity('MS팀 특정','#2A6FDB', true, MS_T_CHANS.map(c=>[c[0],c[1]]), cutoff, msTC, msTL),
+    ms:   buildKsubEntity('MS팀','#2A6FDB', false, MS_ALL_CHANS.map(c=>[c[0],c[1]]), cutoff, msC, msL),
+    it:   buildKsubEntity('I팀','#1F8A5B', false, ORG_CELLMAP.it.chans.map(c=>[c[0],c[1]]), cutoff, itC, itL),
+  };
+
+  // 1년 흐름(yearLine) 차트 — 올해 1월 이전(전년 8~12월) 구간은 전년 비교 시트의 월별값을 씀
+  window.__DASH_LEGACY__ = { bo:boL, bd:bdL, kp:kpL };
+  window.__DASH_CUTOFF__ = cutoff;
+}
+
+/* ---------- 1년 선그래프용 — 전년(주별 실측 없음) 구간은 월별 값을 주 단위로 배분한 파생값 ---------- */
 const WEEKMAP = [
-  ['2025-08',33,35],['2025-09',36,39],['2025-10',40,44],['2025-11',45,48],['2025-12',49,52]
+  ['08',33,35], ['09',36,39], ['10',40,44], ['11',45,48], ['12',49,52]
 ];
-const AUG25 = { bo:{s:1922.15,c:82.4}, bd:{s:5305.42,c:87.0}, kp:{s:4114.50,c:63.9},
-                ms_t:{s:957.46,c:null}, ms:{s:2603.84,c:null}, it:{s:301.34,c:null} };
-/* 1주~현재 주차 전체 표용 데이터 */
-/* 1주 ~ 현재 주차 전체 표용. 이제 마스터 파일에 1~33주 실측이 다 들어있어서
-   있는 그대로 주차순으로 반환하면 된다(파생/추정 보정 불필요). */
+function legacyMonthVal(key, mm){
+  const arr = window.__DASH_LEGACY__ && window.__DASH_LEGACY__[key];
+  const rec = arr ? arr.find(r=>r.id===mm) : null;
+  return rec ? {s:rec.s, c:rec.c} : null;
+}
+function buildYear(key){
+  const src = D[key];
+  const out = [];
+  const cutoff = window.__DASH_CUTOFF__;
+  const priorYear = cutoff.year-1;
+  for(const [mm,a,b] of WEEKMAP){
+    const rec = legacyMonthVal(key, +mm);
+    const n = b-a+1;
+    for(let w=a; w<=b; w++) out.push({ w, yr:priorYear, s: rec? rec.s/n : null, c: rec? rec.c : null, est:true });
+  }
+  (src.week||[]).forEach(r=>{ const w=+r.id.slice(1);
+    out.push({ w, yr:cutoff.year, s:r.s, c:r.c!=null?r.c:null, est:false }); });
+  return out;
+}
 function fullWeeks(eObj){
   const have = {};
   (eObj.week||[]).forEach(r=>{ have[+r.id.slice(1)]=r; });
   const ws = Object.keys(have).map(Number).sort((a,b)=>a-b);
   return ws.map(w=>have[w]);
-}
-function buildYear(key){
-  const src = D[key] || KSUB[key];
-  const mIdx = {}; (src.month||[]).forEach(r=>mIdx[r.id]=r);
-  const out = [];
-  for(const [mid,a,b] of WEEKMAP){
-    const rec = mIdx[mid] || (mid==='2025-08' && AUG25[key] ? AUG25[key] : null);
-    const n = b-a+1;
-    for(let w=a; w<=b; w++)
-      out.push({ w, yr:(a>=33?2025:2026), s: rec? rec.s/n : null, c: rec? (rec.c!=null?rec.c:null) : null, est:true });
-  }
-  (src.week||[]).forEach(r=>{ const w=+r.id.slice(1);
-    out.push({ w, yr:2026, s:r.s, c:r.c!=null?r.c:null, est:false }); });
-  return out;
 }
 
 const NAV = [
@@ -637,7 +654,7 @@ const NAV = [
 ];
 
 /* ══════════════════════ 유틸 ══════════════════════ */
-const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11, wi:32 };
+const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11, wi:33 };
 const n0=v=>(v==null||!isFinite(v))?'–':Math.round(v).toLocaleString('ko-KR');
 const n2=v=>(v==null||!isFinite(v))?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=v=>(v==null||!isFinite(v))?'–':v.toFixed(1)+'%';
@@ -739,6 +756,48 @@ function barChart(rs, chans, prev, e, curIdx){
   </div>`;
 }
 
+/* ══════════════════════ 막대 차트 (모바일 전용 · 가로 막대를 세로로 나열) ══════════════════════
+   컴퓨터용 barChart()는 그대로 두고, 모바일에서만 이 함수를 대신 쓴다. 가로 스크롤 없이
+   한 화면 폭 안에 값이 다 들어오도록, 항목을 세로로 쌓고 막대는 가로로 눕힌다. */
+function barChartMobile(rs, chans, prev, e, curIdx){
+  const last3 = new Set(rs.slice(-3).map(r=>r.id));
+  const cmp = prev ? rs.map(r=>r.id).filter(id=>last3.has(id) && prev[id]) : [];
+  const mx0 = Math.max(...rs.map(r=>r.s||0), ...cmp.map(id=>prev[id].s));
+  const cap = (isM() && e.id && YCAP[e.id]) ? YCAP[e.id] : null;
+  const mx = (cap && mx0<=cap) ? cap : niceCap(mx0);
+  const lineKind = e.hasLoan ? 'loan' : (rs.some(r=>r.c!=null) ? 'cost' : null);
+  const cols=chans.map(x=>x.c), colsL=chans.map(x=>light(x.c));
+
+  const seg=(vals,tot,cs)=> (!vals||!vals.length||tot<=0)
+    ? `<span style="width:100%;background:${CO.grey}"></span>`
+    : vals.map((v,i)=> v>0?`<span style="width:${(v/tot*100).toFixed(3)}%;background:${cs[i]}"></span>`:'').join('');
+
+  CTX = { rs, chans, prev, e };
+  const rows = rs.map((r,i)=>{
+    if(r.s==null) return '';
+    const has = prev && prev[r.id] && last3.has(r.id);
+    const wPct = (r.s/mx*100).toFixed(2);
+    const py = has ? `<div class="hbar-py" style="width:${(prev[r.id].s/mx*100).toFixed(2)}%">${seg(prev[r.id].ch, sum(prev[r.id].ch)||prev[r.id].s, colsL)}</div>` : '';
+    const yoy = has ? `<span class="hbar-yoy">전년비 ${pct(r.s/prev[r.id].s*100)}</span>` : '';
+    const costLine = lineKind==='loan' ? `<span class="hbar-cost">대출액 ${n2(r.loan)}</span>`
+                  : lineKind==='cost' && r.c!=null ? `<span class="hbar-cost">원가율 ${pct(r.c)}</span>` : '';
+    return `<div class="hbar-row${i===curIdx?' on':''}" onclick="openPop(${i})">
+      <div class="hbar-head"><span class="hbar-lbl">${labOf(r)}</span>${costLine}${yoy}</div>
+      <div class="hbar-track-wrap">
+        <div class="hbar-track" style="width:${wPct}%">${seg(r.ch, sum(r.ch)||r.s, cols)}</div>
+        <span class="hbar-track-val">${n2(r.s)}</span>
+      </div>
+      ${py}
+    </div>`;
+  }).join('');
+
+  return `<div class="hbars">${rows}</div>
+  <div class="lgd">
+    ${chans.map(x=>`<span><i style="background:${x.c}"></i>${x.n}</span>`).join('')}
+    ${prev?'<span><i style="border:1px dashed #a8b0bb;background:transparent"></i>전년(같은 기간)</span>':''}
+  </div>`;
+}
+
 /* ══════════════════════ 1년 선 그래프 ══════════════════════ */
 function yearLine(key, color){
   const ys = buildYear(key).filter(r=>r.s!=null);
@@ -759,9 +818,11 @@ function yearLine(key, color){
       (show(i)?`<div style="position:absolute;left:${x}%;top:10px;transform:translateX(-50%);
         font-size:10.5px;color:#9aa3af;font-weight:600;white-space:nowrap">${r.yr}년 ${r.w}주</div>`:'');
   }).join('');
+  const visibleN = 15;  /* 모바일에서 한 화면에 보이는 주 수 — 나머지는 좌우로 스크롤해서 본다 */
+  const widthPct = isPortrait() ? Math.round(n/visibleN*100) : 100;
   return `<div class="plot">
     <div class="yax" style="height:${H}px">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>
-    <div class="area"><div class="canvas" style="height:${H}px">
+    <div class="area"><div class="area-inner" style="width:${widthPct}%"><div class="canvas" style="height:${H}px">
       ${ticks.map(i=>`<div class="gl" style="top:${i/4*100}%"></div>`).join('')}
       <svg style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
         viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -772,7 +833,7 @@ function yearLine(key, color){
       ${ys.map((r,i)=>`<div title="${r.yr}년 ${r.w}주 · 매출 ${n2(r.s)}${r.c!=null?' · 매출원가 '+n2(r.s*r.c/100):''}"
         style="position:absolute;left:${(i/(n-1)*100).toFixed(3)}%;top:0;bottom:0;width:${(100/n).toFixed(2)}%;
         transform:translateX(-50%)"></div>`).join('')}
-    </div><div style="position:relative;height:26px;margin-top:8px">${marks}</div></div>
+    </div><div style="position:relative;height:26px;margin-top:8px">${marks}</div></div></div>
   </div>
   <div class="lgd"><span><i class="ln" style="border-color:${color}"></i>매출액</span>
     ${hasCost?`<span><i class="ln" style="border-color:#C8842A"></i>매출원가</span>`:''}</div>`;
@@ -889,7 +950,7 @@ function kbar(rs, e, ci){
     if(!isFinite(v)) return note||'&nbsp;';
     const up=v>=0;
     return `전${isM()?'월':'주'} 대비 <b style="color:${Math.abs(v)<.05?'#a8b0bb':(up?UP:DN)}">
-      ${up?'+':''}${v.toFixed(1)}%p ${up?'▲':'▼'}</b>${note?' · '+note:''}`;
+      ${up?'+':''}${v.toFixed(1)}%p ${up?'▲':'▼'}</b>${note?'<span class="d-sep"> · </span><span class="d-note">'+note+'</span>':''}`;
   };
   /* 금액 증감 표기 (매출액 전용) */
   const damt=(c,p)=>{
@@ -966,9 +1027,11 @@ function pageSales(){
       ${yearLine(chartKey, e.color)}
     </div>`;
   } else {
+    /* 모바일(세로)에서는 가로 스크롤 막대 대신, 세로로 쌓인 가로 막대 리스트를 쓴다. */
+    const chartHtml = isPortrait() ? barChartMobile(rs, e.chans, prev, e, safeCI) : barChart(rs, e.chans, prev, e, safeCI);
     bodyHtml = `<div class="card chart">
       <div class="chd"><h2>${e.name} ${isM()?'월별':'주별'}</h2>${viewToggle}</div>
-      ${barChart(rs, e.chans, prev, e, safeCI)}
+      ${chartHtml}
     </div>`;
   }
   return { kbarHtml, bodyHtml };
@@ -985,6 +1048,10 @@ function pagePlaceholder(){
 }
 
 function render(){
+  /* 세로(모바일)/가로 여부에 맞는 카드·캔버스 높이를 먼저 확정해 둔다 — 이 값이 아래
+     pageSales()의 barChart/table에서 인라인 px로 그대로 쓰이므로, HTML을 만들기 전인
+     지금 반드시 먼저 계산해야 한다. */
+  recalcCardLayout(isPortrait());
   const g = NAV.find(x=>x.id===S.nav1);
   if(g.subs.length && !g.subs.some(x=>x.id===S.nav2)) S.nav2 = g.subs[0].id;
   const isSales = S.nav1==='sales';
@@ -1035,7 +1102,6 @@ function render(){
 /* 무대를 화면에 맞춰 축소 */
 /* 가로 볼 때는 기존 339:191 그대로. 세로(모바일 세로)일 때만 기기별(아이폰/갤럭시) 화면비로 --H를 바꾼다.
    너비(--W=1920)는 항상 그대로 두고, 세로에서 --H만 그 비율에 맞게 늘려서 계산한다. */
-const DEVICE_RATIO = /iphone|ipad|ipod/i.test(navigator.userAgent) ? 19.5/9 : 20/9; /* 아이폰 vs 그 외(갤럭시 등 안드로이드) */
 /* "화면이 세로로 길쭉한가"만 보면 컴퓨터에서 창을 좁게/세로로 만든 경우까지 모바일로 오인한다.
    그래서 "실제 모바일 기기인지"까지 같이 확인한다 — 컴퓨터는 창 모양이 어떻든 이 조건에 절대 안 걸린다. */
 const IS_MOBILE_DEVICE = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
@@ -1066,15 +1132,25 @@ function alignLine(){
     poly.setAttribute('points', pts.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
   }
 }
+/* 모바일(세로): 축소 없이 실제 화면 폭 그대로, 세로로 자연스럽게 스크롤되는 레이아웃.
+   데스크탑(가로): 기존 그대로 1920×1082 무대를 화면에 맞게 축소해서 보여준다. */
 function fit(){
   const st=document.getElementById('stage'); if(!st) return;
-  applyLayout();
+  const vp=document.getElementById('viewport');
   const portrait = isPortrait();
-  const W = LAYOUT.STAGE_W;
-  const H = portrait ? Math.round(W*DEVICE_RATIO) : LAYOUT.STAGE_H;
+  document.documentElement.classList.toggle('mob', portrait);
+  document.body.classList.toggle('mob', portrait);
+  vp.classList.toggle('mob', portrait);
+  st.classList.toggle('portrait', portrait);
+  recalcCardLayout(portrait);
+  if(portrait){
+    st.style.transform='none';
+    return;
+  }
+  applyLayout();
+  const W = LAYOUT.STAGE_W, H = LAYOUT.STAGE_H;
   document.documentElement.style.setProperty('--W', W+'px');
   document.documentElement.style.setProperty('--H', H+'px');
-  st.classList.toggle('portrait', portrait);
   const s=Math.min(window.innerWidth/W, window.innerHeight/H);
   st.style.transform='scale('+s+')';
 }
@@ -1095,7 +1171,20 @@ function setKsub(v){ S.ksub=v; resetToLatest(); closePop(); render(); }
 function setView(v){ S.view=v; closePop(); render(); }
 function step(d){ const all = S.nav1==='sales'?rows():D.bo[isM()?'month':'week'];
   const v=idx()+d; if(v<0||v>=all.length) return; if(isM()) S.mi=v; else S.wi=v; closePop(); render(); }
-render();
+
+/* ══════════════════════ 부트스트랩 — xlsm 로드 후 첫 렌더 ══════════════════════ */
+(async function start(){
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '<div class="drop"><h3>불러오는 중…</h3><p>주간매출자료 xlsm 파일을 확인하고 있습니다.</p></div>';
+  try{
+    await bootstrapData();
+    render();
+  }catch(err){
+    console.error('[대시보드] 불러오기 실패:', err);
+    stage.innerHTML = '<div class="drop"><h3>불러오기 실패</h3><p>' +
+      String((err&&err.message)||err).replace(/</g,'&lt;') + '</p></div>';
+  }
+})();
 </script>
 </body>
 </html>
