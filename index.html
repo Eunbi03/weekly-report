@@ -171,15 +171,14 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .drop code{background:#eef1f5;padding:3px 9px;border-radius:6px;font-size:13px;font-weight:600;color:#2A6FDB}
 
 /* PDF 뷰어 (주간매출자료 외 카테고리) — 그 주차 PDF 파일을 변형 없이 그대로 보여준다.
-   .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다. */
-.pdfcard{flex:1;min-height:0;background:#fff;border:1px solid #e7eaef;border-radius:12px;
-  box-shadow:0 1px 2px rgba(20,24,29,.04);display:flex;flex-direction:column;overflow:hidden}
-.pdfhd{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
-  padding:14px 18px;border-bottom:1px solid #eef1f5}
-.pdfhd h2{font-size:19px;font-weight:700;letter-spacing:-.3px}
-.pdfhd a{font-size:13.5px;font-weight:700;color:#2A6FDB;text-decoration:none}
-.pdfhd a:hover{text-decoration:underline}
-.pdfcard iframe{flex:1;width:100%;border:none;background:#6b6f76}
+   .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다.
+   실제 PDF는 #stage 안이 아니라(#stage는 CSS transform:scale로 축소·확대되는 무대라
+   그 안의 iframe은 이미 래스터화된 화면을 다시 확대/축소하게 되어 화질이 깨진다),
+   #pdfslot이 화면에서 차지하는 실제 좌표를 getBoundingClientRect()로 읽어서
+   화면 밖(#stage 밖)의 진짜 크기 iframe(#pdfOverlay)을 그 위치·크기에 그대로 맞춰
+   덧씌우는 방식을 쓴다 — syncPdfOverlay() 참고. .pdfslot 자체는 자리만 차지하는
+   빈 틀이고, 테두리·그림자·둥근모서리 같은 "프레임"은 넣지 않는다. */
+.pdfslot{flex:1;min-height:0}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
@@ -213,9 +212,7 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .kc .d .d-sep{display:none}
 #stage.portrait .kc .d .d-note{display:block;margin-top:2px}
 #stage.portrait .chart,#stage.portrait .tcard{height:auto;flex:none;padding:12px 14px 16px}
-#stage.portrait .pdfcard{flex:none;height:78vh}
-#stage.portrait .pdfhd{padding:10px 14px}
-#stage.portrait .pdfhd h2{font-size:15px}
+#stage.portrait .pdfslot{flex:none;height:78vh}
 #stage.portrait .chd h2{font-size:16px}
 #stage.portrait .tw{max-height:65vh;scroll-snap-type:x mandatory;scroll-padding-left:71px}
 /* scroll-padding-left: 고정된 "구분" 칸 폭만큼 여유를 줘야, 스냅했을 때 다음 칸이
@@ -1100,6 +1097,9 @@ async function probePdf(prefix, week){
   /* 확인하는 동안 사용자가 다른 화면으로 넘어갔으면 그 화면을 덮어쓰지 않는다 */
   if(S.nav1!=='sales' && pdfPrefix()===prefix) render();
 }
+/* 현재 화면에 보여줄 PDF의 실제 경로. render()가 매번 먼저 null로 리셋한 뒤
+   pagePdf()가 (자료가 실제로 있을 때만) 채워 넣는다 — syncPdfOverlay()가 이 값을 읽는다. */
+let CUR_PDF_FILE = null;
 function pagePdf(r){
   const g = NAV.find(x=>x.id===S.nav1);
   const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
@@ -1117,11 +1117,36 @@ function pagePdf(r){
       <p>${wk}주차 자료가 아직 없습니다.</p>
       <p style="margin-top:16px"><code>${pdfPath(prefix, wk)}</code></p></div>`;
 
-  const file = state; /* probePdf가 실제로 응답 확인한 경로(NFC 또는 NFD) */
-  return `<div class="pdfcard">
-    <div class="pdfhd"><h2>${title} · ${wk}주차</h2><a href="${file}" target="_blank" rel="noopener">새 창에서 열기 ↗</a></div>
-    <iframe src="${file}" title="${title} ${wk}주차"></iframe>
-  </div>`;
+  CUR_PDF_FILE = state; /* probePdf가 실제로 응답 확인한 경로(NFC 또는 NFD) */
+  return `<div id="pdfslot" class="pdfslot"></div>`;
+}
+/* #stage는 CSS transform:scale(s)로 화면 크기에 맞춰 축소·확대되는 무대다. 그 안에
+   iframe을 그대로 두면 iframe 내부 렌더링(이미 래스터화된 결과물)까지 s배 만큼 다시
+   확대되어(특히 모니터가 1920x1082보다 넓어 s>1인 경우) PDF 글자가 뿌옇게 흐려진다.
+   그래서 실제 iframe은 #stage 밖(변형이 전혀 적용되지 않는 곳)에 두고, #pdfslot이
+   화면에서 차지하는 실제 픽셀 좌표(getBoundingClientRect() — CSS transform이 반영된
+   "최종 화면 좌표"를 그대로 돌려준다)에 매번 맞춰 그 위에 겹쳐 그린다. 이러면 iframe은
+   실제 화면 배율 그대로 렌더링되어 확대로 인한 블러가 생기지 않는다. */
+function syncPdfOverlay(){
+  let ov = document.getElementById('pdfOverlay');
+  if(!ov){
+    ov = document.createElement('iframe');
+    ov.id = 'pdfOverlay';
+    ov.style.cssText = 'position:fixed;border:none;background:#6b6f76;display:none;z-index:5;';
+    document.body.appendChild(ov);
+  }
+  const slot = document.getElementById('pdfslot');
+  if(!slot || !CUR_PDF_FILE){ ov.style.display='none'; ov.removeAttribute('src'); ov.dataset.file=''; return; }
+  const r = slot.getBoundingClientRect();
+  ov.style.left = r.left+'px';
+  ov.style.top = r.top+'px';
+  ov.style.width = r.width+'px';
+  ov.style.height = r.height+'px';
+  ov.style.display = 'block';
+  if(ov.dataset.file !== CUR_PDF_FILE){
+    ov.src = CUR_PDF_FILE;
+    ov.dataset.file = CUR_PDF_FILE;
+  }
 }
 
 function render(){
@@ -1129,6 +1154,7 @@ function render(){
      pageSales()의 barChart/table에서 인라인 px로 그대로 쓰이므로, HTML을 만들기 전인
      지금 반드시 먼저 계산해야 한다. */
   recalcCardLayout(isPortrait());
+  CUR_PDF_FILE = null; /* pagePdf()가 이번에 실제로 자료를 찾았을 때만 다시 채운다 */
   const g = NAV.find(x=>x.id===S.nav1);
   if(g.subs.length && !g.subs.some(x=>x.id===S.nav2)) S.nav2 = g.subs[0].id;
   const isSales = S.nav1==='sales';
@@ -1222,6 +1248,7 @@ function fit(){
   recalcCardLayout(portrait);
   if(portrait){
     st.style.transform='none';
+    syncPdfOverlay();
     return;
   }
   applyLayout();
@@ -1230,9 +1257,11 @@ function fit(){
   document.documentElement.style.setProperty('--H', H+'px');
   const s=Math.min(window.innerWidth/W, window.innerHeight/H);
   st.style.transform='scale('+s+')';
+  syncPdfOverlay();
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
+window.addEventListener('scroll', syncPdfOverlay, {passive:true});
 /* 주간매출자료 탭 밖(식육사업본부 등)에서는 ent()가 D[S.nav2]를 찾는데, 그 탭들은 nav2가
    ''이거나(subs 없음) M본부의 'all'/'price'라서 D 안에 그 키가 없다 — ent()/resetToLatest()를
    쓰면 안 되고, 항상 D.bo.week(주차 개수 기준용 공용 배열)의 마지막 인덱스로 직접 맞춘다. */
