@@ -1065,7 +1065,7 @@ function pageSales(){
    보관 정책(최대 20주차)은 파일을 지우는 쪽(저장소)의 몫이고, 여기서는 그냥 "그 주차 폴더에
    파일이 있으면 보여주고 없으면 없다고 표시"만 하면 된다 — 오래된 주차 폴더가 통째로 없어져도
    자동으로 "자료 없음"이 뜬다. */
-const PDF_CACHE = {}; // prefix -> { [week]: undefined(아직 확인 전) | 'pending' | true | false }
+const PDF_CACHE = {}; // prefix -> { [week]: undefined(아직 확인 전) | 'pending' | false(없음) | "실제로 통한 경로 문자열" }
 function pdfPrefix(){
   const g = NAV.find(x=>x.id===S.nav1);
   const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
@@ -1081,14 +1081,22 @@ function pdfFileName(prefix, week){
 }
 function pdfPath(prefix, week){ return `${pdfFolder(week)}/${pdfFileName(prefix, week)}`; }
 function pdfState(prefix, week){ const c = PDF_CACHE[prefix]; return c ? c[week] : undefined; }
+/* macOS(APFS)에서 만든 폴더/파일은 한글이 NFD(자모 분해)로 저장되는데, 이 코드에 그대로
+   타이핑된 문자열(예: "주차")은 보통 NFC(완성형)라서 fetch()가 만드는 URL과 실제 깃허브에
+   올라간 파일의 바이트가 달라 항상 404가 난다 — 겉보기엔 철자가 완전히 같아도 그렇다.
+   그래서 NFC/NFD 두 형태를 다 시도해보고, 실제로 응답이 온 쪽을 그대로 기억해서 쓴다. */
 async function probePdf(prefix, week){
   const c = PDF_CACHE[prefix] || (PDF_CACHE[prefix] = {});
   if(c[week] !== undefined) return;
   c[week] = 'pending';
-  let ok = false;
-  try{ const res = await fetch(pdfPath(prefix, week), {method:'HEAD', cache:'no-store'}); ok = res.ok; }
-  catch(e){ /* 존재하지 않음 — 무시 */ }
-  c[week] = ok;
+  const base = pdfPath(prefix, week);
+  const candidates = [...new Set([base.normalize('NFC'), base.normalize('NFD')])];
+  let found = false;
+  for(const cand of candidates){
+    try{ const res = await fetch(cand, {method:'HEAD', cache:'no-store'}); if(res.ok){ found = cand; break; } }
+    catch(e){ /* 존재하지 않음 — 무시 */ }
+  }
+  c[week] = found;
   /* 확인하는 동안 사용자가 다른 화면으로 넘어갔으면 그 화면을 덮어쓰지 않는다 */
   if(S.nav1!=='sales' && pdfPrefix()===prefix) render();
 }
@@ -1099,7 +1107,6 @@ function pagePdf(r){
   const prefix = pdfPrefix();
   const wk = +r.id.slice(1);
   const state = pdfState(prefix, wk);
-  const file = pdfPath(prefix, wk);
 
   if(state===undefined){ probePdf(prefix, wk);
     return `<div class="drop"><h3>확인 중…</h3><p>${title} ${wk}주차 자료를 찾고 있습니다.</p></div>`; }
@@ -1108,8 +1115,9 @@ function pagePdf(r){
   if(state===false)
     return `<div class="drop"><h3>${title}</h3>
       <p>${wk}주차 자료가 아직 없습니다.</p>
-      <p style="margin-top:16px"><code>${file}</code></p></div>`;
+      <p style="margin-top:16px"><code>${pdfPath(prefix, wk)}</code></p></div>`;
 
+  const file = state; /* probePdf가 실제로 응답 확인한 경로(NFC 또는 NFD) */
   return `<div class="pdfcard">
     <div class="pdfhd"><h2>${title} · ${wk}주차</h2><a href="${file}" target="_blank" rel="noopener">새 창에서 열기 ↗</a></div>
     <iframe src="${file}" title="${title} ${wk}주차"></iframe>
