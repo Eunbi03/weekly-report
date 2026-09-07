@@ -174,15 +174,18 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
    .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다.
    브라우저 내장 PDF 뷰어(<iframe src="파일.pdf">)는 자체 툴바/여백을 강제로 붙이고
    그 툴바를 없애는 옵션(#toolbar=0 등)도 무시하기 때문에 쓰지 않는다. 대신 pdf.js로
-   PDF를 직접 읽어 각 페이지를 <canvas>에 그려서 이 안에 그대로 채운다(renderPdfInto
-   참고) — 툴바·여백 없이 내용만 프레임 폭에 꽉 차게 보이고, 페이지가 여러 장이면
-   이 안에서 세로 스크롤된다. 캔버스 해상도는 getBoundingClientRect()의 실제 화면
-   픽셀 폭 기준으로 정하므로 #stage의 CSS transform:scale(화면 크기에 맞춘 축소/확대)
-   배율까지 반영되어, 확대해도 흐려지지 않는다. 테두리·그림자·둥근모서리 같은
-   "프레임"은 넣지 않는다. */
-.pdfslot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
-.pdfslot .pdfpage{display:block;width:100%;height:auto}
-.pdfslot .pdfpage:not(:last-child){margin-bottom:6px}
+   PDF를 직접 읽어 각 페이지를 <canvas>에 그려서 이 안에 그대로 채운다(renderPdfInto 참고).
+   2026-09-07: 처음엔 "프레임 폭에 꽉 차게"(가로 기준) 방식이었는데, 가로로 넓은(와이드)
+   페이지는 그러면 세로로 넘쳐서 화면 하나에 다 안 보이고 스크롤이 필요했다. 사용자 요청으로
+   페이지 하나가 항상 이 프레임 안에 통째로 들어오도록(가로·세로 중 더 빡빡한 쪽에 맞춤 =
+   "contain") 바꿨다 — 남는 방향(보통 좌우)엔 흰 여백이 생기고, 페이지 여러 장이면 그
+   화면 하나씩 아래로 스크롤해서 넘어간다. 캔버스 해상도는 getBoundingClientRect()의 실제
+   화면 픽셀 크기 기준으로 정하므로 #stage의 CSS transform:scale 배율까지 반영되어 확대해도
+   흐려지지 않는다. 테두리·그림자·둥근모서리 같은 "프레임"은 넣지 않는다. */
+.pdfslot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#fff;
+  display:flex;flex-direction:column;align-items:center}
+.pdfslot .pdfpage{display:block;flex:none}
+.pdfslot .pdfpage:not(:last-child){margin-bottom:10px}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
@@ -1158,15 +1161,17 @@ function schedulePdfSync(){
 function syncPdfView(){
   const slot = document.getElementById('pdfslot');
   if(!slot || !CUR_PDF_FILE){ PDF_RENDER_TOKEN++; return; } /* 화면이 바뀌었으면 진행 중이던 렌더링을 취소만 하고 끝 */
-  const w = Math.round(slot.getBoundingClientRect().width);
-  /* 같은 파일을 같은 폭으로 이미 그려놨으면(단순 재렌더 트리거) 다시 그리지 않는다 */
-  if(slot.dataset.file === CUR_PDF_FILE && slot.dataset.w === String(w)) return;
-  renderPdfInto(slot, CUR_PDF_FILE, w);
+  const rect = slot.getBoundingClientRect();
+  const w = Math.round(rect.width), h = Math.round(rect.height);
+  /* 같은 파일을 같은 크기로 이미 그려놨으면(단순 재렌더 트리거) 다시 그리지 않는다 */
+  if(slot.dataset.file === CUR_PDF_FILE && slot.dataset.w === String(w) && slot.dataset.h === String(h)) return;
+  renderPdfInto(slot, CUR_PDF_FILE, w, h);
 }
-async function renderPdfInto(container, file, cssWidth){
+async function renderPdfInto(container, file, cssWidth, cssHeight){
   const myToken = ++PDF_RENDER_TOKEN; /* 렌더링 도중 다른 화면으로 넘어가면 이 토큰이 바뀌어 아래 작업들이 중단된다 */
   container.dataset.file = file;
   container.dataset.w = String(cssWidth);
+  container.dataset.h = String(cssHeight);
   container.innerHTML = '<div class="drop"><h3>불러오는 중…</h3><p>PDF를 그리고 있습니다.</p></div>';
   try{
     const doc = await pdfjsLib.getDocument({url:file, cMapUrl:'cmaps/', cMapPacked:true}).promise;
@@ -1177,11 +1182,16 @@ async function renderPdfInto(container, file, cssWidth){
       const page = await doc.getPage(i);
       if(myToken !== PDF_RENDER_TOKEN) return;
       const base = page.getViewport({scale:1});
-      const viewport = page.getViewport({scale:(cssWidth*dpr)/base.width});
+      /* 가로·세로 중 더 빡빡하게 맞는 쪽 기준으로 축소 — 페이지 전체가 항상 한 화면 안에
+         들어오게 하고("세로길이 맞춤"), 남는 방향엔 .pdfslot의 흰 배경이 여백으로 보인다. */
+      const cssScale = Math.min(cssWidth/base.width, cssHeight/base.height);
+      const viewport = page.getViewport({scale:cssScale*dpr});
       const canvas = document.createElement('canvas');
       canvas.className = 'pdfpage';
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
+      canvas.style.width = Math.round(base.width*cssScale)+'px';
+      canvas.style.height = Math.round(base.height*cssScale)+'px';
       container.appendChild(canvas);
       await page.render({canvasContext:canvas.getContext('2d'), viewport}).promise;
       if(myToken !== PDF_RENDER_TOKEN) return;
