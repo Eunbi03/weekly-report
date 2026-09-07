@@ -172,13 +172,17 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 
 /* PDF 뷰어 (주간매출자료 외 카테고리) — 그 주차 PDF 파일을 변형 없이 그대로 보여준다.
    .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다.
-   실제 PDF는 #stage 안이 아니라(#stage는 CSS transform:scale로 축소·확대되는 무대라
-   그 안의 iframe은 이미 래스터화된 화면을 다시 확대/축소하게 되어 화질이 깨진다),
-   #pdfslot이 화면에서 차지하는 실제 좌표를 getBoundingClientRect()로 읽어서
-   화면 밖(#stage 밖)의 진짜 크기 iframe(#pdfOverlay)을 그 위치·크기에 그대로 맞춰
-   덧씌우는 방식을 쓴다 — syncPdfOverlay() 참고. .pdfslot 자체는 자리만 차지하는
-   빈 틀이고, 테두리·그림자·둥근모서리 같은 "프레임"은 넣지 않는다. */
-.pdfslot{flex:1;min-height:0}
+   브라우저 내장 PDF 뷰어(<iframe src="파일.pdf">)는 자체 툴바/여백을 강제로 붙이고
+   그 툴바를 없애는 옵션(#toolbar=0 등)도 무시하기 때문에 쓰지 않는다. 대신 pdf.js로
+   PDF를 직접 읽어 각 페이지를 <canvas>에 그려서 이 안에 그대로 채운다(renderPdfInto
+   참고) — 툴바·여백 없이 내용만 프레임 폭에 꽉 차게 보이고, 페이지가 여러 장이면
+   이 안에서 세로 스크롤된다. 캔버스 해상도는 getBoundingClientRect()의 실제 화면
+   픽셀 폭 기준으로 정하므로 #stage의 CSS transform:scale(화면 크기에 맞춘 축소/확대)
+   배율까지 반영되어, 확대해도 흐려지지 않는다. 테두리·그림자·둥근모서리 같은
+   "프레임"은 넣지 않는다. */
+.pdfslot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.pdfslot .pdfpage{display:block;width:100%;height:auto}
+.pdfslot .pdfpage:not(:last-child){margin-bottom:6px}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
@@ -263,6 +267,7 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 <div id="pop"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="pdf.min.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════
    데이터 — 매주 여기만 고칩니다  (단위: 백만원)
@@ -1098,7 +1103,7 @@ async function probePdf(prefix, week){
   if(S.nav1!=='sales' && pdfPrefix()===prefix) render();
 }
 /* 현재 화면에 보여줄 PDF의 실제 경로. render()가 매번 먼저 null로 리셋한 뒤
-   pagePdf()가 (자료가 실제로 있을 때만) 채워 넣는다 — syncPdfOverlay()가 이 값을 읽는다. */
+   pagePdf()가 (자료가 실제로 있을 때만) 채워 넣는다 — schedulePdfSync()가 이 값을 읽는다. */
 let CUR_PDF_FILE = null;
 function pagePdf(r){
   const g = NAV.find(x=>x.id===S.nav1);
@@ -1120,32 +1125,61 @@ function pagePdf(r){
   CUR_PDF_FILE = state; /* probePdf가 실제로 응답 확인한 경로(NFC 또는 NFD) */
   return `<div id="pdfslot" class="pdfslot"></div>`;
 }
-/* #stage는 CSS transform:scale(s)로 화면 크기에 맞춰 축소·확대되는 무대다. 그 안에
-   iframe을 그대로 두면 iframe 내부 렌더링(이미 래스터화된 결과물)까지 s배 만큼 다시
-   확대되어(특히 모니터가 1920x1082보다 넓어 s>1인 경우) PDF 글자가 뿌옇게 흐려진다.
-   그래서 실제 iframe은 #stage 밖(변형이 전혀 적용되지 않는 곳)에 두고, #pdfslot이
-   화면에서 차지하는 실제 픽셀 좌표(getBoundingClientRect() — CSS transform이 반영된
-   "최종 화면 좌표"를 그대로 돌려준다)에 매번 맞춰 그 위에 겹쳐 그린다. 이러면 iframe은
-   실제 화면 배율 그대로 렌더링되어 확대로 인한 블러가 생기지 않는다. */
-function syncPdfOverlay(){
-  let ov = document.getElementById('pdfOverlay');
-  if(!ov){
-    ov = document.createElement('iframe');
-    ov.id = 'pdfOverlay';
-    ov.style.cssText = 'position:fixed;border:none;background:#6b6f76;display:none;z-index:5;';
-    document.body.appendChild(ov);
-  }
+/* 브라우저 내장 PDF 뷰어(iframe) 대신 pdf.js로 직접 페이지를 그린다 — 이유는 두 가지.
+   (1) 내장 뷰어는 항상 자체 툴바(페이지 번호·확대율·다운로드 버튼)와 회색 여백을
+       붙이는데, 이걸 없애는 표준 옵션(#toolbar=0 등)을 크롬이 아예 무시해서 프레임을
+       완전히 채울 방법이 없다.
+   (2) #stage는 CSS transform:scale(s)로 화면 크기에 맞춰 축소·확대되는 무대라, 그냥
+       고정 해상도로 그리면 s>1(모니터가 1920x1082보다 넓은 경우)일 때 확대되어 흐려진다.
+   그래서 캔버스의 실제 해상도(width/height 속성)를 #pdfslot의 getBoundingClientRect()
+   — #stage의 transform이 반영된 "최종 화면 픽셀 크기" — 기준으로 정한다. 이러면 화면
+   배율이 얼마든 항상 그 순간의 실제 표시 크기에 맞는 해상도로 그려져 흐려지지 않는다.
+   페이지가 여러 장이면 #pdfslot 안에서 세로로 이어 붙이고, 넘치면 그 안에서만
+   스크롤된다(overflow-y:auto, CSS 참고). */
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+let PDF_RENDER_TOKEN = 0;
+let PDF_SYNC_TIMER = null;
+/* fit()에서 매번 호출 — resize처럼 짧은 시간에 여러 번 발생할 수 있는 호출은
+   150ms 디바운스해서, 창을 드래그로 늘리는 동안 매 프레임 다시 그리지 않게 한다. */
+function schedulePdfSync(){
+  clearTimeout(PDF_SYNC_TIMER);
+  PDF_SYNC_TIMER = setTimeout(syncPdfView, 150);
+}
+function syncPdfView(){
   const slot = document.getElementById('pdfslot');
-  if(!slot || !CUR_PDF_FILE){ ov.style.display='none'; ov.removeAttribute('src'); ov.dataset.file=''; return; }
-  const r = slot.getBoundingClientRect();
-  ov.style.left = r.left+'px';
-  ov.style.top = r.top+'px';
-  ov.style.width = r.width+'px';
-  ov.style.height = r.height+'px';
-  ov.style.display = 'block';
-  if(ov.dataset.file !== CUR_PDF_FILE){
-    ov.src = CUR_PDF_FILE;
-    ov.dataset.file = CUR_PDF_FILE;
+  if(!slot || !CUR_PDF_FILE){ PDF_RENDER_TOKEN++; return; } /* 화면이 바뀌었으면 진행 중이던 렌더링을 취소만 하고 끝 */
+  const w = Math.round(slot.getBoundingClientRect().width);
+  /* 같은 파일을 같은 폭으로 이미 그려놨으면(단순 재렌더 트리거) 다시 그리지 않는다 */
+  if(slot.dataset.file === CUR_PDF_FILE && slot.dataset.w === String(w)) return;
+  renderPdfInto(slot, CUR_PDF_FILE, w);
+}
+async function renderPdfInto(container, file, cssWidth){
+  const myToken = ++PDF_RENDER_TOKEN; /* 렌더링 도중 다른 화면으로 넘어가면 이 토큰이 바뀌어 아래 작업들이 중단된다 */
+  container.dataset.file = file;
+  container.dataset.w = String(cssWidth);
+  container.innerHTML = '<div class="drop"><h3>불러오는 중…</h3><p>PDF를 그리고 있습니다.</p></div>';
+  try{
+    const doc = await pdfjsLib.getDocument({url:file, cMapUrl:'cmaps/', cMapPacked:true}).promise;
+    if(myToken !== PDF_RENDER_TOKEN) return;
+    container.innerHTML = '';
+    const dpr = window.devicePixelRatio || 1;
+    for(let i=1;i<=doc.numPages;i++){
+      const page = await doc.getPage(i);
+      if(myToken !== PDF_RENDER_TOKEN) return;
+      const base = page.getViewport({scale:1});
+      const viewport = page.getViewport({scale:(cssWidth*dpr)/base.width});
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdfpage';
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      container.appendChild(canvas);
+      await page.render({canvasContext:canvas.getContext('2d'), viewport}).promise;
+      if(myToken !== PDF_RENDER_TOKEN) return;
+    }
+  }catch(e){
+    if(myToken !== PDF_RENDER_TOKEN) return;
+    console.error('[PDF 뷰어] 렌더링 실패:', e);
+    container.innerHTML = `<div class="drop"><h3>PDF를 표시할 수 없습니다</h3><p>${String((e&&e.message)||e).replace(/</g,'&lt;')}</p></div>`;
   }
 }
 
@@ -1248,7 +1282,7 @@ function fit(){
   recalcCardLayout(portrait);
   if(portrait){
     st.style.transform='none';
-    syncPdfOverlay();
+    schedulePdfSync();
     return;
   }
   applyLayout();
@@ -1257,11 +1291,10 @@ function fit(){
   document.documentElement.style.setProperty('--H', H+'px');
   const s=Math.min(window.innerWidth/W, window.innerHeight/H);
   st.style.transform='scale('+s+')';
-  syncPdfOverlay();
+  schedulePdfSync();
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
-window.addEventListener('scroll', syncPdfOverlay, {passive:true});
 /* 주간매출자료 탭 밖(식육사업본부 등)에서는 ent()가 D[S.nav2]를 찾는데, 그 탭들은 nav2가
    ''이거나(subs 없음) M본부의 'all'/'price'라서 D 안에 그 키가 없다 — ent()/resetToLatest()를
    쓰면 안 되고, 항상 D.bo.week(주차 개수 기준용 공용 배열)의 마지막 인덱스로 직접 맞춘다. */
