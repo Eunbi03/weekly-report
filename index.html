@@ -1315,6 +1315,14 @@ function fit(){
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
+/* 2026-09-07: 웹폰트(Pretendard, CDN)나 로고 이미지가 초기 렌더 이후 늦게 로드되면, 그
+   위쪽 고정 영역의 실제 높이가 바뀌면서 #pdfslot이 쓸 수 있는 세로 공간도 따라 바뀐다 —
+   그런데 이건 창 크기가 바뀐 게 아니라서 resize 이벤트가 안 뜨고, PDF는 그 이전(더 작았던)
+   높이로 그려진 채 그대로 남는 문제가 실제로 있었다. 폰트 로딩 완료(document.fonts.ready)와
+   전체 리소스 로딩 완료(load) 시점에도 한 번 더 fit()을 불러 그 순간의 실제 크기로 다시
+   맞춘다. */
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(()=>{});
+window.addEventListener('load', fit);
 /* 주간매출자료 탭 밖(식육사업본부 등)에서는 ent()가 D[S.nav2]를 찾는데, 그 탭들은 nav2가
    ''이거나(subs 없음) M본부의 'all'/'price'라서 D 안에 그 키가 없다 — ent()/resetToLatest()를
    쓰면 안 되고, 항상 D.bo.week(주차 개수 기준용 공용 배열)의 마지막 인덱스로 직접 맞춘다. */
