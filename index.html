@@ -662,7 +662,7 @@ const NAV = [
  {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]},
  {id:'meat',  n:'식육사업본부', subs:[]},
  {id:'chain', n:'계열화사업본부', subs:[]},
- {id:'mhq',   n:'M본부', subs:[{id:'all',n:'전체'},{id:'price',n:'PRICE REPORT',slug:'PRICEREPORT'}]},
+ {id:'mhq',   n:'M본부', subs:[]},
  {id:'saemal',n:'새말센터', subs:[]},
  {id:'scm',   n:'SCM/경영/자금', slug:'SCM-경영-자금', subs:[]}
 ];
@@ -1178,19 +1178,19 @@ function render(){
       <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
   </div>
   <div class="nav1">${NAV.map(x=>`<button class="${S.nav1===x.id?'on':''}" onclick="go1('${x.id}')">${x.n}</button>`).join('')}</div>
-  <div class="navrow">
+  ${isSales?`<div class="navrow">
     ${g.subs.length?`<div class="nav2">${g.subs.map(x=>{
-       const col = isSales?D[x.id].color:'#15181d';
+       const col = D[x.id].color;
        return `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
          style="${S.nav2===x.id?`background:${col};border-color:${col}`:''}">
          <span class="pip" style="background:${S.nav2===x.id?'#fff':col}"></span>${x.n}</button>`;}).join('')}</div>`:''}
     <div class="spacer"></div>
-    ${isSales?`${S.nav2==='kp'?`<div class="seg sm">${[['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']]
+    ${S.nav2==='kp'?`<div class="seg sm">${[['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']]
         .map(x=>`<button class="${S.ksub===x[0]?'on':''}" onclick="setKsub('${x[0]}')">${x[1]}</button>`).join('')}</div>`:''}
       <div class="seg"><button class="${isM()?'on':''}" onclick="setMode('month')">월별</button>
-        <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>`:''}
+        <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>
   </div>
-  ${isSales ? page.kbarHtml : ''}
+  ${page.kbarHtml}`:''}
   </div>
   ${isSales ? page.bodyHtml : pagePdf(r)}`;
   fit();
