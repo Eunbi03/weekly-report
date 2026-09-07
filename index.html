@@ -169,6 +169,17 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .drop h3{font-size:20px;font-weight:800;letter-spacing:-.4px;margin:0}
 .drop p{margin:9px 0 0;font-size:13px;color:#7a828d;line-height:1.8}
 .drop code{background:#eef1f5;padding:3px 9px;border-radius:6px;font-size:13px;font-weight:600;color:#2A6FDB}
+
+/* PDF 뷰어 (주간매출자료 외 카테고리) — 그 주차 PDF 파일을 변형 없이 그대로 보여준다.
+   .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다. */
+.pdfcard{flex:1;min-height:0;background:#fff;border:1px solid #e7eaef;border-radius:12px;
+  box-shadow:0 1px 2px rgba(20,24,29,.04);display:flex;flex-direction:column;overflow:hidden}
+.pdfhd{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;
+  padding:14px 18px;border-bottom:1px solid #eef1f5}
+.pdfhd h2{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.pdfhd a{font-size:13.5px;font-weight:700;color:#2A6FDB;text-decoration:none}
+.pdfhd a:hover{text-decoration:underline}
+.pdfcard iframe{flex:1;width:100%;border:none;background:#6b6f76}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
@@ -202,6 +213,9 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .kc .d .d-sep{display:none}
 #stage.portrait .kc .d .d-note{display:block;margin-top:2px}
 #stage.portrait .chart,#stage.portrait .tcard{height:auto;flex:none;padding:12px 14px 16px}
+#stage.portrait .pdfcard{flex:none;height:78vh}
+#stage.portrait .pdfhd{padding:10px 14px}
+#stage.portrait .pdfhd h2{font-size:15px}
 #stage.portrait .chd h2{font-size:16px}
 #stage.portrait .tw{max-height:65vh;scroll-snap-type:x mandatory;scroll-padding-left:71px}
 /* scroll-padding-left: 고정된 "구분" 칸 폭만큼 여유를 줘야, 스냅했을 때 다음 칸이
@@ -644,13 +658,16 @@ function fullWeeks(eObj){
   return ws.map(w=>have[w]);
 }
 
+/* slug: 화면에 보이는 이름(n)과 실제 PDF 파일명이 달라야 할 때만 넣는다
+   (예: "PRICE REPORT"는 화면엔 띄어쓰기 그대로, 파일명엔 "PRICEREPORT"로 / "SCM/경영/자금"은
+   "/"가 파일명에 못 들어가는 문자라 "SCM-경영-자금"으로 — 둘 다 2026-09-06 사용자 확인) */
 const NAV = [
  {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]},
  {id:'meat',  n:'식육사업본부', subs:[]},
  {id:'chain', n:'계열화사업본부', subs:[]},
- {id:'mhq',   n:'M본부', subs:[{id:'all',n:'전체'},{id:'price',n:'PRICE REPORT'}]},
+ {id:'mhq',   n:'M본부', subs:[{id:'all',n:'전체'},{id:'price',n:'PRICE REPORT',slug:'PRICEREPORT'}]},
  {id:'saemal',n:'새말센터', subs:[]},
- {id:'scm',   n:'SCM/경영/자금', subs:[]}
+ {id:'scm',   n:'SCM/경영/자금', slug:'SCM-경영-자금', subs:[]}
 ];
 
 /* ══════════════════════ 유틸 ══════════════════════ */
@@ -1037,14 +1054,66 @@ function pageSales(){
   return { kbarHtml, bodyHtml };
 }
 
-function pagePlaceholder(){
+/* ══════════════════════ PDF 뷰어 (주간매출자료 외 카테고리) ══════════════════════
+   식육사업본부/계열화사업본부/M본부/새말센터/SCM 탭은 시트를 읽는 게 아니라, 그 주차의
+   PDF 파일 하나를 변형 없이 그대로 보여준다. 이 파일들은 xlsm과 달리 저장소 루트가 아니라
+   "{주차}주차" 폴더 안에 직접(깃허브에서) 올린다 — 예: 35주차/식육사업본부-2635.pdf.
+   (2026-09-06: 처음엔 "2026-35w" 형태로 이야기했었는데, 실제로 폴더를 만들 땐 "35주차"로
+   올려서 그에 맞췄다 — 다음 주차부터도 이 형태(순수 "{주차}주차")로 올리면 된다. 연도가
+   폴더명에 없어서 해를 넘기는 시점엔 주차가 겹칠 수 있는데, 그건 그때 가서 다시 정하면 된다.)
+   파일명 자체는 xlsm과 같은 "{prefix}-{yy}{ww}(0채움)}.pdf" 규칙을 그대로 쓴다.
+   보관 정책(최대 20주차)은 파일을 지우는 쪽(저장소)의 몫이고, 여기서는 그냥 "그 주차 폴더에
+   파일이 있으면 보여주고 없으면 없다고 표시"만 하면 된다 — 오래된 주차 폴더가 통째로 없어져도
+   자동으로 "자료 없음"이 뜬다. */
+const PDF_CACHE = {}; // prefix -> { [week]: undefined(아직 확인 전) | 'pending' | true | false }
+function pdfPrefix(){
   const g = NAV.find(x=>x.id===S.nav1);
   const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
-  const wk = D.bo.week[S.wi].id.slice(1);
-  const f = `${g.n}${sub?'_'+sub.n:''}_${wk}주차`;
-  return `<div class="drop"><h3>${g.n}${sub?' · '+sub.n:''}</h3>
-    <p>이 자리는 파일을 변형 없이 그대로 표시합니다.</p>
-    <p style="margin-top:16px"><code>${f}.pdf</code> &nbsp;또는&nbsp; <code>${f}.png</code></p></div>`;
+  const gLabel = g.slug || g.n;
+  const subLabel = sub ? (sub.slug || sub.n) : null;
+  return `${gLabel}${subLabel?'-'+subLabel:''}`;
+}
+function pdfYear(){ return (window.__DASH_CUTOFF__&&window.__DASH_CUTOFF__.year)||new Date().getFullYear(); }
+function pdfFolder(week){ return `${week}주차`; }
+function pdfFileName(prefix, week){
+  const yy = String(pdfYear()%100).padStart(2,'0');
+  return `${prefix}-${yy}${String(week).padStart(2,'0')}.pdf`;
+}
+function pdfPath(prefix, week){ return `${pdfFolder(week)}/${pdfFileName(prefix, week)}`; }
+function pdfState(prefix, week){ const c = PDF_CACHE[prefix]; return c ? c[week] : undefined; }
+async function probePdf(prefix, week){
+  const c = PDF_CACHE[prefix] || (PDF_CACHE[prefix] = {});
+  if(c[week] !== undefined) return;
+  c[week] = 'pending';
+  let ok = false;
+  try{ const res = await fetch(pdfPath(prefix, week), {method:'HEAD', cache:'no-store'}); ok = res.ok; }
+  catch(e){ /* 존재하지 않음 — 무시 */ }
+  c[week] = ok;
+  /* 확인하는 동안 사용자가 다른 화면으로 넘어갔으면 그 화면을 덮어쓰지 않는다 */
+  if(S.nav1!=='sales' && pdfPrefix()===prefix) render();
+}
+function pagePdf(r){
+  const g = NAV.find(x=>x.id===S.nav1);
+  const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
+  const title = `${g.n}${sub?' · '+sub.n:''}`;
+  const prefix = pdfPrefix();
+  const wk = +r.id.slice(1);
+  const state = pdfState(prefix, wk);
+  const file = pdfPath(prefix, wk);
+
+  if(state===undefined){ probePdf(prefix, wk);
+    return `<div class="drop"><h3>확인 중…</h3><p>${title} ${wk}주차 자료를 찾고 있습니다.</p></div>`; }
+  if(state==='pending')
+    return `<div class="drop"><h3>불러오는 중…</h3><p>${title} ${wk}주차 자료를 확인하고 있습니다.</p></div>`;
+  if(state===false)
+    return `<div class="drop"><h3>${title}</h3>
+      <p>${wk}주차 자료가 아직 없습니다.</p>
+      <p style="margin-top:16px"><code>${file}</code></p></div>`;
+
+  return `<div class="pdfcard">
+    <div class="pdfhd"><h2>${title} · ${wk}주차</h2><a href="${file}" target="_blank" rel="noopener">새 창에서 열기 ↗</a></div>
+    <iframe src="${file}" title="${title} ${wk}주차"></iframe>
+  </div>`;
 }
 
 function render(){
@@ -1089,7 +1158,7 @@ function render(){
   </div>
   ${isSales ? page.kbarHtml : ''}
   </div>
-  ${isSales ? page.bodyHtml : pagePlaceholder()}`;
+  ${isSales ? page.bodyHtml : pagePdf(r)}`;
   fit();
   /* 표는 최근 구간(6개월/6주)이 먼저 보이도록 표 내부 스크롤은 맨 아래로, 헤더는 sticky로 고정 */
   const twEl = document.querySelector('.tw');
@@ -1156,8 +1225,11 @@ function fit(){
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
+/* 주간매출자료 탭 밖(식육사업본부 등)에서는 ent()가 D[S.nav2]를 찾는데, 그 탭들은 nav2가
+   ''이거나(subs 없음) M본부의 'all'/'price'라서 D 안에 그 키가 없다 — ent()/resetToLatest()를
+   쓰면 안 되고, 항상 D.bo.week(주차 개수 기준용 공용 배열)의 마지막 인덱스로 직접 맞춘다. */
 function go1(v){ S.nav1=v; const g=NAV.find(x=>x.id===v); S.nav2=g.subs.length?g.subs[0].id:'';
-  if(v!=='sales') S.mode='week'; else resetToLatest(); closePop(); render(); }
+  if(v!=='sales'){ S.mode='week'; S.wi=D.bo.week.length-1; } else resetToLatest(); closePop(); render(); }
 /* 조직마다 월별 배열 길이가 달라서(D류=12개월, KSUB류=20개월), 조직을 바꿀 때마다
    항상 "가장 최근 시점"으로 인덱스를 다시 맞춘다. */
 function resetToLatest(){
@@ -1165,7 +1237,9 @@ function resetToLatest(){
   S.mi = (e.month||[]).length - 1;
   S.wi = (e.week||[]).length - 1;
 }
-function go2(v){ S.nav2=v; S.ksub='all'; resetToLatest(); closePop(); render(); }
+function go2(v){ S.nav2=v; S.ksub='all';
+  if(S.nav1==='sales') resetToLatest(); else S.wi=D.bo.week.length-1;
+  closePop(); render(); }
 function setMode(v){ S.mode=v; if(v==='month' && S.view==='line') S.view='bar'; closePop(); render(); }
 function setKsub(v){ S.ksub=v; resetToLatest(); closePop(); render(); }
 function setView(v){ S.view=v; closePop(); render(); }
