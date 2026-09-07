@@ -1086,17 +1086,27 @@ function pdfState(prefix, week){ const c = PDF_CACHE[prefix]; return c ? c[week]
 /* macOS(APFS)에서 만든 폴더/파일은 한글이 NFD(자모 분해)로 저장되는데, 이 코드에 그대로
    타이핑된 문자열(예: "주차")은 보통 NFC(완성형)라서 fetch()가 만드는 URL과 실제 깃허브에
    올라간 파일의 바이트가 달라 항상 404가 난다 — 겉보기엔 철자가 완전히 같아도 그렇다.
-   그래서 NFC/NFD 두 형태를 다 시도해보고, 실제로 응답이 온 쪽을 그대로 기억해서 쓴다. */
+   그래서 NFC/NFD 두 형태를 다 시도해보고, 실제로 응답이 온 쪽을 그대로 기억해서 쓴다.
+   (2026-09-07: 폴더는 Finder가 만들어 NFD인데 파일 하나만 다른 도구로 나중에 추가돼 NFC인
+   식으로, 폴더와 파일명이 서로 다른 정규화 형태로 섞여 있는 경우가 실제로 발생했다 — 전체
+   경로를 통째로 NFC/NFD 중 하나로 맞추면 이런 "섞인" 경우는 여전히 404가 난다. 그래서 폴더와
+   파일명을 각각 따로 NFC/NFD를 시도해 2x2 조합 전부를 확인한다.) */
 async function probePdf(prefix, week){
   const c = PDF_CACHE[prefix] || (PDF_CACHE[prefix] = {});
   if(c[week] !== undefined) return;
   c[week] = 'pending';
-  const base = pdfPath(prefix, week);
-  const candidates = [...new Set([base.normalize('NFC'), base.normalize('NFD')])];
+  const folder = pdfFolder(week);
+  const file = pdfFileName(prefix, week);
+  const folderVariants = [...new Set([folder.normalize('NFC'), folder.normalize('NFD')])];
+  const fileVariants = [...new Set([file.normalize('NFC'), file.normalize('NFD')])];
   let found = false;
-  for(const cand of candidates){
-    try{ const res = await fetch(cand, {method:'HEAD', cache:'no-store'}); if(res.ok){ found = cand; break; } }
-    catch(e){ /* 존재하지 않음 — 무시 */ }
+  outer:
+  for(const f of folderVariants){
+    for(const n of fileVariants){
+      const cand = `${f}/${n}`;
+      try{ const res = await fetch(cand, {method:'HEAD', cache:'no-store'}); if(res.ok){ found = cand; break outer; } }
+      catch(e){ /* 존재하지 않음 — 무시 */ }
+    }
   }
   c[week] = found;
   /* 확인하는 동안 사용자가 다른 화면으로 넘어갔으면 그 화면을 덮어쓰지 않는다 */
