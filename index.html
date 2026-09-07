@@ -1152,6 +1152,17 @@ function pagePdf(r){
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 let PDF_RENDER_TOKEN = 0;
 let PDF_SYNC_TIMER = null;
+/* #stage는 CSS transform:scale(s)로 화면에 맞게 축소되는데, #pdfslot.getBoundingClientRect()가
+   돌려주는 가로/세로 값은 이미 그 transform이 반영된("화면에 실제로 보이는") 픽셀 크기다.
+   그런데 캔버스는 #stage "안"의 자식이라, 캔버스에 style.width/height를 그 값 그대로(예: 1698px)
+   넣으면 #stage의 transform:scale이 그 위에 또 한 번 곱해져서(2번 축소) 화면에는 그보다
+   더 작게(1698*s px) 그려지는 버그가 있었다 — s가 1에 가까울 땐(예전 무대 비율 1920×1082가
+   보통 모니터 화면비와 거의 같아서) 오차가 0.1~0.2%뿐이라 안 보였지만, 2026-09-07에 PDF 탭
+   무대 비율을 16:9로 바꾸면서 s가 1에서 크게 벗어나는 경우가 흔해져 이 오차가 눈에 띄게 커졌다.
+   그래서 style.width/height에는 STAGE_SCALE로 나눠 "transform 적용 전" 크기를 넣고, 캔버스
+   해상도(width/height 속성, 실제 그려지는 선명도)는 지금처럼 화면에 보일 최종 픽셀 크기(cssWidth
+   ×dpr) 기준을 그대로 유지한다 — 그래야 style로 축소돼도 흐려지지 않는다. */
+let STAGE_SCALE = 1;
 /* fit()에서 매번 호출 — resize처럼 짧은 시간에 여러 번 발생할 수 있는 호출은
    150ms 디바운스해서, 창을 드래그로 늘리는 동안 매 프레임 다시 그리지 않게 한다. */
 function schedulePdfSync(){
@@ -1199,8 +1210,8 @@ async function renderPdfInto(container, file, cssWidth, cssHeight){
       canvas.className = 'pdfpage';
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
-      canvas.style.width = Math.round(base.width*cssScale)+'px';
-      canvas.style.height = Math.round(base.height*cssScale)+'px';
+      canvas.style.width = Math.round(base.width*cssScale/STAGE_SCALE)+'px';
+      canvas.style.height = Math.round(base.height*cssScale/STAGE_SCALE)+'px';
       container.appendChild(canvas);
       await page.render({canvasContext:canvas.getContext('2d'), viewport}).promise;
       if(myToken !== PDF_RENDER_TOKEN) return;
@@ -1315,16 +1326,32 @@ function fit(){
   recalcCardLayout(portrait);
   if(portrait){
     st.style.transform='none';
+    STAGE_SCALE = 1;
     schedulePdfSync();
     return;
   }
   applyLayout();
-  const W = LAYOUT.STAGE_W, H = LAYOUT.STAGE_H;
+  const W = LAYOUT.STAGE_W, H = (S.nav1==='sales') ? LAYOUT.STAGE_H : pdfStageH();
   document.documentElement.style.setProperty('--W', W+'px');
   document.documentElement.style.setProperty('--H', H+'px');
   const s=Math.min(window.innerWidth/W, window.innerHeight/H);
   st.style.transform='scale('+s+')';
+  STAGE_SCALE = s;
   schedulePdfSync();
+}
+/* 2026-09-07: 주간매출자료 외 카테고리(식육사업본부·계열화사업본부·M본부·새말센터·SCM/경영/자금)는
+   무대 안에 KPI/차트 없이 .pdfslot 하나만 flex:1로 남는데, 무대 비율을 주간매출자료용 1920×1082
+   (16:9에 가깝지만 정확히는 아님)로 그대로 쓰면 .pdfslot 상자의 가로세로 비율이 실제 PDF 페이지
+   비율과 안 맞아 contain-fit이 좌우에 필요 이상으로 큰 흰 여백을 만든다. 실제 마스터 PDF 파일들을
+   열어 페이지 크기를 확인해보니(2026-09-07, pypdf로 실측) 전부 예외 없이 파워포인트 와이드스크린
+   원본 그대로 960.7×540pt = 정확히 16:9였다. 그래서 PDF 탭에서만, .pdfslot 상자 자체의 가로세로
+   비율이 정확히 16:9가 되도록 무대 높이(H)를 거꾸로 계산해서 쓴다 — 주간매출자료 탭의 무대 크기
+   (LAYOUT.STAGE_H, 카드/캔버스 높이 계산의 기준)는 이 계산과 무관하게 그대로 1082 고정이다. */
+function pdfStageH(){
+  const slotW = LAYOUT.STAGE_W - LAYOUT.PAD_H*2;
+  const slotH = slotW / (16/9);
+  const nonSlotH = LAYOUT.PAD_V*2 + LAYOUT.TOP_H + LAYOUT.NAV1_H + LAYOUT.FIXED_GAP + LAYOUT.GAP;
+  return Math.round(nonSlotH + slotH);
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
