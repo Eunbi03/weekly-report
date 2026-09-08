@@ -558,18 +558,27 @@ function pickMonth(arr, m){ return arr ? arr.find(r=>r.id===m) : null; }
 
 function buildOrgEntity(key, name, color, cur, curData, legacyData){
   const def = ORG_CELLMAP[key];
-  const trailing = trailingMonths(cur.year, cur.month, 12);
-  const month = trailing.map(({y,m})=>{
-    const id = monthId(y,m);
-    const rec = (y===cur.year) ? pickMonth(curData.month, m) : pickMonth(legacyData, m);
-    return rec ? {id, t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id, t:null, s:null, c:null, ch:null};
-  });
-  const prevM = {};
-  trailing.slice(-3).forEach(({y,m})=>{
-    if(y!==cur.year) return;
+  /* 월별 배열 = 전년 1~12월(트레일링 계산의 "뒷받침용" 과거 구간, 직접 선택은 안 됨) +
+     올해 1월~기준월. KSUB(buildKsubEntity)와 똑같은 형태로 맞춰서, "선택한 달 기준
+     트레일링 12개월"이 8월이든 1월이든 항상 꽉 찬 12개로 나오게 한다(2026-09-08 확립) —
+     예전엔 항상 "기준월까지의 최근 12개월"로만 고정 길이였어서, 올해 1월처럼 이른 달을
+     선택하면 트레일링 창이 전년 데이터 없이 짧아졌었다. 실제 선택 가능한 최소 인덱스는
+     resetToLatest/step()이 "올해 1월"(=이 배열의 12번째, 0-based 인덱스 12)로 제한한다. */
+  const month = [];
+  for(let m=1;m<=12;m++){
+    const y = cur.year-1;
     const rec = pickMonth(legacyData, m);
-    if(rec) prevM[monthId(y,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
-  });
+    month.push(rec ? {id:monthId(y,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id:monthId(y,m), t:null, s:null, c:null, ch:null});
+  }
+  for(let m=1;m<=cur.month;m++){
+    const rec = pickMonth(curData.month, m);
+    month.push(rec ? {id:monthId(cur.year,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id:monthId(cur.year,m), t:null, s:null, c:null, ch:null});
+  }
+  const prevM = {};
+  for(let m=Math.max(1,cur.month-2); m<=cur.month; m++){
+    const rec = pickMonth(legacyData, m);
+    if(rec) prevM[monthId(cur.year,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
+  }
   const week = curData.week.map(r=>({id:'W'+r.id, t:r.t, s:r.s, c:r.c, ch:r.ch}));
   return {
     id:key, name, color,
@@ -677,6 +686,9 @@ const NAV = [
 
 /* ══════════════════════ 유틸 ══════════════════════ */
 const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11, wi:33 };
+/* 월별 배열은 이제 항상 "전년 1~12월 + 올해 1월~기준월" 형태라, 인덱스 12가 곧 "올해 1월"이다.
+   그 앞은 트레일링 계산용 전년 데이터일 뿐 직접 선택(현재 시점)할 수 없게 막는다. */
+const MONTH_FLOOR = 12;
 const n0=v=>(v==null||!isFinite(v))?'–':Math.round(v).toLocaleString('ko-KR');
 const n2=v=>(v==null||!isFinite(v))?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=v=>(v==null||!isFinite(v))?'–':v.toFixed(1)+'%';
@@ -1030,7 +1042,11 @@ function pageSales(){
      고정해서, 12개 창 밖의(더 과거) 주차를 선택하면 찾지 못해(ci<0) 최신 주차로
      조용히 되돌아가 버렸다 — 표/요약바가 선택과 무관하게 최신 주차에 멈춰 보이던 버그의 원인.
      전주(pr=rs[ci-1]) 비교도 이 창 안에 실제 이전 시점이 들어와야 정상 표시된다. */
-  const globalIdx = Math.min(idx(), allRs.length-1);
+  const navFloor = isM() ? MONTH_FLOOR : 0;
+  const globalIdx = Math.min(Math.max(idx(), navFloor), allRs.length-1);
+  /* 창의 시작점(왼쪽 끝)은 navFloor로 자르지 않는다 — 월별에서 선택 가능한 "현재 시점"은
+     올해 1월 이전으로 못 가지만, 그 시점의 트레일링 12개월 창 자체는 작년 데이터까지
+     정상적으로 보여줘야 한다(예: 올해 1월 선택 시 작년 2월~올해 1월 12개가 나와야 함). */
   const rs = allRs.slice(Math.max(0, globalIdx-11), globalIdx+1);
   const selId = allRs[globalIdx].id;
   let ci = rs.findIndex(r=>r.id===selId);
@@ -1243,7 +1259,8 @@ function render(){
   const isSales = S.nav1==='sales';
   const e = isSales ? ent() : null;
   const rs = isSales ? rows() : D.bo[isM()?'month':'week'];
-  const i = Math.min(idx(), rs.length-1);
+  const navFloor = isM() ? MONTH_FLOOR : 0;
+  const i = Math.min(Math.max(idx(), navFloor), rs.length-1);
   const r = rs[i];
   const big = isM() ? `${r.id.slice(0,4)}년 ${+r.id.slice(5)}월` : `2026년 ${r.id.slice(1)}주차`;
 
@@ -1256,7 +1273,7 @@ function render(){
       <h1>${isSales?g.n:`${g.n}${g.subs.length?` · ${(g.subs.find(x=>x.id===S.nav2)||g.subs[0]).n}`:''}`}</h1>
       <span class="unit">(단위:백만 원)</span></div>
     <div class="stepper">
-      <button onclick="step(-1)" ${i<=0?'disabled':''}>‹</button>
+      <button onclick="step(-1)" ${i<=navFloor?'disabled':''}>‹</button>
       <div class="lbl">${big}</div>
       <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
   </div>
@@ -1387,7 +1404,10 @@ function setMode(v){ S.mode=v; if(v==='month' && S.view==='line') S.view='bar'; 
 function setKsub(v){ S.ksub=v; resetToLatest(); closePop(); render(); }
 function setView(v){ S.view=v; closePop(); render(); }
 function step(d){ const all = S.nav1==='sales'?rows():D.bo[isM()?'month':'week'];
-  const v=idx()+d; if(v<0||v>=all.length) return; if(isM()) S.mi=v; else S.wi=v; closePop(); render(); }
+  /* 월별은 "올해 1월"(MONTH_FLOOR, 배열의 12번째)보다 더 과거로는 선택 못 하게 막는다 —
+     그 앞(인덱스 0~11)은 트레일링 12개월 계산에만 쓰는 전년 데이터라 직접 선택 대상이 아님. */
+  const floor = isM() ? MONTH_FLOOR : 0;
+  const v=idx()+d; if(v<floor||v>=all.length) return; if(isM()) S.mi=v; else S.wi=v; closePop(); render(); }
 
 /* ══════════════════════ 부트스트랩 — xlsm 로드 후 첫 렌더 ══════════════════════ */
 (async function start(){
@@ -1395,6 +1415,10 @@ function step(d){ const all = S.nav1==='sales'?rows():D.bo[isM()?'month':'week']
   stage.innerHTML = '<div class="drop"><h3>불러오는 중…</h3><p>주간매출자료 xlsm 파일을 확인하고 있습니다.</p></div>';
   try{
     await bootstrapData();
+    /* 월별 배열 길이가 조직마다 다르고(이제 전년 12개월 + 올해 N개월), 초기값(S.mi=11)은
+       예전(항상 12개 고정 길이) 기준이라 지금은 최신월을 안 가리킬 수 있다 — 실제 데이터
+       기준으로 다시 맞춘다. */
+    resetToLatest();
     render();
   }catch(err){
     console.error('[대시보드] 불러오기 실패:', err);
