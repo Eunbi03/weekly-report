@@ -1025,8 +1025,13 @@ function buildKsubPrev(e){
 
 function pageSales(){
   const e = ent(), allRs = rows();
-  const rs = allRs.slice(-12);
+  /* 최근 12개만 보여주되, 선택된 시점(과거로 이동한 경우 포함)이 항상 창의 마지막
+     칸에 오도록 "선택 지점 기준" 창을 슬라이드한다. 예전엔 항상 "전체의 마지막 12개"로
+     고정해서, 12개 창 밖의(더 과거) 주차를 선택하면 찾지 못해(ci<0) 최신 주차로
+     조용히 되돌아가 버렸다 — 표/요약바가 선택과 무관하게 최신 주차에 멈춰 보이던 버그의 원인.
+     전주(pr=rs[ci-1]) 비교도 이 창 안에 실제 이전 시점이 들어와야 정상 표시된다. */
   const globalIdx = Math.min(idx(), allRs.length-1);
+  const rs = allRs.slice(Math.max(0, globalIdx-11), globalIdx+1);
   const selId = allRs[globalIdx].id;
   let ci = rs.findIndex(r=>r.id===selId);
   if(ci<0) ci = rs.length-1;
