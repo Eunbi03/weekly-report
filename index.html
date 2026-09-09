@@ -40,6 +40,27 @@ button{font-family:inherit;border:none;cursor:pointer}
 .stepper button:hover:not(:disabled){background:#f0f2f6;color:#15181d}
 .stepper button:disabled{opacity:.28;cursor:default}
 .stepper .lbl{min-width:128px;text-align:center;font-size:15.5px;font-weight:700;letter-spacing:-.3px}
+/* 2026-09-09: 월/주차를 바꾸는 스테퍼(◄ 2026년 36주차 ►) 바로 왼쪽에 놓는 "전체 PDF 저장" 버튼 */
+.topright{display:flex;align-items:center;gap:10px}
+.pdfbtn{height:38px;padding:0 16px;border-radius:10px;background:#fff;border:1px solid #e7eaef;
+  color:#3a4049;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;letter-spacing:-.2px}
+.pdfbtn:hover:not(:disabled){background:#f0f2f6}
+.pdfbtn:disabled{opacity:.5;cursor:default}
+.pdfico{width:13px;height:15px;border-radius:2px 2px 2px 6px;background:#D64545;position:relative;flex:0 0 auto}
+.pdfico::after{content:'';position:absolute;right:0;top:0;width:0;height:0;
+  border-left:5px solid #f3f5f8;border-bottom:5px solid transparent}
+/* PDF 일괄 생성 중 화면을 덮는 진행 표시 오버레이 */
+#pdfOverlay{position:fixed;inset:0;background:rgba(20,24,29,.6);z-index:999;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;
+  letter-spacing:-.2px;text-align:center;padding:20px}
+/* PDF 캡처용 오프스크린 스테이지 — 실제 화면(#stage)과 같은 클래스를 그대로 재사용하되
+   화면과 달리 높이를 고정하지 않고(overflow:visible) 내용이 필요한 만큼 늘어나게 해서,
+   표가 스크롤에 잘리지 않고 한 페이지에 전부 담기게 한다. */
+#pdfStage{position:fixed;left:-99999px;top:0;width:1920px;background:#f3f5f8;
+  display:flex;flex-direction:column;gap:8px;padding:14px 18px}
+#pdfStage .chart,#pdfStage .tcard{height:auto;flex:none}
+#pdfStage .tw{overflow:visible;max-height:none}
+#pdfStage .area{overflow-x:visible}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
@@ -1073,7 +1094,10 @@ function pageSales(){
   return { kbarHtml, bodyHtml };
 }
 
-function render(){
+/* 2026-09-09: render()가 만들던 화면 HTML을 buildScreenHtml()로 분리했다 — PDF 일괄
+   내보내기(exportAllPdf)가 화면에 보이는 것과 똑같은 마크업을 오프스크린 컨테이너에
+   그대로 재사용해야 해서다(따로 만들면 나중에 화면 디자인이 바뀔 때 둘이 어긋난다). */
+function buildScreenHtml(){
   /* 세로(모바일)/가로 여부에 맞는 카드·캔버스 높이를 먼저 확정해 둔다 — 이 값이 아래
      pageSales()의 barChart/table에서 인라인 px로 그대로 쓰이므로, HTML을 만들기 전인
      지금 반드시 먼저 계산해야 한다. */
@@ -1089,16 +1113,20 @@ function render(){
 
   const page = pageSales();
 
-  document.getElementById('stage').innerHTML = `
+  return `
   <div class="fixed-zone">
   <div class="top">
     <div class="brand"><div class="bar" style="background:${e.color}"></div>
       <h1>${g.n}</h1>
       <span class="unit">(단위:백만 원)</span></div>
-    <div class="stepper">
-      <button onclick="step(-1)" ${i<=navFloor?'disabled':''}>‹</button>
-      <div class="lbl">${big}</div>
-      <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
+    <div class="topright">
+      <button class="pdfbtn" id="pdfBtn" onclick="exportAllPdf()" title="보담/백두/케이프라이드 전체(월별·주별·막대·표) 24장을 PDF 한 파일로 저장">
+        <span class="pdfico"></span>PDF 저장</button>
+      <div class="stepper">
+        <button onclick="step(-1)" ${i<=navFloor?'disabled':''}>‹</button>
+        <div class="lbl">${big}</div>
+        <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
+    </div>
   </div>
   <!-- 2026-09-09: 보담/백두/케이프라이드는 이제 최상단 카테고리 위치(원래 5개
        카테고리 탭이 있던 자리)에 온다. 케이프라이드 선택 시에만 존재하는
@@ -1118,6 +1146,9 @@ function render(){
   ${page.kbarHtml}
   </div>
   ${page.bodyHtml}`;
+}
+function render(){
+  document.getElementById('stage').innerHTML = buildScreenHtml();
   fit();
   /* 표는 최근 구간(6개월/6주)이 먼저 보이도록 표 내부 스크롤은 맨 아래로, 헤더는 sticky로 고정 */
   const twEl = document.querySelector('.tw');
@@ -1133,8 +1164,13 @@ function render(){
 /* "화면이 세로로 길쭉한가"만 보면 컴퓨터에서 창을 좁게/세로로 만든 경우까지 모바일로 오인한다.
    그래서 "실제 모바일 기기인지"까지 같이 확인한다 — 컴퓨터는 창 모양이 어떻든 이 조건에 절대 안 걸린다. */
 const IS_MOBILE_DEVICE = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+/* 2026-09-09: PDF 일괄 저장(exportAllPdf) 중에는 실제 기기가 모바일/세로여도 항상
+   데스크탑 레이아웃(가로 막대그래프 등)으로 캡처해야 인쇄용 PDF가 일관되게 나온다.
+   isPortrait()를 호출하는 모든 곳(barChart 폭 계산 등 포함)에 한 번에 적용되도록
+   전역 플래그로 강제한다. */
+let FORCE_DESKTOP_EXPORT = false;
 /* fit()이 render() "이후"에 실행되므로, render() 도중(barChart 등)에도 즉시 같은 기준으로 판정할 수 있도록 별도 함수로 뺀다 */
-function isPortrait(){ return IS_MOBILE_DEVICE && window.innerWidth < window.innerHeight; }
+function isPortrait(){ return !FORCE_DESKTOP_EXPORT && IS_MOBILE_DEVICE && window.innerWidth < window.innerHeight; }
 /* 선그래프(원가율/대출액) 점·점라벨·꺾은선을 "실제로 그려진 올해 막대"의 픽셀 중심에 다시 맞춘다.
    .bars엔 flex gap(고정 px)이 섞여 있어서 %만으로 계산하면 오차가 누적된다 — 실측이 가장 정확하다. */
 function alignLine(){
@@ -1191,6 +1227,123 @@ window.addEventListener('orientationchange', fit);
    그 순간의 실제 크기로 다시 맞춘다. */
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(()=>{});
 window.addEventListener('load', fit);
+
+/* ══════════════════════ PDF 일괄 저장 ══════════════════════
+   2026-09-09: 보담/백두/케이프라이드(케이는 전사·MS팀 특정·MS팀·I팀 4가지)를
+   월별/주별 × 막대/표로 조합한 24장을 한 번에 PDF 한 파일로 뽑는 기능.
+   - 화면(#stage)은 절대 건드리지 않는다 — 오프스크린 컨테이너(#pdfStage)에
+     buildScreenHtml()이 만드는 것과 완전히 같은 마크업을 그대로 넣고 그것만 캡처한다.
+     그래서 내보내는 도중에도 실제 화면은 전혀 깜빡이거나 바뀌지 않는다.
+   - 표는 화면과 달리(.tw{overflow:auto}로 스크롤) 잘리면 안 되므로, #pdfStage 안에서는
+     표 컨테이너의 높이 제한을 풀어(위 CSS #pdfStage .tw 참고) 전체 행이 다 그려지게 하고,
+     필요하면 폭도 늘려서(케이MS처럼 채널이 많아 원래 1920px보다 넓어지는 경우) 잘리는
+     열이 없게 한 뒤 캡처한다. 그 결과 이미지를 A4 가로 페이지에 "전체가 들어오도록"
+     축소해서 넣으므로 글씨는 작아질 수 있지만 항상 한 페이지 안에 다 들어간다. */
+const PDF_COMBOS = [
+  {nav2:'bo', ksub:'all', label:'보담'},
+  {nav2:'bd', ksub:'all', label:'백두'},
+  {nav2:'kp', ksub:'all', label:'케이프라이드 · 전사'},
+  {nav2:'kp', ksub:'ms_t', label:'케이프라이드 · MS팀 특정'},
+  {nav2:'kp', ksub:'ms', label:'케이프라이드 · MS팀'},
+  {nav2:'kp', ksub:'it', label:'케이프라이드 · I팀'},
+];
+function loadScriptOnce(src){
+  return new Promise((resolve,reject)=>{
+    if(document.querySelector(`script[data-lazy="${src}"]`)){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.dataset.lazy = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error(`${src} 을(를) 불러오지 못했습니다`));
+    document.head.appendChild(s);
+  });
+}
+async function exportAllPdf(){
+  const btn = document.getElementById('pdfBtn');
+  if(!btn || btn.disabled) return;
+  btn.disabled = true;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'pdfOverlay';
+  overlay.innerHTML = '<div>PDF 준비 중…</div>';
+  document.body.appendChild(overlay);
+  const setProgress = msg=>{ const el = overlay.querySelector('div'); if(el) el.textContent = msg; };
+
+  /* 지금 화면 상태(어느 탭/월별·주별/막대·표 보고 있었는지)를 그대로 보존했다가 끝나고 복원한다 */
+  const saved = { nav1:S.nav1, nav2:S.nav2, mode:S.mode, ksub:S.ksub, view:S.view, mi:S.mi, wi:S.wi };
+  FORCE_DESKTOP_EXPORT = true;
+
+  let pdfStage = document.getElementById('pdfStage');
+  if(!pdfStage){ pdfStage = document.createElement('div'); pdfStage.id = 'pdfStage'; document.body.appendChild(pdfStage); }
+
+  try{
+    setProgress('PDF 도구 불러오는 중…');
+    await Promise.all([
+      loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+      loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
+    ]);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    const margin = 6, usableW = pageW - margin*2, usableH = pageH - margin*2;
+
+    let pageIdx = 0;
+    const total = PDF_COMBOS.length * 2 * 2;
+    for(const combo of PDF_COMBOS){
+      S.nav2 = combo.nav2; S.ksub = combo.ksub;
+      resetToLatest();
+      for(const mode of ['month','week']){
+        S.mode = mode;
+        for(const view of ['bar','table']){
+          S.view = view;
+          pageIdx++;
+          setProgress(`PDF 생성 중… (${pageIdx}/${total})\n${combo.label} · ${mode==='month'?'월별':'주별'} · ${view==='bar'?'막대':'표'}`);
+
+          applyLayout();
+          pdfStage.style.width = '1920px';
+          pdfStage.innerHTML = buildScreenHtml();
+
+          /* 표가 원래 화면 폭(1920px)보다 넓어지는 경우(채널이 많은 케이MS 등) 잘리지
+             않도록 컨테이너 폭을 표의 실제 폭에 맞춰 늘린다 */
+          const tbl = pdfStage.querySelector('table');
+          if(tbl && tbl.scrollWidth + 60 > pdfStage.clientWidth) pdfStage.style.width = (tbl.scrollWidth+60)+'px';
+
+          await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+          /* 2026-09-09: PNG+scale:2로 24장을 그대로 넣으면 jsPDF가 최종 파일을 만들 때
+             내부적으로 문자열 하나로 합치는 과정에서 "Invalid string length"로 실패할 만큼
+             용량이 커진다(실측). 표/차트 이미지는 사진이 아니라 선·글자 위주라 JPEG로도
+             화질 손실이 거의 안 보이면서 용량은 크게 줄어서, scale:1.5 + JPEG로 바꿨다. */
+          const canvas = await html2canvas(pdfStage, { scale:1.5, backgroundColor:'#f3f5f8', useCORS:true });
+          const imgData = canvas.toDataURL('image/jpeg', 0.85);
+          const imgAspect = canvas.width / canvas.height;
+          const usableAspect = usableW / usableH;
+          let drawW, drawH;
+          if(imgAspect > usableAspect){ drawW = usableW; drawH = usableW / imgAspect; }
+          else { drawH = usableH; drawW = usableH * imgAspect; }
+          const x = margin + (usableW-drawW)/2, y = margin + (usableH-drawH)/2;
+
+          if(pageIdx > 1) doc.addPage();
+          doc.addImage(imgData, 'JPEG', x, y, drawW, drawH, undefined, 'FAST');
+        }
+      }
+    }
+
+    const t = new Date();
+    const ymd = `${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+    doc.save(`주간매출자료_전체_${ymd}.pdf`);
+  }catch(err){
+    console.error('[대시보드] PDF 생성 실패:', err);
+    alert('PDF 생성 중 문제가 발생했습니다: ' + ((err&&err.message)||err));
+  }finally{
+    FORCE_DESKTOP_EXPORT = false;
+    if(pdfStage && pdfStage.parentNode) pdfStage.parentNode.removeChild(pdfStage);
+    if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    Object.assign(S, saved);
+    render();
+    btn.disabled = false;
+  }
+}
+
 /* 2026-09-09: 주간매출자료 외 카테고리 탭을 없애면서 NAV엔 이제 'sales' 하나뿐이라
    go1()이 사실상 항상 같은 곳으로 돌아가지만, 탭 구조 자체는 남겨뒀다(추후 카테고리가
    다시 필요해질 수 있어서) — 그래서 go1/go2도 원래 형태를 최대한 유지했다. */
