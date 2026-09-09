@@ -170,22 +170,6 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .drop p{margin:9px 0 0;font-size:13px;color:#7a828d;line-height:1.8}
 .drop code{background:#eef1f5;padding:3px 9px;border-radius:6px;font-size:13px;font-weight:600;color:#2A6FDB}
 
-/* PDF 뷰어 (주간매출자료 외 카테고리) — 그 주차 PDF 파일을 변형 없이 그대로 보여준다.
-   .drop과 같은 자리(고정영역 아래 남는 공간 전체, flex:1)를 쓴다.
-   브라우저 내장 PDF 뷰어(<iframe src="파일.pdf">)는 자체 툴바/여백을 강제로 붙이고
-   그 툴바를 없애는 옵션(#toolbar=0 등)도 무시하기 때문에 쓰지 않는다. 대신 pdf.js로
-   PDF를 직접 읽어 각 페이지를 <canvas>에 그려서 이 안에 그대로 채운다(renderPdfInto 참고).
-   2026-09-07: 처음엔 "프레임 폭에 꽉 차게"(가로 기준) 방식이었는데, 가로로 넓은(와이드)
-   페이지는 그러면 세로로 넘쳐서 화면 하나에 다 안 보이고 스크롤이 필요했다. 사용자 요청으로
-   페이지 하나가 항상 이 프레임 안에 통째로 들어오도록(가로·세로 중 더 빡빡한 쪽에 맞춤 =
-   "contain") 바꿨다 — 남는 방향(보통 좌우)엔 흰 여백이 생기고, 페이지 여러 장이면 그
-   화면 하나씩 아래로 스크롤해서 넘어간다. 캔버스 해상도는 getBoundingClientRect()의 실제
-   화면 픽셀 크기 기준으로 정하므로 #stage의 CSS transform:scale 배율까지 반영되어 확대해도
-   흐려지지 않는다. 테두리·그림자·둥근모서리 같은 "프레임"은 넣지 않는다. */
-.pdfslot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#fff;
-  display:flex;flex-direction:column;align-items:center}
-.pdfslot .pdfpage{display:block;flex:none}
-.pdfslot .pdfpage:not(:last-child){margin-bottom:10px}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
@@ -219,7 +203,6 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .kc .d .d-sep{display:none}
 #stage.portrait .kc .d .d-note{display:block;margin-top:2px}
 #stage.portrait .chart,#stage.portrait .tcard{height:auto;flex:none;padding:12px 14px 16px}
-#stage.portrait .pdfslot{flex:none;height:78vh}
 #stage.portrait .chd h2{font-size:16px}
 #stage.portrait .tw{max-height:65vh;scroll-snap-type:x mandatory;scroll-padding-left:71px}
 /* scroll-padding-left: 고정된 "구분" 칸 폭만큼 여유를 줘야, 스냅했을 때 다음 칸이
@@ -270,7 +253,6 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 <div id="pop"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="pdf.min.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════
    데이터 — 매주 여기만 고칩니다  (단위: 백만원)
@@ -672,16 +654,11 @@ function fullWeeks(eObj){
   return ws.map(w=>have[w]);
 }
 
-/* slug: 화면에 보이는 이름(n)과 실제 PDF 파일명이 달라야 할 때만 넣는다
-   (예: "PRICE REPORT"는 화면엔 띄어쓰기 그대로, 파일명엔 "PRICEREPORT"로 / "SCM/경영/자금"은
-   "/"가 파일명에 못 들어가는 문자라 "SCM-경영-자금"으로 — 둘 다 2026-09-06 사용자 확인) */
+/* 2026-09-09: 주간매출자료 외 5개 카테고리(식육사업본부/계열화사업본부/M본부/새말센터/
+   SCM·경영·자금) 탭은 사용자 요청으로 제거 — 그 탭들이 쓰던 PDF 뷰어 관련 코드
+   (probePdf/pagePdf/renderPdfInto 등)도 전부 같이 정리했다. 원본은 커밋 96e1168 참고. */
 const NAV = [
- {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]},
- {id:'meat',  n:'식육사업본부', subs:[]},
- {id:'chain', n:'계열화사업본부', subs:[]},
- {id:'mhq',   n:'M본부', subs:[]},
- {id:'saemal',n:'새말센터', subs:[]},
- {id:'scm',   n:'SCM/경영/자금', slug:'SCM-경영-자금', subs:[]}
+ {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]}
 ];
 
 /* ══════════════════════ 유틸 ══════════════════════ */
@@ -1080,197 +1057,27 @@ function pageSales(){
   return { kbarHtml, bodyHtml };
 }
 
-/* ══════════════════════ PDF 뷰어 (주간매출자료 외 카테고리) ══════════════════════
-   식육사업본부/계열화사업본부/M본부/새말센터/SCM 탭은 시트를 읽는 게 아니라, 그 주차의
-   PDF 파일 하나를 변형 없이 그대로 보여준다. 이 파일들은 xlsm과 달리 저장소 루트가 아니라
-   "{주차}주차" 폴더 안에 직접(깃허브에서) 올린다 — 예: 35주차/식육사업본부-2635.pdf.
-   (2026-09-06: 처음엔 "2026-35w" 형태로 이야기했었는데, 실제로 폴더를 만들 땐 "35주차"로
-   올려서 그에 맞췄다 — 다음 주차부터도 이 형태(순수 "{주차}주차")로 올리면 된다. 연도가
-   폴더명에 없어서 해를 넘기는 시점엔 주차가 겹칠 수 있는데, 그건 그때 가서 다시 정하면 된다.)
-   파일명 자체는 xlsm과 같은 "{prefix}-{yy}{ww}(0채움)}.pdf" 규칙을 그대로 쓴다.
-   보관 정책(최대 20주차)은 파일을 지우는 쪽(저장소)의 몫이고, 여기서는 그냥 "그 주차 폴더에
-   파일이 있으면 보여주고 없으면 없다고 표시"만 하면 된다 — 오래된 주차 폴더가 통째로 없어져도
-   자동으로 "자료 없음"이 뜬다. */
-const PDF_CACHE = {}; // prefix -> { [week]: undefined(아직 확인 전) | 'pending' | false(없음) | "실제로 통한 경로 문자열" }
-function pdfPrefix(){
-  const g = NAV.find(x=>x.id===S.nav1);
-  const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
-  const gLabel = g.slug || g.n;
-  const subLabel = sub ? (sub.slug || sub.n) : null;
-  return `${gLabel}${subLabel?'-'+subLabel:''}`;
-}
-function pdfYear(){ return (window.__DASH_CUTOFF__&&window.__DASH_CUTOFF__.year)||new Date().getFullYear(); }
-function pdfFolder(week){ return `${week}주차`; }
-function pdfFileName(prefix, week){
-  const yy = String(pdfYear()%100).padStart(2,'0');
-  return `${prefix}-${yy}${String(week).padStart(2,'0')}.pdf`;
-}
-function pdfPath(prefix, week){ return `${pdfFolder(week)}/${pdfFileName(prefix, week)}`; }
-function pdfState(prefix, week){ const c = PDF_CACHE[prefix]; return c ? c[week] : undefined; }
-/* macOS(APFS)에서 만든 폴더/파일은 한글이 NFD(자모 분해)로 저장되는데, 이 코드에 그대로
-   타이핑된 문자열(예: "주차")은 보통 NFC(완성형)라서 fetch()가 만드는 URL과 실제 깃허브에
-   올라간 파일의 바이트가 달라 항상 404가 난다 — 겉보기엔 철자가 완전히 같아도 그렇다.
-   그래서 NFC/NFD 두 형태를 다 시도해보고, 실제로 응답이 온 쪽을 그대로 기억해서 쓴다.
-   (2026-09-07: 폴더는 Finder가 만들어 NFD인데 파일 하나만 다른 도구로 나중에 추가돼 NFC인
-   식으로, 폴더와 파일명이 서로 다른 정규화 형태로 섞여 있는 경우가 실제로 발생했다 — 전체
-   경로를 통째로 NFC/NFD 중 하나로 맞추면 이런 "섞인" 경우는 여전히 404가 난다. 그래서 폴더와
-   파일명을 각각 따로 NFC/NFD를 시도해 2x2 조합 전부를 확인한다.) */
-async function probePdf(prefix, week){
-  const c = PDF_CACHE[prefix] || (PDF_CACHE[prefix] = {});
-  if(c[week] !== undefined) return;
-  c[week] = 'pending';
-  const folder = pdfFolder(week);
-  const file = pdfFileName(prefix, week);
-  const folderVariants = [...new Set([folder.normalize('NFC'), folder.normalize('NFD')])];
-  const fileVariants = [...new Set([file.normalize('NFC'), file.normalize('NFD')])];
-  let found = false;
-  outer:
-  for(const f of folderVariants){
-    for(const n of fileVariants){
-      const cand = `${f}/${n}`;
-      try{ const res = await fetch(cand, {method:'HEAD', cache:'no-store'}); if(res.ok){ found = cand; break outer; } }
-      catch(e){ /* 존재하지 않음 — 무시 */ }
-    }
-  }
-  c[week] = found;
-  /* 확인하는 동안 사용자가 다른 화면으로 넘어갔으면 그 화면을 덮어쓰지 않는다 */
-  if(S.nav1!=='sales' && pdfPrefix()===prefix) render();
-}
-/* 현재 화면에 보여줄 PDF의 실제 경로. render()가 매번 먼저 null로 리셋한 뒤
-   pagePdf()가 (자료가 실제로 있을 때만) 채워 넣는다 — schedulePdfSync()가 이 값을 읽는다. */
-let CUR_PDF_FILE = null;
-function pagePdf(r){
-  const g = NAV.find(x=>x.id===S.nav1);
-  const sub = g.subs.length ? (g.subs.find(x=>x.id===S.nav2)||g.subs[0]) : null;
-  const title = `${g.n}${sub?' · '+sub.n:''}`;
-  const prefix = pdfPrefix();
-  const wk = +r.id.slice(1);
-  const state = pdfState(prefix, wk);
-
-  if(state===undefined){ probePdf(prefix, wk);
-    return `<div class="drop"><h3>확인 중…</h3><p>${title} ${wk}주차 자료를 찾고 있습니다.</p></div>`; }
-  if(state==='pending')
-    return `<div class="drop"><h3>불러오는 중…</h3><p>${title} ${wk}주차 자료를 확인하고 있습니다.</p></div>`;
-  if(state===false)
-    return `<div class="drop"><h3>${title}</h3>
-      <p>${wk}주차 자료가 아직 없습니다.</p>
-      <p style="margin-top:16px"><code>${pdfPath(prefix, wk)}</code></p></div>`;
-
-  CUR_PDF_FILE = state; /* probePdf가 실제로 응답 확인한 경로(NFC 또는 NFD) */
-  return `<div id="pdfslot" class="pdfslot"></div>`;
-}
-/* 브라우저 내장 PDF 뷰어(iframe) 대신 pdf.js로 직접 페이지를 그린다 — 이유는 두 가지.
-   (1) 내장 뷰어는 항상 자체 툴바(페이지 번호·확대율·다운로드 버튼)와 회색 여백을
-       붙이는데, 이걸 없애는 표준 옵션(#toolbar=0 등)을 크롬이 아예 무시해서 프레임을
-       완전히 채울 방법이 없다.
-   (2) #stage는 CSS transform:scale(s)로 화면 크기에 맞춰 축소·확대되는 무대라, 그냥
-       고정 해상도로 그리면 s>1(모니터가 1920x1082보다 넓은 경우)일 때 확대되어 흐려진다.
-   그래서 캔버스의 실제 해상도(width/height 속성)를 #pdfslot의 getBoundingClientRect()
-   — #stage의 transform이 반영된 "최종 화면 픽셀 크기" — 기준으로 정한다. 이러면 화면
-   배율이 얼마든 항상 그 순간의 실제 표시 크기에 맞는 해상도로 그려져 흐려지지 않는다.
-   페이지가 여러 장이면 #pdfslot 안에서 세로로 이어 붙이고, 넘치면 그 안에서만
-   스크롤된다(overflow-y:auto, CSS 참고). */
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
-let PDF_RENDER_TOKEN = 0;
-let PDF_SYNC_TIMER = null;
-/* #stage는 CSS transform:scale(s)로 화면에 맞게 축소되는데, #pdfslot.getBoundingClientRect()가
-   돌려주는 가로/세로 값은 이미 그 transform이 반영된("화면에 실제로 보이는") 픽셀 크기다.
-   그런데 캔버스는 #stage "안"의 자식이라, 캔버스에 style.width/height를 그 값 그대로(예: 1698px)
-   넣으면 #stage의 transform:scale이 그 위에 또 한 번 곱해져서(2번 축소) 화면에는 그보다
-   더 작게(1698*s px) 그려지는 버그가 있었다 — s가 1에 가까울 땐(예전 무대 비율 1920×1082가
-   보통 모니터 화면비와 거의 같아서) 오차가 0.1~0.2%뿐이라 안 보였지만, 2026-09-07에 PDF 탭
-   무대 비율을 16:9로 바꾸면서 s가 1에서 크게 벗어나는 경우가 흔해져 이 오차가 눈에 띄게 커졌다.
-   그래서 style.width/height에는 STAGE_SCALE로 나눠 "transform 적용 전" 크기를 넣고, 캔버스
-   해상도(width/height 속성, 실제 그려지는 선명도)는 지금처럼 화면에 보일 최종 픽셀 크기(cssWidth
-   ×dpr) 기준을 그대로 유지한다 — 그래야 style로 축소돼도 흐려지지 않는다. */
-let STAGE_SCALE = 1;
-/* fit()에서 매번 호출 — resize처럼 짧은 시간에 여러 번 발생할 수 있는 호출은
-   150ms 디바운스해서, 창을 드래그로 늘리는 동안 매 프레임 다시 그리지 않게 한다. */
-function schedulePdfSync(){
-  clearTimeout(PDF_SYNC_TIMER);
-  PDF_SYNC_TIMER = setTimeout(syncPdfView, 150);
-}
-/* fit()에서 부르는 resize/orientationchange/fonts.ready/load 훅만으로는 못 잡는 경우가
-   실제로 있었다(로고·폰트 로딩이 그 이벤트들보다 늦게, 또는 그 직후 한 번 더 레이아웃을
-   흔드는 경우) — 그래서 #pdfslot 자신의 "실제 박스 크기"가 바뀌는 걸 직접 관찰하는
-   ResizeObserver를 추가로 둔다. 창 크기 변경은 #stage의 CSS transform:scale만 바꾸고
-   #pdfslot 자체의 레이아웃 박스 크기(--W/--H 기준)는 그대로라 ResizeObserver가 반응하지
-   않으므로, 기존 resize 리스너는 그대로 남겨둔다. 이 관찰자는 폰트/이미지 로딩처럼
-   "레이아웃 박스 자체가 바뀌는" 경우를 보완한다. */
-const PDF_RESIZE_OBSERVER = new ResizeObserver(()=>schedulePdfSync());
-function syncPdfView(){
-  const slot = document.getElementById('pdfslot');
-  if(!slot || !CUR_PDF_FILE){ PDF_RENDER_TOKEN++; return; } /* 화면이 바뀌었으면 진행 중이던 렌더링을 취소만 하고 끝 */
-  PDF_RESIZE_OBSERVER.observe(slot); /* 이미 관찰 중인 요소를 다시 observe해도 안전(no-op) */
-  const rect = slot.getBoundingClientRect();
-  const w = Math.round(rect.width), h = Math.round(rect.height);
-  /* 같은 파일을 같은 크기로 이미 "완성까지" 그려놨으면 다시 그리지 않는다. dataset는
-     렌더링이 끝난 뒤에만 갱신한다 — 시작하자마자 갱신하면, 같은 크기로 다시 들어온 요청이
-     "이미 하고 있다"고 오판해 건너뛰었다가 정작 그 진행 중이던 렌더링이 취소돼버리는
-     경우(둘 다 결과물이 안 남음)가 생길 수 있다. */
-  if(slot.dataset.file === CUR_PDF_FILE && slot.dataset.w === String(w) && slot.dataset.h === String(h)) return;
-  renderPdfInto(slot, CUR_PDF_FILE, w, h);
-}
-async function renderPdfInto(container, file, cssWidth, cssHeight){
-  const myToken = ++PDF_RENDER_TOKEN; /* 렌더링 도중 다른 화면으로 넘어가면 이 토큰이 바뀌어 아래 작업들이 중단된다 */
-  container.innerHTML = '<div class="drop"><h3>불러오는 중…</h3><p>PDF를 그리고 있습니다.</p></div>';
-  try{
-    const doc = await pdfjsLib.getDocument({url:file, cMapUrl:'cmaps/', cMapPacked:true}).promise;
-    if(myToken !== PDF_RENDER_TOKEN) return;
-    container.innerHTML = '';
-    const dpr = window.devicePixelRatio || 1;
-    for(let i=1;i<=doc.numPages;i++){
-      const page = await doc.getPage(i);
-      if(myToken !== PDF_RENDER_TOKEN) return;
-      const base = page.getViewport({scale:1});
-      /* 가로·세로 중 더 빡빡하게 맞는 쪽 기준으로 축소 — 페이지 전체가 항상 한 화면 안에
-         들어오게 하고("세로길이 맞춤"), 남는 방향엔 .pdfslot의 흰 배경이 여백으로 보인다. */
-      const cssScale = Math.min(cssWidth/base.width, cssHeight/base.height);
-      const viewport = page.getViewport({scale:cssScale*dpr});
-      const canvas = document.createElement('canvas');
-      canvas.className = 'pdfpage';
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      canvas.style.width = Math.round(base.width*cssScale/STAGE_SCALE)+'px';
-      canvas.style.height = Math.round(base.height*cssScale/STAGE_SCALE)+'px';
-      container.appendChild(canvas);
-      await page.render({canvasContext:canvas.getContext('2d'), viewport}).promise;
-      if(myToken !== PDF_RENDER_TOKEN) return;
-    }
-    /* 여기까지 왔으면 이 크기로 완전히 다 그린 것 — 이제서야 캐시 표시를 남긴다 */
-    container.dataset.file = file;
-    container.dataset.w = String(cssWidth);
-    container.dataset.h = String(cssHeight);
-  }catch(e){
-    if(myToken !== PDF_RENDER_TOKEN) return;
-    console.error('[PDF 뷰어] 렌더링 실패:', e);
-    container.innerHTML = `<div class="drop"><h3>PDF를 표시할 수 없습니다</h3><p>${String((e&&e.message)||e).replace(/</g,'&lt;')}</p></div>`;
-  }
-}
-
 function render(){
   /* 세로(모바일)/가로 여부에 맞는 카드·캔버스 높이를 먼저 확정해 둔다 — 이 값이 아래
      pageSales()의 barChart/table에서 인라인 px로 그대로 쓰이므로, HTML을 만들기 전인
      지금 반드시 먼저 계산해야 한다. */
   recalcCardLayout(isPortrait());
-  CUR_PDF_FILE = null; /* pagePdf()가 이번에 실제로 자료를 찾았을 때만 다시 채운다 */
   const g = NAV.find(x=>x.id===S.nav1);
   if(g.subs.length && !g.subs.some(x=>x.id===S.nav2)) S.nav2 = g.subs[0].id;
-  const isSales = S.nav1==='sales';
-  const e = isSales ? ent() : null;
-  const rs = isSales ? rows() : D.bo[isM()?'month':'week'];
+  const e = ent();
+  const rs = rows();
   const navFloor = isM() ? MONTH_FLOOR : 0;
   const i = Math.min(Math.max(idx(), navFloor), rs.length-1);
   const r = rs[i];
   const big = isM() ? `${r.id.slice(0,4)}년 ${+r.id.slice(5)}월` : `2026년 ${r.id.slice(1)}주차`;
 
-  const page = isSales ? pageSales() : null;
+  const page = pageSales();
 
   document.getElementById('stage').innerHTML = `
   <div class="fixed-zone">
   <div class="top">
-    <div class="brand"><div class="bar" style="background:${isSales?e.color:'#15181d'}"></div>
-      <h1>${isSales?g.n:`${g.n}${g.subs.length?` · ${(g.subs.find(x=>x.id===S.nav2)||g.subs[0]).n}`:''}`}</h1>
+    <div class="brand"><div class="bar" style="background:${e.color}"></div>
+      <h1>${g.n}</h1>
       <span class="unit">(단위:백만 원)</span></div>
     <div class="stepper">
       <button onclick="step(-1)" ${i<=navFloor?'disabled':''}>‹</button>
@@ -1278,7 +1085,7 @@ function render(){
       <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
   </div>
   <div class="nav1">${NAV.map(x=>`<button class="${S.nav1===x.id?'on':''}" onclick="go1('${x.id}')">${x.n}</button>`).join('')}</div>
-  ${isSales?`<div class="navrow">
+  <div class="navrow">
     ${g.subs.length?`<div class="nav2">${g.subs.map(x=>{
        const col = D[x.id].color;
        return `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
@@ -1290,9 +1097,9 @@ function render(){
       <div class="seg"><button class="${isM()?'on':''}" onclick="setMode('month')">월별</button>
         <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>
   </div>
-  ${page.kbarHtml}`:''}
+  ${page.kbarHtml}
   </div>
-  ${isSales ? page.bodyHtml : pagePdf(r)}`;
+  ${page.bodyHtml}`;
   fit();
   /* 표는 최근 구간(6개월/6주)이 먼저 보이도록 표 내부 스크롤은 맨 아래로, 헤더는 sticky로 고정 */
   const twEl = document.querySelector('.tw');
@@ -1348,48 +1155,29 @@ function fit(){
   recalcCardLayout(portrait);
   if(portrait){
     st.style.transform='none';
-    STAGE_SCALE = 1;
-    schedulePdfSync();
     return;
   }
   applyLayout();
-  const W = LAYOUT.STAGE_W, H = (S.nav1==='sales') ? LAYOUT.STAGE_H : pdfStageH();
+  const W = LAYOUT.STAGE_W, H = LAYOUT.STAGE_H;
   document.documentElement.style.setProperty('--W', W+'px');
   document.documentElement.style.setProperty('--H', H+'px');
   const s=Math.min(window.innerWidth/W, window.innerHeight/H);
   st.style.transform='scale('+s+')';
-  STAGE_SCALE = s;
-  schedulePdfSync();
-}
-/* 2026-09-07: 주간매출자료 외 카테고리(식육사업본부·계열화사업본부·M본부·새말센터·SCM/경영/자금)는
-   무대 안에 KPI/차트 없이 .pdfslot 하나만 flex:1로 남는데, 무대 비율을 주간매출자료용 1920×1082
-   (16:9에 가깝지만 정확히는 아님)로 그대로 쓰면 .pdfslot 상자의 가로세로 비율이 실제 PDF 페이지
-   비율과 안 맞아 contain-fit이 좌우에 필요 이상으로 큰 흰 여백을 만든다. 실제 마스터 PDF 파일들을
-   열어 페이지 크기를 확인해보니(2026-09-07, pypdf로 실측) 전부 예외 없이 파워포인트 와이드스크린
-   원본 그대로 960.7×540pt = 정확히 16:9였다. 그래서 PDF 탭에서만, .pdfslot 상자 자체의 가로세로
-   비율이 정확히 16:9가 되도록 무대 높이(H)를 거꾸로 계산해서 쓴다 — 주간매출자료 탭의 무대 크기
-   (LAYOUT.STAGE_H, 카드/캔버스 높이 계산의 기준)는 이 계산과 무관하게 그대로 1082 고정이다. */
-function pdfStageH(){
-  const slotW = LAYOUT.STAGE_W - LAYOUT.PAD_H*2;
-  const slotH = slotW / (16/9);
-  const nonSlotH = LAYOUT.PAD_V*2 + LAYOUT.TOP_H + LAYOUT.NAV1_H + LAYOUT.FIXED_GAP + LAYOUT.GAP;
-  return Math.round(nonSlotH + slotH);
 }
 window.addEventListener('resize', fit);
 window.addEventListener('orientationchange', fit);
 /* 2026-09-07: 웹폰트(Pretendard, CDN)나 로고 이미지가 초기 렌더 이후 늦게 로드되면, 그
-   위쪽 고정 영역의 실제 높이가 바뀌면서 #pdfslot이 쓸 수 있는 세로 공간도 따라 바뀐다 —
-   그런데 이건 창 크기가 바뀐 게 아니라서 resize 이벤트가 안 뜨고, PDF는 그 이전(더 작았던)
-   높이로 그려진 채 그대로 남는 문제가 실제로 있었다. 폰트 로딩 완료(document.fonts.ready)와
-   전체 리소스 로딩 완료(load) 시점에도 한 번 더 fit()을 불러 그 순간의 실제 크기로 다시
-   맞춘다. */
+   위쪽 고정 영역의 실제 높이가 바뀌면서 카드/캔버스가 쓸 수 있는 세로 공간도 따라 바뀐다 —
+   그런데 이건 창 크기가 바뀐 게 아니라서 resize 이벤트가 안 뜬다. 폰트 로딩 완료
+   (document.fonts.ready)와 전체 리소스 로딩 완료(load) 시점에도 한 번 더 fit()을 불러
+   그 순간의 실제 크기로 다시 맞춘다. */
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(()=>{});
 window.addEventListener('load', fit);
-/* 주간매출자료 탭 밖(식육사업본부 등)에서는 ent()가 D[S.nav2]를 찾는데, 그 탭들은 nav2가
-   ''이거나(subs 없음) M본부의 'all'/'price'라서 D 안에 그 키가 없다 — ent()/resetToLatest()를
-   쓰면 안 되고, 항상 D.bo.week(주차 개수 기준용 공용 배열)의 마지막 인덱스로 직접 맞춘다. */
+/* 2026-09-09: 주간매출자료 외 카테고리 탭을 없애면서 NAV엔 이제 'sales' 하나뿐이라
+   go1()이 사실상 항상 같은 곳으로 돌아가지만, 탭 구조 자체는 남겨뒀다(추후 카테고리가
+   다시 필요해질 수 있어서) — 그래서 go1/go2도 원래 형태를 최대한 유지했다. */
 function go1(v){ S.nav1=v; const g=NAV.find(x=>x.id===v); S.nav2=g.subs.length?g.subs[0].id:'';
-  if(v!=='sales'){ S.mode='week'; S.wi=D.bo.week.length-1; } else resetToLatest(); closePop(); render(); }
+  resetToLatest(); closePop(); render(); }
 /* 조직마다 월별 배열 길이가 달라서(D류=12개월, KSUB류=20개월), 조직을 바꿀 때마다
    항상 "가장 최근 시점"으로 인덱스를 다시 맞춘다. */
 function resetToLatest(){
@@ -1398,12 +1186,12 @@ function resetToLatest(){
   S.wi = (e.week||[]).length - 1;
 }
 function go2(v){ S.nav2=v; S.ksub='all';
-  if(S.nav1==='sales') resetToLatest(); else S.wi=D.bo.week.length-1;
+  resetToLatest();
   closePop(); render(); }
 function setMode(v){ S.mode=v; if(v==='month' && S.view==='line') S.view='bar'; closePop(); render(); }
 function setKsub(v){ S.ksub=v; resetToLatest(); closePop(); render(); }
 function setView(v){ S.view=v; closePop(); render(); }
-function step(d){ const all = S.nav1==='sales'?rows():D.bo[isM()?'month':'week'];
+function step(d){ const all = rows();
   /* 월별은 "올해 1월"(MONTH_FLOOR, 배열의 12번째)보다 더 과거로는 선택 못 하게 막는다 —
      그 앞(인덱스 0~11)은 트레일링 12개월 계산에만 쓰는 전년 데이터라 직접 선택 대상이 아님. */
   const floor = isM() ? MONTH_FLOOR : 0;
