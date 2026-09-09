@@ -172,16 +172,27 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .mhd h3{margin:0;font-size:19px;font-weight:800;letter-spacing:-.5px}
 .mhd .tot{margin-top:4px;font-size:13px;color:#7a828d}
 .mhd .x{width:30px;height:30px;border-radius:8px;background:#f0f2f6;color:#6c7684;font-size:16px;font-weight:700}
-.mrow{display:grid;grid-template-columns:112px 1fr 126px;align-items:center;gap:12px;padding:7px 24px}
+.mrow{display:grid;grid-template-columns:1fr 126px;align-items:center;gap:12px;padding:7px 24px}
 .mrow .nm{display:flex;align-items:center;gap:7px;min-width:0}
 .mrow .nm i{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
 .mrow .nm span{font-size:13px;font-weight:600;color:#3a4049;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mtrack{height:18px;background:#f3f5f8;border-radius:5px;overflow:hidden}
-.mtrack i{display:block;height:100%;border-radius:5px}
 .mval{text-align:right}
 .mval b{font-size:14px;font-weight:800;letter-spacing:-.3px}
 .mval u{display:block;font-size:11px;color:#9aa3af;text-decoration:none}
 .mft{padding:10px 24px 18px}
+/* 2026-09-09: 거래처(채널)별 상세를 막대(가로 트랙) 대신 원그래프(도넛)로 보여준다 —
+   비중을 한눈에 비교하기엔 여러 개의 가로 막대보다 원 하나가 더 직관적이라는 요청. */
+.mbody{display:flex;gap:22px;padding:16px 24px 6px;align-items:flex-start}
+.mdonut{position:relative;flex:0 0 auto;width:180px;height:180px;margin-top:6px}
+.mdonut svg{display:block}
+.mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;pointer-events:none;padding:0 14px}
+.mdonut-c b{font-size:16px;font-weight:800;letter-spacing:-.3px;color:#15181d}
+.mdonut-c span{font-size:11px;color:#9aa3af;margin-top:3px;font-weight:600}
+/* 채널이 많은 조직(MS팀 등 11개)도 안 잘리도록 자체 스크롤을 걸지 않고 그대로 늘어나게
+   두고, 넘치면 .modal 자체(overflow:auto)가 스크롤되게 한다. */
+.mlegend{flex:1;min-width:0;display:flex;flex-direction:column}
+.mlegend .mrow{padding:6px 0}
 
 /* 대기 화면 */
 .drop{flex:1;border:2px dashed #d3dae4;border-radius:12px;background:#fff;
@@ -592,8 +603,13 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
     const rec = pickMonth(curData.month, m);
     month.push(rec ? {id:monthId(cur.year,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id:monthId(cur.year,m), t:null, s:null, c:null, ch:null});
   }
+  /* 2026-09-09: 예전엔 "최근 3개월"만 전년 비교 데이터를 채워서, 그래프에서 다른 달로
+     이동하면(예: 8월로) 비교 막대가 2개/1개로 줄어드는 문제가 있었다. 막대그래프 쪽에서
+     "이동한 달 기준 최근 3개월"을 매번 다시 계산해 보여주므로(barChart의 last3), 여기서는
+     올해 1~12월 전체에 대해 전년 동월 데이터를 미리 다 채워 둔다 — 실제로 어느 3개월이
+     비교되는지는 화면(barChart)이 선택된 달에 맞춰 결정한다. */
   const prevM = {};
-  for(let m=Math.max(1,cur.month-2); m<=cur.month; m++){
+  for(let m=1; m<=12; m++){
     const rec = pickMonth(legacyData, m);
     if(rec) prevM[monthId(cur.year,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
   }
@@ -702,6 +718,12 @@ const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11
 /* 월별 배열은 이제 항상 "전년 1~12월 + 올해 1월~기준월" 형태라, 인덱스 12가 곧 "올해 1월"이다.
    그 앞은 트레일링 계산용 전년 데이터일 뿐 직접 선택(현재 시점)할 수 없게 막는다. */
 const MONTH_FLOOR = 12;
+/* 2026-09-09: 막대그래프의 "최근 3개월 전년 비교"가 항상 3개월 다 채워지려면, 그 3개월이
+   전부 올해(cur.year) 안에 있어야 한다(그 앞은 전년치라 "전전년" 데이터가 없어 비교 불가).
+   그래서 막대그래프 창의 끝(윈도우 마지막 달)은 최소 "올해 3월"(MONTH_FLOOR+2)까지는
+   차 있게 고정한다 — 실제 선택(스테퍼 이동)은 그대로 1월까지 가능하고, 1~2월을 선택해도
+   그래프 모양(창)은 3월에 멈춘 채로 두고 그 안에서 해당 월 막대만 굵게 표시한다. */
+const MONTH_CHART_FLOOR = MONTH_FLOOR + 2;
 const n0=v=>(v==null||!isFinite(v))?'–':Math.round(v).toLocaleString('ko-KR');
 const n2=v=>(v==null||!isFinite(v))?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=v=>(v==null||!isFinite(v))?'–':v.toFixed(1)+'%';
@@ -897,12 +919,34 @@ function findPriorYear(e, r){
   return arr.find(x=>x.id===pid) || null;
 }
 
+/* 2026-09-09: 채널별 매출 비중을 원그래프(도넛)로 그린다. 굳이 라이브러리를 쓰지 않고
+   SVG <circle>의 stroke-dasharray/offset만으로 조각을 이어 붙인다 — 원 하나를
+   stroke-width만큼 굵게 그린 뒤 조각마다 (길이, 간격)을 채워서 도넛처럼 보이게 하는
+   방식. transform:rotate(-90deg)로 시작점을 12시 방향으로 맞춘다(SVG 기본 시작점은
+   3시 방향이라서). 가운데엔 합계 금액을 겹쳐 놓아 도넛 안이 비어 보이지 않게 한다. */
+function donutChart(vals, chans, total){
+  const R=68, C=2*Math.PI*R, SW=30, SIZE=180;
+  let acc=0;
+  const arcs = chans.map((c,j)=>{
+    const v = vals[j];
+    if(!v || v<=0) return '';
+    const len = v/total*C;
+    const offset = -(acc/total*C);
+    acc += v;
+    return `<circle r="${R}" cx="${SIZE/2}" cy="${SIZE/2}" fill="none" stroke="${c.c}" stroke-width="${SW}"
+      stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"></circle>`;
+  }).join('');
+  return `<div class="mdonut">
+    <svg viewBox="0 0 ${SIZE} ${SIZE}" width="${SIZE}" height="${SIZE}" style="transform:rotate(-90deg)">${arcs}</svg>
+    <div class="mdonut-c"><b>${n2(total)}</b><span>합계(백만)</span></div>
+  </div>`;
+}
 function openPop(i){
   if(!CTX) return;
   const {rs,chans,prev,e} = CTX, r = rs[i];
   if(!r || r.s==null) return;
   const vals = r.ch || null;
-  const mxv = vals ? Math.max(...vals) : r.s;
+  const total = vals ? sum(vals) : 0;
   const py = (prev && prev[r.id]) || findPriorYear(e, r);
   const a = ach(r.t, r.s);
 
@@ -918,14 +962,16 @@ function openPop(i){
   }
   if(py) summary += ` (전년 매출액 ${n2(py.s)})`;
 
-  const body = vals ? chans.map((c,j)=>{
-      return `<div class="mrow">
-        <div class="nm"><i style="background:${c.c}"></i><span>${c.n}</span></div>
-        <div class="mtrack"><i style="width:${mxv>0?(vals[j]/mxv*100).toFixed(2):0}%;background:${c.c}"></i></div>
-        <div class="mval"><b>${n2(vals[j])}</b><u>${r.s>0?pct(vals[j]/r.s*100):'–'}</u></div>
-      </div>`;}).join('')
+  const body = (vals && total>0) ? `<div class="mbody">
+      ${donutChart(vals, chans, total)}
+      <div class="mlegend">${chans.map((c,j)=>{
+        const v = vals[j];
+        return `<div class="mrow">
+          <div class="nm"><i style="background:${c.c}"></i><span>${c.n}</span></div>
+          <div class="mval"><b>${n2(v)}</b><u>${r.s>0?pct(v/r.s*100):'–'}</u></div>
+        </div>`;}).join('')}</div>
+    </div>`
     : `<div class="mrow"><div class="nm"><i style="background:${CO.grey}"></i><span>미집계</span></div>
-        <div class="mtrack"><i style="width:100%;background:${CO.grey}"></i></div>
         <div class="mval"><b>${n2(r.s)}</b><u>거래처 상세 준비 중</u></div></div>`;
   document.getElementById('pop').innerHTML = `<div class="mask" onclick="closePop(event)">
     <div class="modal" onclick="event.stopPropagation()">
@@ -1065,6 +1111,19 @@ function pageSales(){
   let ci = rs.findIndex(r=>r.id===selId);
   if(ci<0) ci = rs.length-1;
   const safeCI = ci;
+  /* 2026-09-09: 월별 "막대그래프"만 별도로 — 선택한 달이 3월보다 이른(1~2월) 경우에도
+     그래프 창(rs) 자체는 3월에서 멈춰 두고, 그 안에서 실제 선택된 달의 막대만 굵게
+     표시한다(barCI). 표/KPI 요약(kbarHtml)은 계속 원래 rs/ci(선택한 달 그대로)를 쓴다 —
+     "그래프 모양은 그대로, 요약 내용만 해당 월로 바뀐다"는 요구사항. */
+  let barRs = rs, barCI = safeCI;
+  if(isM()){
+    const barWindowEnd = Math.min(Math.max(globalIdx, MONTH_CHART_FLOOR), allRs.length-1);
+    if(barWindowEnd !== globalIdx){
+      barRs = allRs.slice(Math.max(0, barWindowEnd-11), barWindowEnd+1);
+      barCI = barRs.findIndex(r=>r.id===selId);
+      if(barCI<0) barCI = barRs.length-1;
+    }
+  }
   const isKsub = S.nav2==='kp' && S.ksub!=='all';
   const prev = isKsub ? (isM()?buildKsubPrev(e):null) : (isM()?D[S.nav2].prevM:D[S.nav2].prevW);
   const chartKey = (S.nav2==='kp' && S.ksub!=='all') ? S.ksub : S.nav2;
@@ -1088,7 +1147,7 @@ function pageSales(){
     </div>`;
   } else {
     /* 모바일(세로)에서는 가로 스크롤 막대 대신, 세로로 쌓인 가로 막대 리스트를 쓴다. */
-    const chartHtml = isPortrait() ? barChartMobile(rs, e.chans, prev, e, safeCI) : barChart(rs, e.chans, prev, e, safeCI);
+    const chartHtml = isPortrait() ? barChartMobile(barRs, e.chans, prev, e, barCI) : barChart(barRs, e.chans, prev, e, barCI);
     bodyHtml = `<div class="card chart">
       <div class="chd"><h2>${e.name} ${isM()?'월별':'주별'}</h2>${viewToggle}</div>
       ${chartHtml}
