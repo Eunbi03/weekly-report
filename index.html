@@ -53,14 +53,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 #pdfOverlay{position:fixed;inset:0;background:rgba(20,24,29,.6);z-index:999;
   display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;
   letter-spacing:-.2px;text-align:center;padding:20px}
-/* PDF 캡처용 오프스크린 스테이지 — 실제 화면(#stage)과 같은 클래스를 그대로 재사용하되
-   화면과 달리 높이를 고정하지 않고(overflow:visible) 내용이 필요한 만큼 늘어나게 해서,
-   표가 스크롤에 잘리지 않고 한 페이지에 전부 담기게 한다. */
-#pdfStage{position:fixed;left:-99999px;top:0;width:1920px;background:#f3f5f8;
-  display:flex;flex-direction:column;gap:8px;padding:14px 18px}
-#pdfStage .chart,#pdfStage .tcard{height:auto;flex:none}
-#pdfStage .tw{overflow:visible;max-height:none}
-#pdfStage .area{overflow-x:visible}
+/* PDF 캡처용 오프스크린 스테이지 — 실제 화면(#stage)과 완전히 같은 1920×1082 고정 크기
+   박스로 캡처해서, 모든 페이지가 항상 같은 가로세로 비율이 되고 여백 없이 꽉 차게 한다.
+   #stage와 똑같이 overflow:hidden 고정 크기로 두고(박스 자체를 늘리지 않음), 표가
+   넘치는 경우엔 exportAllPdf()가 표 자체를 transform:scale로 줄여서 이 박스 안에 맞춘다. */
+#pdfStage{position:fixed;left:-99999px;top:0;width:1920px;height:1082px;background:#f3f5f8;
+  display:flex;flex-direction:column;gap:var(--gap);padding:var(--pad-v) var(--pad-h);overflow:hidden}
+#pdfStage .tw{overflow:hidden}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
@@ -1180,21 +1179,22 @@ let PDF_EXPORT_MODE = false;
 function isPortrait(){ return !FORCE_DESKTOP_EXPORT && IS_MOBILE_DEVICE && window.innerWidth < window.innerHeight; }
 /* 선그래프(원가율/대출액) 점·점라벨·꺾은선을 "실제로 그려진 올해 막대"의 픽셀 중심에 다시 맞춘다.
    .bars엔 flex gap(고정 px)이 섞여 있어서 %만으로 계산하면 오차가 누적된다 — 실측이 가장 정확하다. */
-function alignLine(){
-  const svg = document.querySelector('.lnsvg'); if(!svg) return;
+function alignLine(root){
+  root = root || document;
+  const svg = root.querySelector('.lnsvg'); if(!svg) return;
   const canvas = svg.closest('.canvas'); if(!canvas) return;
   const cvRect = canvas.getBoundingClientRect();
   if(cvRect.width<=0) return;
   const poly = svg.querySelector('polyline');
   const pts = [];
-  document.querySelectorAll('.dotpt[data-i]').forEach(dot=>{
+  root.querySelectorAll('.dotpt[data-i]').forEach(dot=>{
     const i = dot.getAttribute('data-i');
     const bar = canvas.querySelector(`.bwrap[data-cur="${i}"]`);
     if(!bar) return;
     const bRect = bar.getBoundingClientRect();
     const xPct = ((bRect.left + bRect.width/2) - cvRect.left) / cvRect.width * 100;
     dot.style.left = xPct.toFixed(3)+'%';
-    const lab = document.querySelector(`.dotlab[data-i="${i}"]`);
+    const lab = root.querySelector(`.dotlab[data-i="${i}"]`);
     if(lab) lab.style.left = xPct.toFixed(3)+'%';
     pts.push([+i, xPct, dot.style.top]);
   });
@@ -1241,11 +1241,11 @@ window.addEventListener('load', fit);
    - 화면(#stage)은 절대 건드리지 않는다 — 오프스크린 컨테이너(#pdfStage)에
      buildScreenHtml()이 만드는 것과 완전히 같은 마크업을 그대로 넣고 그것만 캡처한다.
      그래서 내보내는 도중에도 실제 화면은 전혀 깜빡이거나 바뀌지 않는다.
-   - 표는 화면과 달리(.tw{overflow:auto}로 스크롤) 잘리면 안 되므로, #pdfStage 안에서는
-     표 컨테이너의 높이 제한을 풀어(위 CSS #pdfStage .tw 참고) 전체 행이 다 그려지게 하고,
-     필요하면 폭도 늘려서(케이MS처럼 채널이 많아 원래 1920px보다 넓어지는 경우) 잘리는
-     열이 없게 한 뒤 캡처한다. 그 결과 이미지를 A4 가로 페이지에 "전체가 들어오도록"
-     축소해서 넣으므로 글씨는 작아질 수 있지만 항상 한 페이지 안에 다 들어간다. */
+   - 표는 화면과 달리(.tw{overflow:auto}로 스크롤) 잘리면 안 되는데, #pdfStage는 #stage와
+     똑같이 1920×1082 고정 크기(overflow:hidden)라서 컨테이너를 늘릴 수 없다 — 대신
+     케이MS처럼 채널이 많아 표가 카드 폭/높이보다 커지면 표 자체를 transform:scale로
+     통째로 줄여서(exportAllPdf 안 로직) 그 안에 맞춘 뒤 캡처한다. 글씨는 작아질 수 있지만
+     stage 크기 자체는 모든 페이지에서 항상 동일해서 페이지 비율/여백이 흔들리지 않는다. */
 const PDF_COMBOS = [
   {nav2:'bo', ksub:'all', label:'보담'},
   {nav2:'bd', ksub:'all', label:'백두'},
@@ -1290,9 +1290,13 @@ async function exportAllPdf(){
       loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
     ]);
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
-    const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
-    const margin = 6, usableW = pageW - margin*2, usableH = pageH - margin*2;
+    /* 2026-09-09: 페이지마다 여백/비율이 들쭉날쭉하다는 피드백 — #pdfStage를 화면(#stage)과
+       똑같은 1920×1082 고정 크기로 캡처하고(표가 넘치면 컨테이너를 늘리는 대신 표 쪽을
+       transform:scale로 줄여서 그 안에 맞춘다), PDF 페이지 크기 자체도 그 비율(1920:1082)에
+       정확히 맞춰서 만든다 — 그러면 모든 페이지가 서로 같은 가로세로 비율이 되고,
+       이미지가 페이지 전체를 여백 없이 꽉 채운다(letterbox 없음). */
+    const PAGE_W_MM = 320, PAGE_H_MM = PAGE_W_MM * (LAYOUT.STAGE_H / LAYOUT.STAGE_W);
+    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:[PAGE_W_MM, PAGE_H_MM] });
 
     let pageIdx = 0;
     const total = PDF_COMBOS.length * 2 * 2;
@@ -1307,13 +1311,31 @@ async function exportAllPdf(){
           setProgress(`PDF 생성 중… (${pageIdx}/${total})\n${combo.label} · ${mode==='month'?'월별':'주별'} · ${view==='bar'?'막대':'표'}`);
 
           applyLayout();
-          pdfStage.style.width = '1920px';
           pdfStage.innerHTML = buildScreenHtml();
 
-          /* 표가 원래 화면 폭(1920px)보다 넓어지는 경우(채널이 많은 케이MS 등) 잘리지
-             않도록 컨테이너 폭을 표의 실제 폭에 맞춰 늘린다 */
-          const tbl = pdfStage.querySelector('table');
-          if(tbl && tbl.scrollWidth + 60 > pdfStage.clientWidth) pdfStage.style.width = (tbl.scrollWidth+60)+'px';
+          if(view==='table'){
+            /* 표는 화면과 달리(스크롤로 최근 구간만 보여주는 대신) 스크롤 없이 한 페이지
+               안에 통째로 다 담겨야 하는데, 컨테이너 폭을 늘리면(채널 많은 케이MS 등)
+               페이지마다 비율이 달라져 버린다 — 대신 표 자체를 카드 영역(.tw) 안에 들어올
+               때까지 통째로 축소(transform:scale)한다. 글씨가 작아질 수 있지만 stage
+               크기(1920×1082)는 모든 페이지에서 항상 동일하게 유지된다.
+               (주의: .tw를 scrollTop으로 먼저 스크롤해둔 뒤 table에 transform:scale을
+               걸면, 표 헤더(position:sticky)가 스크롤 오프셋과 뒤섞여 캡처 결과에서
+               통째로 사라지는 문제가 있었다 — 그래서 스크롤은 아예 하지 않고, 축소만으로
+               전체 표(헤더 포함)가 항상 들어오게 한다.) */
+            const twEl = pdfStage.querySelector('.tw');
+            const tableEl = twEl ? twEl.querySelector('table') : null;
+            if(twEl && tableEl){
+              const naturalW = tableEl.scrollWidth, naturalH = tableEl.scrollHeight;
+              const scale = Math.min(twEl.clientWidth/naturalW, twEl.clientHeight/naturalH, 1);
+              if(scale < 1){ tableEl.style.transformOrigin = 'top left'; tableEl.style.transform = `scale(${scale})`; }
+            }
+          } else {
+            /* render()가 화면(#stage)에 대해 매번 하는 후처리(막대그래프 선/점을 실측
+               위치로 재정렬)를 pdfStage에도 똑같이 해줘야 한다 — 안 하면 선그래프가
+               부정확한 위치로 캡처된다. */
+            alignLine(pdfStage);
+          }
 
           await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
 
@@ -1323,15 +1345,9 @@ async function exportAllPdf(){
              화질 손실이 거의 안 보이면서 용량은 크게 줄어서, scale:1.5 + JPEG로 바꿨다. */
           const canvas = await html2canvas(pdfStage, { scale:1.5, backgroundColor:'#f3f5f8', useCORS:true });
           const imgData = canvas.toDataURL('image/jpeg', 0.85);
-          const imgAspect = canvas.width / canvas.height;
-          const usableAspect = usableW / usableH;
-          let drawW, drawH;
-          if(imgAspect > usableAspect){ drawW = usableW; drawH = usableW / imgAspect; }
-          else { drawH = usableH; drawW = usableH * imgAspect; }
-          const x = margin + (usableW-drawW)/2, y = margin + (usableH-drawH)/2;
 
-          if(pageIdx > 1) doc.addPage();
-          doc.addImage(imgData, 'JPEG', x, y, drawW, drawH, undefined, 'FAST');
+          if(pageIdx > 1) doc.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
+          doc.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, undefined, 'FAST');
         }
       }
     }
