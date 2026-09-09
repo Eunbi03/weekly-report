@@ -349,12 +349,28 @@ async function findWorkbookFile(){
   if(found.length>1) console.warn('[대시보드] 후보 파일이 여러 개 발견됨(오래된 파일을 지워주세요):', found);
   return found.sort().slice(-1)[0];
 }
+/* 2026-09-09: 화면 로딩 속도 개선.
+   1) fetch cache:'no-cache' — 매번 서버에 최신 여부는 확인하지만(항상 최신 데이터 보장),
+      xlsm 파일 내용이 그대로면(주중 재방문 등) 브라우저가 본문(수 MB~십수 MB)을
+      다시 받지 않고 304로 짧게 끝낼 수 있다. 'no-store'는 이 확인 절차 자체를 건너뛰고
+      매번 무조건 전체를 새로 받아서 느렸다.
+   2) 이 워크북엔 대시보드가 전혀 쓰지 않는 원천 ERP DATA 시트(판매현황DATA 등)가
+      들어있는데, 이게 주차가 쌓일수록 수만 행까지 불어나 있어(예: 6만행) SheetJS가
+      "전체" 시트를 다 파싱하면 그것만으로 수 초가 걸린다. 대시보드가 실제로 읽는
+      시트만 골라 파싱하도록 sheets 옵션을 쓴다 — 전년 비교 시트 이름(YYYY년-XX)은
+      연도를 알아야 정해지므로, 먼저 '집계' 시트만 가볍게 읽어 연도를 얻은 뒤
+      그 연도로 필요한 시트 전체를 다시 한 번(이번엔 딱 필요한 것만) 읽는다. */
+const NEEDED_SHEETS_BASE = ['집계','보담통합','백두통합','케이통합','케이I','케이MS'];
+const LEGACY_SHEET_SUFFIXES = ['보담','백두','케이','케이MS특정','케이MS','케이I'];
 async function loadWorkbook(){
   const fname = await findWorkbookFile();
-  const res = await fetch(fname, {cache:'no-store'});
+  const res = await fetch(fname, {cache:'no-cache'});
   if(!res.ok) throw new Error(`${fname} 파일을 불러오지 못했습니다 (HTTP ${res.status})`);
   const buf = await res.arrayBuffer();
-  const wb = XLSX.read(buf, {type:'array', cellFormula:false});
+  const probe = XLSX.read(buf, {type:'array', cellFormula:false, sheets:['집계']});
+  const legacyYear = readCutoff(probe).year - 1;
+  const needed = NEEDED_SHEETS_BASE.concat(LEGACY_SHEET_SUFFIXES.map(n=>`${legacyYear}년-${n}`));
+  const wb = XLSX.read(buf, {type:'array', cellFormula:false, sheets: needed});
   return { wb, fname };
 }
 
