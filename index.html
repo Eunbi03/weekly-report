@@ -1077,7 +1077,11 @@ function pageSales(){
 
   let bodyHtml;
   if(view==='table'){
-    bodyHtml = table(isM()?rs:fullWeeks(e), e.chans, prev, e, ci>=0?rs[ci].id:rs[rs.length-1].id, `${e.name} ${isM()?'월별':'주별'} 표`, viewToggle);
+    /* 2026-09-09: 화면의 주별 표는 원래대로 전체 이력(fullWeeks)을 다 보여준다.
+       PDF 일괄 저장(exportAllPdf)에서만은 막대그래프와 똑같이 최근 12주(트레일링
+       윈도우, rs)로 맞춰 달라는 요청 — PDF_EXPORT_MODE일 때만 분기한다. */
+    const weekTableRs = PDF_EXPORT_MODE ? rs : fullWeeks(e);
+    bodyHtml = table(isM()?rs:weekTableRs, e.chans, prev, e, ci>=0?rs[ci].id:rs[rs.length-1].id, `${e.name} ${isM()?'월별':'주별'} 표`, viewToggle);
   } else if(view==='line'){
     bodyHtml = `<div class="card chart">
       <div class="chd"><h2>${e.name} 1년 흐름</h2>${viewToggle}</div>
@@ -1169,6 +1173,9 @@ const IS_MOBILE_DEVICE = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
    isPortrait()를 호출하는 모든 곳(barChart 폭 계산 등 포함)에 한 번에 적용되도록
    전역 플래그로 강제한다. */
 let FORCE_DESKTOP_EXPORT = false;
+/* 2026-09-09: PDF에서만 주별 표를 최근 12주(막대그래프와 동일한 트레일링 창)로 제한하기
+   위한 플래그. 화면에서는 계속 전체 이력을 보여준다(pageSales() 참고). */
+let PDF_EXPORT_MODE = false;
 /* fit()이 render() "이후"에 실행되므로, render() 도중(barChart 등)에도 즉시 같은 기준으로 판정할 수 있도록 별도 함수로 뺀다 */
 function isPortrait(){ return !FORCE_DESKTOP_EXPORT && IS_MOBILE_DEVICE && window.innerWidth < window.innerHeight; }
 /* 선그래프(원가율/대출액) 점·점라벨·꺾은선을 "실제로 그려진 올해 막대"의 픽셀 중심에 다시 맞춘다.
@@ -1271,6 +1278,7 @@ async function exportAllPdf(){
   /* 지금 화면 상태(어느 탭/월별·주별/막대·표 보고 있었는지)를 그대로 보존했다가 끝나고 복원한다 */
   const saved = { nav1:S.nav1, nav2:S.nav2, mode:S.mode, ksub:S.ksub, view:S.view, mi:S.mi, wi:S.wi };
   FORCE_DESKTOP_EXPORT = true;
+  PDF_EXPORT_MODE = true;
 
   let pdfStage = document.getElementById('pdfStage');
   if(!pdfStage){ pdfStage = document.createElement('div'); pdfStage.id = 'pdfStage'; document.body.appendChild(pdfStage); }
@@ -1336,6 +1344,7 @@ async function exportAllPdf(){
     alert('PDF 생성 중 문제가 발생했습니다: ' + ((err&&err.message)||err));
   }finally{
     FORCE_DESKTOP_EXPORT = false;
+    PDF_EXPORT_MODE = false;
     if(pdfStage && pdfStage.parentNode) pdfStage.parentNode.removeChild(pdfStage);
     if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     Object.assign(S, saved);
