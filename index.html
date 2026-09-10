@@ -166,7 +166,7 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 /* 팝업 */
 .mask{position:fixed;inset:0;background:rgba(20,24,29,.45);display:flex;align-items:center;
   justify-content:center;z-index:99;padding:24px}
-.modal{background:#fff;border-radius:16px;width:min(660px,92vw);max-height:86vh;overflow:auto;
+.modal{background:#fff;border-radius:16px;width:min(760px,94vw);max-height:86vh;overflow:auto;
   box-shadow:0 18px 50px rgba(20,24,29,.26)}
 .mhd{padding:20px 24px 14px;border-bottom:1px solid #eef1f5;display:flex;justify-content:space-between;align-items:flex-start}
 .mhd h3{margin:0;font-size:19px;font-weight:800;letter-spacing:-.5px}
@@ -182,21 +182,20 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .mft{padding:10px 24px 18px}
 /* 2026-09-09: 거래처(채널)별 상세를 막대(가로 트랙) 대신 원그래프(도넛)로 보여준다 —
    비중을 한눈에 비교하기엔 여러 개의 가로 막대보다 원 하나가 더 직관적이라는 요청. */
-.mbody{display:flex;gap:34px;padding:18px 24px 8px;align-items:flex-start;justify-content:center}
-.mdonut{position:relative;flex:0 0 auto;width:224px;height:224px;margin-top:6px}
+.mbody{display:flex;gap:14px;padding:12px 24px 8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.mdonut{position:relative;flex:1 1 260px;min-width:0;margin-top:0}
 .mdonut svg{display:block}
-.mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+.mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;gap:4px;align-items:center;
   justify-content:center;text-align:center;pointer-events:none;padding:0 14px}
-.mdonut-c b{font-size:18px;font-weight:800;letter-spacing:-.3px;color:#15181d}
-.mdonut-c span{font-size:11.5px;color:#9aa3af;margin-top:3px;font-weight:600}
+.mdonut-c b{font-size:21px;font-weight:800;letter-spacing:-.3px;color:#15181d}
+.mdonut-c span{font-size:12px;color:#9aa3af;font-weight:600}
 /* 채널이 많은 조직(MS팀 등 11개)도 안 잘리도록 자체 스크롤을 걸지 않고 그대로 늘어나게
    두고, 넘치면 .modal 자체(overflow:auto)가 스크롤되게 한다. */
-.mlegend{flex:0 0 auto;min-width:0;display:flex;flex-direction:column}
-/* 2026-09-09: 이름-값 사이 간격이 모달 폭만큼 벌어져 보인다는 피드백 — 목록을
-   그리드(1fr)로 늘리는 대신 이름/값 칸을 내용에 맞는 고정폭으로 좁혀서 붙인다. */
-.mlegend .mrow{display:flex;align-items:center;gap:14px;padding:6px 0}
-.mlegend .mrow .nm{flex:0 0 112px}
-.mlegend .mrow .mval{flex:0 0 auto;min-width:82px}
+.mlegend{flex:0 0 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+/* 2026-09-10: 매출/비중 숫자는 이제 그래프 조각 위에 직접 표시하므로, 옆 목록은
+   색상+이름만 보여주는 순수 범례로 단순화했다. */
+.mlegend .mrow{display:flex;align-items:center;padding:5px 0}
+.mlegend .mrow .nm i{width:12px;height:12px;border-radius:3px}
 
 /* 대기 화면 */
 .drop{flex:1;border:2px dashed #d3dae4;border-radius:12px;background:#fff;
@@ -926,23 +925,104 @@ function findPriorYear(e, r){
 /* 2026-09-09: 채널별 매출 비중을 원그래프(도넛)로 그린다. 굳이 라이브러리를 쓰지 않고
    SVG <circle>의 stroke-dasharray/offset만으로 조각을 이어 붙인다 — 원 하나를
    stroke-width만큼 굵게 그린 뒤 조각마다 (길이, 간격)을 채워서 도넛처럼 보이게 하는
-   방식. transform:rotate(-90deg)로 시작점을 12시 방향으로 맞춘다(SVG 기본 시작점은
-   3시 방향이라서). 가운데엔 합계 금액을 겹쳐 놓아 도넛 안이 비어 보이지 않게 한다. */
+   방식. rotate(-90 cx cy)로 시작점을 12시 방향으로 맞춘다(SVG 기본 시작점은
+   3시 방향이라서). 가운데엔 합계 금액을 겹쳐 놓아 도넛 안이 비어 보이지 않게 한다.
+   2026-09-10: 옆의 목록에만 있던 이름/매출/비중을 그래프 위에 직접 표시하는 방식으로
+   바꿨다(참고 이미지 요청) — 조각이 큰(비중 12% 이상) 채널은 도넛 안쪽에 바로 쓰고,
+   작은 조각은 도넛 밖으로 선을 그어 라벨을 붙인다. 배경색 대비를 계산해 안쪽 글자는
+   밝은/어두운 색 중 더 잘 보이는 쪽을 자동으로 고른다. 왼쪽/오른쪽으로 나간 바깥
+   라벨끼리 세로로 겹치면(채널이 많은 조직) 위에서부터 순서대로 살짝씩 밀어낸다. */
+function textOn(hex){
+  const lin = c=>{ c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const L = 0.2126*lin(parseInt(hex.slice(1,3),16)) + 0.7152*lin(parseInt(hex.slice(3,5),16)) + 0.0722*lin(parseInt(hex.slice(5,7),16));
+  const cW = 1.05/(L+0.05), cB = (L+0.05)/0.05;
+  return cW >= cB ? '#ffffff' : '#20242b';
+}
 function donutChart(vals, chans, total){
-  const R=84, C=2*Math.PI*R, SW=36, SIZE=224;
-  let acc=0;
-  const arcs = chans.map((c,j)=>{
+  const R=78, SW=32, W=486;
+  const OUT=R+SW/2, C=2*Math.PI*R, TAU=Math.PI*2, IN_TH=0.12, MIN_GAP=48;
+
+  const slices=[]; let acc=0;
+  chans.forEach((c,j)=>{
     const v = vals[j];
-    if(!v || v<=0) return '';
-    const len = v/total*C;
-    const offset = -(acc/total*C);
+    if(!v || v<=0) return;
+    slices.push({ c, v, frac: v/total, mid: (acc+v/2)/total*TAU });
     acc += v;
-    return `<circle r="${R}" cx="${SIZE/2}" cy="${SIZE/2}" fill="none" stroke="${c.c}" stroke-width="${SW}"
+  });
+
+  /* 세로 3줄(이름/매출/비중)로 쌓는 안쪽 라벨은 조각 중심각이 12시나 6시 방향(원의
+     "극점")에 가까우면 도넛 링의 얇은 두께 안에 다 안 들어가서 도넛 구멍(가운데
+     합계) 쪽으로 넘치거나 바깥으로 흘러나온다 — 그런 조각(비중이 커도)은 안쪽 대신
+     바깥 라벨 방식으로 돌린다(회전대칭이라 3시/9시 방향은 세로로 쌓아도 링 두께
+     안에 잘 맞는다). 각도/비중만으로 정해지므로 캔버스 크기와 무관하게 먼저 분류한다. */
+  const nearPole = s => Math.abs(Math.cos(s.mid)) > 0.85;
+  const inside = slices.filter(s=>s.frac>=IN_TH && !nearPole(s));
+  const outside = slices.filter(s=>!(s.frac>=IN_TH && !nearPole(s)));
+  const sideOf = s => Math.sin(s.mid) < 0 ? 'L' : 'R';
+  const leftArr = outside.filter(s=>sideOf(s)==='L');
+  const rightArr = outside.filter(s=>sideOf(s)==='R');
+
+  /* 채널이 많은 조직(MS팀 등)은 바깥 라벨이 한쪽에 여러 개 몰릴 수 있다 — 그만큼
+     세로 공간이 필요하므로, 캔버스 높이(H)를 몰린 라벨 개수에 맞춰 늘린다(기본
+     352px는 한쪽에 4개까지는 그대로, 그 이상이면 커진다). 도넛 자체는 항상
+     정중앙(H/2)에 있어야 가운데 합계 오버레이가 어긋나지 않는다. */
+  const maxSide = Math.max(leftArr.length, rightArr.length);
+  const H = maxSide<=4 ? 352 : Math.min(760, maxSide*MIN_GAP + 170);
+  const CX=W/2, CY=H/2;
+
+  let accLen=0;
+  const arcs = slices.map(s=>{
+    const len = s.frac*C, offset = -accLen; accLen += len;
+    return `<circle r="${R}" cx="${CX}" cy="${CY}" fill="none" stroke="${s.c.c}" stroke-width="${SW}"
       stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"></circle>`;
   }).join('');
-  return `<div class="mdonut">
-    <svg viewBox="0 0 ${SIZE} ${SIZE}" width="${SIZE}" height="${SIZE}" style="transform:rotate(-90deg)">${arcs}</svg>
-    <div class="mdonut-c"><b>${n2(total)}</b><span>합계(백만)</span></div>
+
+  const pt = (ang,r)=>({ x: CX+r*Math.sin(ang), y: CY-r*Math.cos(ang) });
+  const layoutSide = arr=>{
+    const sorted = [...arr].sort((a,b)=> -Math.cos(a.mid) - (-Math.cos(b.mid)));
+    const ys = sorted.map(s=> CY + (-Math.cos(s.mid))*(OUT+42));
+    for(let k=1;k<ys.length;k++){ if(ys[k]-ys[k-1] < MIN_GAP) ys[k] = ys[k-1]+MIN_GAP; }
+    return sorted.map((s,k)=>({ ...s, labelY: ys[k] }));
+  };
+  const leftOut = layoutSide(leftArr);
+  const rightOut = layoutSide(rightArr);
+
+  const insideSvg = inside.map(s=>{
+    const p = pt(s.mid, R), col = textOn(s.c.c);
+    const nmRow = { t: s.c.n, fs:13, fw:700 };
+    const valRow = { t: n2(s.v), fs:15, fw:800 };
+    const pctRow = { t: pct(s.frac*100), fs:11, fw:400, op:.85 };
+    /* 채널 이름(보통 가장 긴 글자열)이 도넛 구멍(가운데 합계) 쪽이 아니라 링 바깥쪽을
+       향하게 줄 순서를 뒤집는다 — 조각 중심이 도넛 중심보다 아래쪽이면 아래로
+       갈수록(=구멍에서 멀어질수록) 이름이 오도록, 위쪽이면 반대로 놓는다. 가장 짧은
+       비중(%) 줄이 항상 구멍에 가장 가까운 줄이 되어, 긴 이름이 가운데 합계 글자와
+       겹치는 문제를 줄인다. */
+    const rows = p.y >= CY ? [pctRow, valRow, nmRow] : [nmRow, valRow, pctRow];
+    const ys = [p.y-16, p.y+2, p.y+20];
+    const tspans = rows.map((r,idx)=>
+      `<tspan x="${p.x.toFixed(1)}" y="${ys[idx].toFixed(1)}" font-weight="${r.fw}" font-size="${r.fs}"${r.op?` opacity="${r.op}"`:''}>${r.t}</tspan>`
+    ).join('');
+    return `<text text-anchor="middle" fill="${col}">${tspans}</text>`;
+  }).join('');
+  const outsideSvg = (arr, side)=> arr.map(s=>{
+    const edge = pt(s.mid, OUT);
+    const ax = side==='R' ? CX+OUT+44 : CX-OUT-44;
+    const ta = side==='R' ? 'start' : 'end';
+    const tx = side==='R' ? ax+8 : ax-8;
+    return `<path d="M${edge.x.toFixed(1)},${edge.y.toFixed(1)} L${ax.toFixed(1)},${s.labelY.toFixed(1)}" fill="none" stroke="#c7ccd4" stroke-width="1.4"></path>
+      <text x="${tx.toFixed(1)}" y="${(s.labelY-9).toFixed(1)}" text-anchor="${ta}" fill="#3a4049">
+        <tspan x="${tx.toFixed(1)}" font-weight="700" font-size="12.5">${s.c.n}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="800" font-size="14">${n2(s.v)}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="14" font-size="10.5" fill="#9aa3af">${pct(s.frac*100)}</tspan>
+      </text>`;
+  }).join('');
+
+  return `<div class="mdonut" style="width:100%;max-width:${W}px;aspect-ratio:${W}/${H}">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%">
+      <g transform="rotate(-90 ${CX} ${CY})">${arcs}</g>
+      ${outsideSvg(leftOut,'L')}${outsideSvg(rightOut,'R')}${insideSvg}
+    </svg>
+    <div class="mdonut-c"><span>합계</span><b>${n2(total)}</b></div>
   </div>`;
 }
 function openPop(i){
@@ -968,12 +1048,9 @@ function openPop(i){
 
   const body = (vals && total>0) ? `<div class="mbody">
       ${donutChart(vals, chans, total)}
-      <div class="mlegend">${chans.map((c,j)=>{
-        const v = vals[j];
-        return `<div class="mrow">
-          <div class="nm"><i style="background:${c.c}"></i><span>${c.n}</span></div>
-          <div class="mval"><b>${n2(v)}</b><u>${r.s>0?pct(v/r.s*100):'–'}</u></div>
-        </div>`;}).join('')}</div>
+      <div class="mlegend">${chans.map(c=>
+        `<div class="mrow"><div class="nm"><i style="background:${c.c}"></i><span>${c.n}</span></div></div>`
+      ).join('')}</div>
     </div>`
     : `<div class="mrow"><div class="nm"><i style="background:${CO.grey}"></i><span>미집계</span></div>
         <div class="mval"><b>${n2(r.s)}</b><u>거래처 상세 준비 중</u></div></div>`;
