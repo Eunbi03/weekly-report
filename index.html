@@ -1038,13 +1038,24 @@ function donutChart(vals, chans, total){
   const layoutSide = arr=>{
     const sorted = [...arr].sort((a,b)=> -Math.cos(a.mid) - (-Math.cos(b.mid)));
     const ys = sorted.map(s=> clampY(CY + (-Math.cos(s.mid))*(OUT+GAP)));
+    // 1) 위→아래로 겹침 방지: 각 라벨을 바로 위 라벨보다 MIN_GAP 이상 아래로 밀어낸다.
     for(let k=1;k<ys.length;k++){ if(ys[k]-ys[k-1] < MIN_GAP) ys[k] = ys[k-1]+MIN_GAP; }
-    /* 겹침 방지로 아래로 밀어내다 보면 마지막 몇 개가 다시 아래쪽 경계를 넘어갈 수
-       있다 — 맨 끝부터 거꾸로 한 번 더 훑어서 경계 안으로 눌러준다(그 위 라벨과의
-       최소 간격은 이미 위에서 확보됐으므로, 전체를 위로 당겨도 서로 겹치지 않는다). */
-    for(let k=ys.length-1;k>=0;k--){
-      if(ys[k] > H-BOT_PAD){ ys[k] = H-BOT_PAD; if(k>0 && ys[k]-ys[k-1]<MIN_GAP) ys[k-1] = ys[k]-MIN_GAP; }
-    }
+    /* 2026-09-10 수정: 겹침 방지로 아래로 밀어내다 보면 마지막 몇 개가 아래쪽
+       경계를 넘어갈 수 있다 — 예전엔 경계를 넘은 라벨을 눌러 담을 때 "바로 위
+       라벨 하나만" MIN_GAP만큼 같이 끌어내렸는데, 그 라벨이 다시 그 위 라벨과
+       너무 가까워지는 경우까지는 처리하지 못했다(연쇄가 한 칸에서 멈춤 — 라벨이
+       많이 몰리는 주에는 이론상 두 라벨이 겹쳐 보일 수 있는 잠재 버그였다).
+       그래서 "경계로 누르기"와 "MIN_GAP 연쇄 복원"을 완전히 분리된 두 단계로
+       나누고, 복원 단계는 끝까지(k=0까지) 전부 훑는다. */
+    for(let k=ys.length-1;k>=0;k--){ if(ys[k] > H-BOT_PAD) ys[k] = H-BOT_PAD; }
+    // 3) 2)에서 눌러 담은 여파를 아래→위로 끝까지 전파해 MIN_GAP을 전부 복원한다.
+    for(let k=ys.length-2;k>=0;k--){ if(ys[k+1]-ys[k] < MIN_GAP) ys[k] = ys[k+1]-MIN_GAP; }
+    /* 4) 3)의 연쇄가 맨 위쪽 라벨들을 위쪽 경계 밖으로 다시 밀어냈을 가능성에 대비해
+       위→아래로 한 번 더 MIN_GAP을 강제한다. H 산정 공식이 실제 데이터(최대
+       11채널)에는 항상 충분한 여유를 주므로 이 단계가 실제로 값을 바꾸는 일은
+       없을 것으로 예상되지만, 라벨 개수가 감당 못 할 만큼 몰리는 극단적인 경우에도
+       "최소 간격은 항상 지켜진다"는 불변조건 자체는 깨지지 않도록 방어적으로 둔다. */
+    for(let k=1;k<ys.length;k++){ if(ys[k]-ys[k-1] < MIN_GAP) ys[k] = ys[k-1]+MIN_GAP; }
     return sorted.map((s,k)=>({ ...s, labelY: ys[k] }));
   };
   const leftOut = layoutSide(leftArr);
@@ -1084,7 +1095,7 @@ function donutChart(vals, chans, total){
       <text x="${tx.toFixed(1)}" y="${(s.labelY-10).toFixed(1)}" text-anchor="${ta}" fill="#3a4049">
         <tspan x="${tx.toFixed(1)}" font-weight="700" font-size="14">${s.c.n}</tspan>
         <tspan x="${tx.toFixed(1)}" dy="18" font-weight="800" font-size="16">${n2(s.v)}</tspan>
-        <tspan x="${tx.toFixed(1)}" dy="16" font-size="12" fill="${GREY}">${pct(s.frac*100)}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="400" font-size="12" fill="${GREY}">${pct(s.frac*100)}</tspan>
       </text>`;
   }).join('');
 
