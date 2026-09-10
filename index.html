@@ -922,6 +922,29 @@ function findPriorYear(e, r){
   return arr.find(x=>x.id===pid) || null;
 }
 
+/* 2026-09-10: 도넛 라벨 글자폭을 문자 종류별 근사식(한글 98%, 숫자 58% 등)으로 어림
+   잡았더니, 실제 렌더링 폭(특히 굵은 숫자)과 최대 24%까지 차이가 나서 라벨이 캔버스
+   경계에 살짝 잘리는 문제가 있었다 — 폰트가 로딩에 실패해 대체 폰트로 렌더링되는
+   환경도 있어 근사식 자체가 근본적으로 불안정하다. 화면에 보이지 않는 SVG
+   <text>를 하나 만들어 실제로 그 글자를 그려보고 getComputedTextLength()로 진짜
+   렌더링 폭을 재는 방식으로 바꿨다 — 어떤 폰트가 실제로 적용되든(Pretendard든
+   대체 폰트든) 항상 정확하다. */
+let _measureText = null;
+function measureTextWidth(str, fontSize, weight){
+  if(!_measureText){
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('style','position:absolute;left:-99999px;top:0;width:0;height:0;overflow:hidden');
+    svg.setAttribute('aria-hidden','true');
+    _measureText = document.createElementNS('http://www.w3.org/2000/svg','text');
+    svg.appendChild(_measureText);
+    document.body.appendChild(svg);
+  }
+  _measureText.setAttribute('font-size', fontSize);
+  _measureText.setAttribute('font-weight', weight);
+  _measureText.textContent = str;
+  return _measureText.getComputedTextLength();
+}
+
 /* 2026-09-09: 채널별 매출 비중을 원그래프(도넛)로 그린다. 굳이 라이브러리를 쓰지 않고
    SVG <circle>의 stroke-dasharray/offset만으로 조각을 이어 붙인다 — 원 하나를
    stroke-width만큼 굵게 그린 뒤 조각마다 (길이, 간격)을 채워서 도넛처럼 보이게 하는
@@ -955,13 +978,6 @@ function donutChart(vals, chans, total){
     acc += v;
   });
 
-  /* 글자 폭 추정 — 한글은 정사각형에 가까워 폰트크기의 약 98%, 숫자는 표 형식
-     숫자(tabular-nums)라 폭이 고르므로 약 58%로 근사한다. 정확한 measureText는
-     아니지만, 아래 각 사용처에서 여유 버퍼를 더해 약간의 오차는 흡수한다. */
-  const chW = (ch,fs)=> /[가-힣]/.test(ch) ? fs*0.98 : /[0-9]/.test(ch) ? fs*0.58
-    : (ch===','||ch==='.') ? fs*0.28 : ch==='%' ? fs*0.6 : fs*0.55;
-  const textW = (str,fs)=> [...String(str)].reduce((a,ch)=>a+chW(ch,fs),0);
-
   /* 2026-09-10: 예전엔 "비중 12% 미만"이거나 "12시/6시 극점 근처"면 무조건 바깥
      라벨로 뺐다 — 그건 링이 얇았을 때(SW=58) 맞춰둔 문턱값이라, 지금처럼 두꺼운
      링(SW=104)에서는 충분히 들어갈 조각(I팀·MS팀 등)까지 불필요하게 밀려났다.
@@ -970,15 +986,16 @@ function donutChart(vals, chans, total){
      3시/9시에서는 가장 넓은 줄의 가로폭이 온전히 반지름 방향으로 걸리고, 그 사이
      각도에서는 두 성분이 섞인다(sin/cos로 투영). 반지름 방향(링 두께 SW)과
      접선 방향(그 조각의 호 길이) 둘 다 여유가 있어야만 "안쪽"으로 둔다. */
-  const HALF_H = 32; // 이름/매출/비중 3줄 블록 높이의 절반(15/17/12.5px 폰트 기준 근사)
+  const HALF_H = 30; // 이름/매출/비중 3줄 블록 높이의 절반(실제 tspan y좌표+줄별 ascent/descent 기준 실측)
+  const FIT_MARGIN = 3; // 실측 폭에 더하는 최소 안전 여유(px)
   const insideHalfW = s => Math.max(
-    textW(s.c.n,15)*1.05, textW(n2(s.v),17)*1.06, textW(pct(s.frac*100),12.5)
+    measureTextWidth(s.c.n,15,700), measureTextWidth(n2(s.v),17,800), measureTextWidth(pct(s.frac*100),12.5,400)
   ) / 2;
   const fitsInside = s => {
     const hw = insideHalfW(s), cosA = Math.abs(Math.cos(s.mid)), sinA = Math.abs(Math.sin(s.mid));
     const radial = HALF_H*cosA + hw*sinA;      // 링 두께(SW) 방향으로 걸리는 폭
     const tangential = HALF_H*sinA + hw*cosA;  // 호 길이 방향으로 걸리는 폭
-    return radial <= SW/2 - 6 && tangential <= (s.frac*C)/2 - 6;
+    return radial <= SW/2 - FIT_MARGIN && tangential <= (s.frac*C)/2 - FIT_MARGIN;
   };
   const inside = slices.filter(fitsInside);
   const outside = slices.filter(s=>!fitsInside(s));
@@ -986,12 +1003,14 @@ function donutChart(vals, chans, total){
   const leftArr = outside.filter(s=>sideOf(s)==='L');
   const rightArr = outside.filter(s=>sideOf(s)==='R');
 
-  /* 바깥 라벨 3줄(이름/매출/비중) 중 가장 넓은 한 줄의 폭만큼 캔버스 여백을 남긴다. */
+  /* 바깥 라벨 3줄(이름/매출/비중) 중 가장 넓은 한 줄의 실측 폭만큼 캔버스 여백을
+     남긴다. 라벨 텍스트는 안내선 끝(ax)에서 8px 더 띄운 지점(tx)부터 시작하므로
+     그 8px과, 가장자리에 글자가 바싹 붙어 보이지 않도록 숨 쉴 여백(10px)을 더한다. */
   const outsideArr = leftArr.concat(rightArr);
   const maxLabelW = outsideArr.length ? Math.max(...outsideArr.map(s=>
-    Math.max(textW(s.c.n,14)*1.05, textW(n2(s.v),16)*1.06, textW(pct(s.frac*100),12))
+    Math.max(measureTextWidth(s.c.n,14,700), measureTextWidth(n2(s.v),16,800), measureTextWidth(pct(s.frac*100),12,400))
   )) : 0;
-  const LABEL_ALLOW = outsideArr.length ? Math.round(GAP + maxLabelW + 16) : 40;
+  const LABEL_ALLOW = outsideArr.length ? Math.ceil(GAP + 8 + maxLabelW + 10) : 40;
   const W = Math.round(2*(OUT+LABEL_ALLOW));
 
   /* 채널이 많은 조직(MS팀 등)은 바깥 라벨이 한쪽에 여러 개 몰릴 수 있다 — 그만큼
@@ -1031,21 +1050,20 @@ function donutChart(vals, chans, total){
   const leftOut = layoutSide(leftArr);
   const rightOut = layoutSide(rightArr);
 
+  const GREY = '#7a828d'; // 안쪽·바깥 라벨의 비중(%) 줄에 공통으로 쓰는 회색 — 기존 #9aa3af보다 한 단계 진하게
   const insideSvg = inside.map(s=>{
     const p = pt(s.mid, R);
     /* 2026-09-10: 배경색 대비를 계산해 밝은/어두운 텍스트를 자동으로 고르던 걸
        걷어내고, 이름·매출은 항상 흰색, 비중(%)은 바깥 라벨과 똑같은 회색으로
        고정했다 — 조각 색이 달라져도 항상 같은 톤으로 보이게. 단, 배경이 아주 옅은
-       색(도소매/기타의 밝은 회색 등)인 조각은 흰 글자 대비가 약해질 수 있다. */
+       색(도소매/기타의 밝은 회색 등)인 조각은 흰 글자 대비가 약해질 수 있다.
+       줄 순서는 안쪽/바깥 라벨 모두 항상 "이름 → 매출 → 비중"으로 고정한다(예전엔
+       조각 위치가 중심 아래쪽이면 순서를 뒤집었는데, 라벨마다 순서가 달라 보여서
+       오히려 헷갈린다는 피드백으로 되돌림). */
     const nmRow = { t: s.c.n, fs:15, fw:700, fill:'#ffffff' };
     const valRow = { t: n2(s.v), fs:17, fw:800, fill:'#ffffff' };
-    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:'#9aa3af' };
-    /* 채널 이름(보통 가장 긴 글자열)이 도넛 구멍(가운데 합계) 쪽이 아니라 링 바깥쪽을
-       향하게 줄 순서를 뒤집는다 — 조각 중심이 도넛 중심보다 아래쪽이면 아래로
-       갈수록(=구멍에서 멀어질수록) 이름이 오도록, 위쪽이면 반대로 놓는다. 가장 짧은
-       비중(%) 줄이 항상 구멍에 가장 가까운 줄이 되어, 긴 이름이 가운데 합계 글자와
-       겹치는 문제를 줄인다. */
-    const rows = p.y >= CY ? [pctRow, valRow, nmRow] : [nmRow, valRow, pctRow];
+    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:GREY };
+    const rows = [nmRow, valRow, pctRow];
     const ys = [p.y-19, p.y+3, p.y+25];
     const tspans = rows.map((r,idx)=>
       `<tspan x="${p.x.toFixed(1)}" y="${ys[idx].toFixed(1)}" font-weight="${r.fw}" font-size="${r.fs}" fill="${r.fill}">${r.t}</tspan>`
@@ -1066,7 +1084,7 @@ function donutChart(vals, chans, total){
       <text x="${tx.toFixed(1)}" y="${(s.labelY-10).toFixed(1)}" text-anchor="${ta}" fill="#3a4049">
         <tspan x="${tx.toFixed(1)}" font-weight="700" font-size="14">${s.c.n}</tspan>
         <tspan x="${tx.toFixed(1)}" dy="18" font-weight="800" font-size="16">${n2(s.v)}</tspan>
-        <tspan x="${tx.toFixed(1)}" dy="16" font-size="12" fill="#9aa3af">${pct(s.frac*100)}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="16" font-size="12" fill="${GREY}">${pct(s.frac*100)}</tspan>
       </text>`;
   }).join('');
 
