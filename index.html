@@ -182,19 +182,19 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .mft{padding:10px 24px 18px}
 /* 2026-09-09: 거래처(채널)별 상세를 막대(가로 트랙) 대신 원그래프(도넛)로 보여준다 —
    비중을 한눈에 비교하기엔 여러 개의 가로 막대보다 원 하나가 더 직관적이라는 요청. */
-.mbody{display:flex;gap:14px;padding:12px 24px 8px;align-items:center;justify-content:center;flex-wrap:wrap}
-.mdonut{position:relative;flex:1 1 260px;min-width:0;margin-top:0}
+.mbody{display:flex;flex-direction:column;gap:16px;padding:14px 24px 10px;align-items:center;justify-content:center}
+.mdonut{position:relative;width:100%;margin:0 auto}
 .mdonut svg{display:block}
 .mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;gap:4px;align-items:center;
   justify-content:center;text-align:center;pointer-events:none;padding:0 14px}
 .mdonut-c b{font-size:25px;font-weight:800;letter-spacing:-.3px;color:#15181d}
 .mdonut-c span{font-size:13px;color:#9aa3af;font-weight:600}
-/* 채널이 많은 조직(MS팀 등 11개)도 안 잘리도록 자체 스크롤을 걸지 않고 그대로 늘어나게
-   두고, 넘치면 .modal 자체(overflow:auto)가 스크롤되게 한다. */
-.mlegend{flex:0 0 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
-/* 2026-09-10: 매출/비중 숫자는 이제 그래프 조각 위에 직접 표시하므로, 옆 목록은
-   색상+이름만 보여주는 순수 범례로 단순화했다. */
-.mlegend .mrow{display:flex;align-items:center;padding:5px 0}
+/* 2026-09-10: 범례를 그래프 옆이 아니라 아래로 옮겼다 — 그만큼 확보된 가로 폭을
+   원그래프 자체(W/R/SW, donutChart 참고)를 훨씬 크게 그리는 데 쓴다. 채널이 많아
+   범례가 길어지면 자연스럽게 줄바꿈되고, 넘치면 .modal(overflow:auto)이 스크롤된다. */
+.mlegend{flex:0 0 auto;min-width:0;width:100%;display:flex;flex-direction:row;flex-wrap:wrap;
+  justify-content:center;gap:6px 22px;padding-top:6px;border-top:1px solid #f1f3f6}
+.mlegend .mrow{display:flex;align-items:center;padding:3px 0}
 .mlegend .mrow .nm i{width:12px;height:12px;border-radius:3px}
 
 /* 대기 화면 */
@@ -939,11 +939,15 @@ function textOn(hex){
   return cW >= cB ? '#ffffff' : '#20242b';
 }
 function donutChart(vals, chans, total){
-  /* 2026-09-10: 참고 이미지처럼 링을 훨씬 두껍게, 그래프 자체도 더 크게 키웠다
-     (구멍 크기는 가운데 합계 글자가 들어갈 만큼 그대로 유지 — R/SW만 키우면
-     자동으로 두꺼워진다). */
-  const R=90, SW=58, W=560;
+  /* 2026-09-10: 범례를 그래프 아래로 옮겨서 확보한 가로 폭만큼 원그래프를 한 번 더
+     키웠다. 글자 크기(아래 insideSvg/outsideSvg의 font-size)는 그대로 두고 도형
+     쪽(R/SW/W)만 키우면, 가운데 합계 구멍이 상대적으로 훨씬 커져서 안쪽 라벨이
+     가운데 글자와 부대끼는 문제도 같이 줄어든다. LABEL_ALLOW는 바깥 라벨 텍스트가
+     항상 캔버스 안쪽에 온전히 들어갈 만큼 링 바깥에 남겨두는 여유폭 — 링이
+     두꺼워질수록(OUT 증가) W도 같이 늘어나게 이 값에서 역산한다. */
+  const R=145, SW=92, LABEL_ALLOW=190;
   const OUT=R+SW/2, C=2*Math.PI*R, TAU=Math.PI*2, IN_TH=0.12, MIN_GAP=54;
+  const W = Math.round(2*(OUT+LABEL_ALLOW));
 
   const slices=[]; let acc=0;
   chans.forEach((c,j)=>{
@@ -966,12 +970,18 @@ function donutChart(vals, chans, total){
   const rightArr = outside.filter(s=>sideOf(s)==='R');
 
   /* 채널이 많은 조직(MS팀 등)은 바깥 라벨이 한쪽에 여러 개 몰릴 수 있다 — 그만큼
-     세로 공간이 필요하므로, 캔버스 높이(H)를 몰린 라벨 개수에 맞춰 늘린다(기본
-     352px는 한쪽에 4개까지는 그대로, 그 이상이면 커진다). 도넛 자체는 항상
-     정중앙(H/2)에 있어야 가운데 합계 오버레이가 어긋나지 않는다. */
+     세로 공간이 필요하므로, 캔버스 높이(H)를 몰린 라벨 개수에 맞춰 늘린다. 도넛
+     자체는 항상 정중앙(H/2)에 있어야 가운데 합계 오버레이가 어긋나지 않는다. */
   const maxSide = Math.max(leftArr.length, rightArr.length);
-  const H = maxSide<=4 ? 460 : Math.min(820, maxSide*MIN_GAP + 200);
+  const H = maxSide<=4 ? 520 : Math.min(980, maxSide*MIN_GAP + 260);
   const CX=W/2, CY=H/2;
+  /* 2026-09-10 버그 수정: 조각이 12시/6시 극점 아주 가까이(그러나 nearPole 문턱 안쪽)에
+     있으면, 바깥 라벨의 세로 위치 계산(CY ± (OUT+50))이 캔버스 위/아래 경계를 넘어가
+     라벨이나 안내선이 잘려 나가거나 화면 밖으로 삐져나가 보였다(사용자가 캡처해 보내준
+     "선만 있고 글자가 없는" 케이스). 라벨 한 칸(3줄, 위/아래 여백 포함) 높이만큼 항상
+     안쪽 여백을 남기도록 위/아래로 clamp 한다. */
+  const TOP_PAD=46, BOT_PAD=34;
+  const clampY = y => Math.max(TOP_PAD, Math.min(H-BOT_PAD, y));
 
   let accLen=0;
   const arcs = slices.map(s=>{
@@ -983,8 +993,14 @@ function donutChart(vals, chans, total){
   const pt = (ang,r)=>({ x: CX+r*Math.sin(ang), y: CY-r*Math.cos(ang) });
   const layoutSide = arr=>{
     const sorted = [...arr].sort((a,b)=> -Math.cos(a.mid) - (-Math.cos(b.mid)));
-    const ys = sorted.map(s=> CY + (-Math.cos(s.mid))*(OUT+50));
+    const ys = sorted.map(s=> clampY(CY + (-Math.cos(s.mid))*(OUT+50)));
     for(let k=1;k<ys.length;k++){ if(ys[k]-ys[k-1] < MIN_GAP) ys[k] = ys[k-1]+MIN_GAP; }
+    /* 겹침 방지로 아래로 밀어내다 보면 마지막 몇 개가 다시 아래쪽 경계를 넘어갈 수
+       있다 — 맨 끝부터 거꾸로 한 번 더 훑어서 경계 안으로 눌러준다(그 위 라벨과의
+       최소 간격은 이미 위에서 확보됐으므로, 전체를 위로 당겨도 서로 겹치지 않는다). */
+    for(let k=ys.length-1;k>=0;k--){
+      if(ys[k] > H-BOT_PAD){ ys[k] = H-BOT_PAD; if(k>0 && ys[k]-ys[k-1]<MIN_GAP) ys[k-1] = ys[k]-MIN_GAP; }
+    }
     return sorted.map((s,k)=>({ ...s, labelY: ys[k] }));
   };
   const leftOut = layoutSide(leftArr);
