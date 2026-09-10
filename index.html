@@ -1389,8 +1389,37 @@ async function exportAllPdf(){
             const twEl = pdfStage.querySelector('.tw');
             const tableEl = twEl ? twEl.querySelector('table') : null;
             if(twEl && tableEl){
+              /* table{width:100%} 기본 CSS 때문에 scrollWidth는 항상 컨테이너 폭을
+                 그대로 돌려준다(진짜 내용 너비가 아님) — 채널 적은 표(I팀/백두 등)의
+                 진짜 너비를 재려면 잠깐 max-content로 풀었다가 재고 원복해야 한다. */
+              const prevW = tableEl.style.width;
+              tableEl.style.width = 'max-content';
               const naturalW = tableEl.scrollWidth, naturalH = tableEl.scrollHeight;
-              const scale = Math.min(twEl.clientWidth/naturalW, twEl.clientHeight/naturalH, 1);
+              tableEl.style.width = prevW;
+
+              const widthRatio = twEl.clientWidth / naturalW;
+              const heightRatio = twEl.clientHeight / naturalH;
+              const scale = Math.min(widthRatio, heightRatio, 1);
+
+              /* 2026-09-10: 채널 수가 적은 조직(I팀·백두 등)은 줄 수(12개월/12주+합계)가
+                 항상 같아서 세로 기준으로 축소비율이 정해지는데(= heightRatio가 더
+                 작아서 scale을 그게 결정), 그러면 가로는 원래도 컨테이너보다 좁았던
+                 표가 그대로 축소되어 오른쪽에 큰 빈 공간이 남는다. 세로가 축소비율을
+                 결정하는 경우엔 가로에 여유가 있다는 뜻이므로, 축소 전에 표 폭을
+                 "축소하고 나면 정확히 컨테이너 폭이 되는 값"까지 늘리고
+                 table-layout:fixed로 그 여유를 각 열에 고르게 배분한다 — 글자 크기는
+                 그대로 두고 열 너비만 넓어진다.
+                 ⚠ "표가 원래(축소 전) 컨테이너보다 좁을 때만"(naturalW <= clientWidth,
+                 즉 widthRatio>=1) 적용해야 한다 — heightRatio와 widthRatio를 그냥
+                 비교하면 보담처럼 원래 더 넓어서 축소 중이던 표까지(두 비율이
+                 우연히 비슷해서) 여기 걸려 폭을 더 늘려버리고, 그 결과 페이지
+                 오른쪽 끝이 잘려나가는 문제가 있었다(실측으로 확인). 가로가 이미
+                 좁은 비율로 꽉 차는 넓은 표(MS팀 등)도 widthRatio<1이라 자동으로
+                 제외된다. */
+              if(scale < 1 && widthRatio >= 1){
+                tableEl.style.tableLayout = 'fixed';
+                tableEl.style.width = (twEl.clientWidth / scale) + 'px';
+              }
               if(scale < 1){ tableEl.style.transformOrigin = 'top left'; tableEl.style.transform = `scale(${scale})`; }
             }
           } else {
