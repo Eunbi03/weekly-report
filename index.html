@@ -1434,9 +1434,13 @@ async function exportAllPdf(){
           /* 2026-09-09: PNG+scale:2로 24장을 그대로 넣으면 jsPDF가 최종 파일을 만들 때
              내부적으로 문자열 하나로 합치는 과정에서 "Invalid string length"로 실패할 만큼
              용량이 커진다(실측). 표/차트 이미지는 사진이 아니라 선·글자 위주라 JPEG로도
-             화질 손실이 거의 안 보이면서 용량은 크게 줄어서, scale:1.5 + JPEG로 바꿨다. */
-          const canvas = await html2canvas(pdfStage, { scale:1.5, backgroundColor:'#f3f5f8', useCORS:true });
-          const imgData = canvas.toDataURL('image/jpeg', 0.85);
+             화질 손실이 거의 안 보이면서 용량은 크게 줄어서, JPEG로 바꿨다.
+             2026-09-10: 그래도 글자가 살짝 흐릿하다는 피드백 — scale 1.5→1.8, JPEG 품질
+             0.85→0.9로 올렸다(24장 전체 기준 약 6.9MB→10MB, 생성 시간은 거의 그대로).
+             scale:2까지도(실측 12MB, 에러 없음) 가능은 하지만 용량 대비 체감 차이가
+             크지 않아 이 값으로 맞췄다 — 더 선명하게 원하면 scale을 올리면 된다. */
+          const canvas = await html2canvas(pdfStage, { scale:1.8, backgroundColor:'#f3f5f8', useCORS:true });
+          const imgData = canvas.toDataURL('image/jpeg', 0.9);
 
           if(pageIdx > 1) doc.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
           doc.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, undefined, 'FAST');
