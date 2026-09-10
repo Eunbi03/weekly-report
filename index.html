@@ -941,13 +941,16 @@ function textOn(hex){
 function donutChart(vals, chans, total){
   /* 2026-09-10: 범례를 그래프 아래로 옮겨서 확보한 가로 폭만큼 원그래프를 한 번 더
      키웠다. 글자 크기(아래 insideSvg/outsideSvg의 font-size)는 그대로 두고 도형
-     쪽(R/SW/W)만 키우면, 가운데 합계 구멍이 상대적으로 훨씬 커져서 안쪽 라벨이
-     가운데 글자와 부대끼는 문제도 같이 줄어든다. LABEL_ALLOW는 바깥 라벨 텍스트가
-     항상 캔버스 안쪽에 온전히 들어갈 만큼 링 바깥에 남겨두는 여유폭 — 링이
-     두꺼워질수록(OUT 증가) W도 같이 늘어나게 이 값에서 역산한다. */
-  const R=145, SW=92, LABEL_ALLOW=190;
+     쪽(R/SW)만 키우면, 가운데 합계 구멍이 상대적으로 훨씬 커져서 안쪽 라벨이
+     가운데 글자와 부대끼는 문제도 같이 줄어든다. */
+  const R=160, SW=104;
   const OUT=R+SW/2, C=2*Math.PI*R, TAU=Math.PI*2, IN_TH=0.12, MIN_GAP=54;
-  const W = Math.round(2*(OUT+LABEL_ALLOW));
+  /* 2026-09-10: "도넛이 할당된 공간을 꽉 채우는 느낌"과 "안내선이 너무 길다"는
+     피드백 — 링 바깥 여백(W)을 고정값으로 넉넉히 남기지 않고, 이번 그래프에 실제로
+     필요한 만큼만(=바깥 라벨 중 가장 넓은 한 줄의 글자폭 + 안내선 길이) 남긴다.
+     채널명 길이·자릿수는 매주 달라지므로 렌더링마다 다시 계산한다 — 그래야 짧은
+     라벨뿐인 주엔 도넛이 더 커지고, 긴 라벨이 있는 주에도 잘리지 않는다. */
+  const GAP = 22; // 링 가장자리 ~ 바깥 라벨 사이 안내선 길이(가로/세로 공통, 기존 50~52에서 단축)
 
   const slices=[]; let acc=0;
   chans.forEach((c,j)=>{
@@ -968,6 +971,20 @@ function donutChart(vals, chans, total){
   const sideOf = s => Math.sin(s.mid) < 0 ? 'L' : 'R';
   const leftArr = outside.filter(s=>sideOf(s)==='L');
   const rightArr = outside.filter(s=>sideOf(s)==='R');
+
+  /* 바깥 라벨 3줄(이름/매출/비중) 중 가장 넓은 한 줄의 실제 글자폭을 추정 — 한글은
+     정사각형에 가까워 폰트크기의 약 98%, 숫자는 표 형식 숫자(tabular-nums)라 폭이
+     고르므로 약 58%로 근사한다. 정확한 measureText는 아니지만, 잘림을 막을 여유
+     버퍼(16px)를 더해서 약간의 오차는 흡수한다. */
+  const chW = (ch,fs)=> /[가-힣]/.test(ch) ? fs*0.98 : /[0-9]/.test(ch) ? fs*0.58
+    : (ch===','||ch==='.') ? fs*0.28 : ch==='%' ? fs*0.6 : fs*0.55;
+  const textW = (str,fs)=> [...String(str)].reduce((a,ch)=>a+chW(ch,fs),0);
+  const outsideArr = leftArr.concat(rightArr);
+  const maxLabelW = outsideArr.length ? Math.max(...outsideArr.map(s=>
+    Math.max(textW(s.c.n,14)*1.05, textW(n2(s.v),16)*1.06, textW(pct(s.frac*100),12))
+  )) : 0;
+  const LABEL_ALLOW = outsideArr.length ? Math.round(GAP + maxLabelW + 16) : 40;
+  const W = Math.round(2*(OUT+LABEL_ALLOW));
 
   /* 채널이 많은 조직(MS팀 등)은 바깥 라벨이 한쪽에 여러 개 몰릴 수 있다 — 그만큼
      세로 공간이 필요하므로, 캔버스 높이(H)를 몰린 라벨 개수에 맞춰 늘린다. 도넛
@@ -993,7 +1010,7 @@ function donutChart(vals, chans, total){
   const pt = (ang,r)=>({ x: CX+r*Math.sin(ang), y: CY-r*Math.cos(ang) });
   const layoutSide = arr=>{
     const sorted = [...arr].sort((a,b)=> -Math.cos(a.mid) - (-Math.cos(b.mid)));
-    const ys = sorted.map(s=> clampY(CY + (-Math.cos(s.mid))*(OUT+50)));
+    const ys = sorted.map(s=> clampY(CY + (-Math.cos(s.mid))*(OUT+GAP)));
     for(let k=1;k<ys.length;k++){ if(ys[k]-ys[k-1] < MIN_GAP) ys[k] = ys[k-1]+MIN_GAP; }
     /* 겹침 방지로 아래로 밀어내다 보면 마지막 몇 개가 다시 아래쪽 경계를 넘어갈 수
        있다 — 맨 끝부터 거꾸로 한 번 더 훑어서 경계 안으로 눌러준다(그 위 라벨과의
@@ -1025,7 +1042,7 @@ function donutChart(vals, chans, total){
   }).join('');
   const outsideSvg = (arr, side)=> arr.map(s=>{
     const edge = pt(s.mid, OUT);
-    const ax = side==='R' ? CX+OUT+52 : CX-OUT-52;
+    const ax = side==='R' ? CX+OUT+GAP : CX-OUT-GAP;
     const ta = side==='R' ? 'start' : 'end';
     const tx = side==='R' ? ax+8 : ax-8;
     /* 2026-09-10: 안내선이 꼭 직선일 필요는 없다는 피드백 — 조각 가장자리에서
