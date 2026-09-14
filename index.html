@@ -4,17 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>주간매출자료</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#e8ecf1}
 html.mob,body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
-body{color:#15181d;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+body{color:#15181d;font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums lining-nums}
 /* 191mm : 339mm = 16:9 고정 무대. 화면 크기에 맞춰 자동 축소 */
 :root{ --W:1920px; --H:1082px; --pad-h:18px; --pad-v:14px; --gap:8px; --fixed-gap:10px;
-  --top-h:50px; --nav1-h:42px; --navrow-h:38px; --kbar-h:132px; --card-h:754px;
-  --chart-pad-t:12px; --chart-pad-b:10px; --chd-h:38px; --plot-margin-t:52px }
+  --top-h:64px; --nav1-h:50px; --kbar-h:190px; --card-h:722px;
+  --chart-pad-t:12px; --chart-pad-b:10px; --chd-h:48px; --plot-margin-t:52px }
 #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 #stage{width:var(--W);height:var(--H);flex:none;background:#f3f5f8;transform-origin:center center;
   display:flex;flex-direction:column;gap:var(--gap);padding:var(--pad-v) var(--pad-h);overflow:hidden}
@@ -31,19 +33,19 @@ button{font-family:inherit;border:none;cursor:pointer}
 .top{display:flex;justify-content:space-between;align-items:center;gap:20px;height:var(--top-h);flex:0 0 var(--top-h)}
 .brand{display:flex;align-items:center;gap:10px}
 .brand .bar{width:8px;height:24px;border-radius:2px}
-.brand h1{font-size:27px;font-weight:800;letter-spacing:-.5px}
-.brand .unit{font-size:15.5px;color:#9aa3af;font-weight:600;margin-left:2px}
+.brand h1{font-size:45.6px;font-weight:800;letter-spacing:-.5px}
+.brand .unit{font-size:23px;color:#9aa3af;font-weight:700;margin-left:2px}
 .stepper{display:flex;align-items:center;background:#fff;border:1px solid #e7eaef;border-radius:10px;
-  padding:3px 4px;gap:2px}
-.stepper button{width:26px;height:26px;border-radius:7px;background:transparent;color:#7a828d;
+  padding:5px 6px;gap:2px}
+.stepper button{width:30px;height:34px;border-radius:7px;background:transparent;color:#7a828d;
   font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .stepper button:hover:not(:disabled){background:#f0f2f6;color:#15181d}
 .stepper button:disabled{opacity:.28;cursor:default}
-.stepper .lbl{min-width:128px;text-align:center;font-size:15.5px;font-weight:700;letter-spacing:-.3px}
-/* 2026-09-09: 월/주차를 바꾸는 스테퍼(◄ 2026년 36주차 ►) 바로 왼쪽에 놓는 "전체 PDF 저장" 버튼 */
+.stepper .lbl{min-width:160px;text-align:center;font-size:23px;font-weight:700;letter-spacing:-.3px}
+/* 2026-09-14: 월별/주별 전환은 이제 이 자리(PDF 저장과 스테퍼 사이)로 옮겨졌다 — navrow는 없앴다. */
 .topright{display:flex;align-items:center;gap:10px}
-.pdfbtn{height:38px;padding:0 16px;border-radius:10px;background:#fff;border:1px solid #e7eaef;
-  color:#3a4049;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;letter-spacing:-.2px}
+.pdfbtn{height:44px;padding:0 18px;border-radius:10px;background:#fff;border:1px solid #e7eaef;
+  color:#3a4049;font-size:23px;font-weight:700;display:flex;align-items:center;gap:7px;letter-spacing:-.2px}
 .pdfbtn:hover:not(:disabled){background:#f0f2f6}
 .pdfbtn:disabled{opacity:.5;cursor:default}
 .pdfico{width:13px;height:15px;border-radius:2px 2px 2px 6px;background:#D64545;position:relative;flex:0 0 auto}
@@ -63,21 +65,32 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
-.nav1 button{flex:1;border-radius:7px;font-size:16.5px;font-weight:700;background:transparent;color:#6c7684;
+.nav1 button{flex:1;border-radius:7px;font-size:23px;font-weight:700;background:transparent;color:#6c7684;
   letter-spacing:-.2px;display:flex;align-items:center;justify-content:center;gap:7px}
 .nav1 button:hover{color:#15181d}
 .nav1 button.on{background:#15181d;color:#fff}
-.navrow{display:flex;gap:8px;align-items:center;flex:0 0 var(--navrow-h)}
-.nav2{display:flex;gap:5px}
-.nav2 button{padding:0 16px;height:38px;border-radius:8px;font-size:15.5px;font-weight:700;background:#fff;
-  border:1px solid #e7eaef;color:#7a828d;display:flex;align-items:center;gap:6px}
-.nav2 button.on{color:#fff}
+/* 2026-09-14: 케이프라이드 탭에 마우스를 올리면(hover) 전사/MS팀 특정/MS팀/I팀이 아래로
+   드롭다운처럼 펼쳐진다 — navrow에 항상 떠 있던 줄을 없애고 그 공간을 상단요약(kbar)에
+   보탰다. 드롭다운은 다른 내용을 가려도 상관없다(overlay), hover가 풀리면 바로 사라진다. */
+.nav1-kp-wrap{position:relative;flex:1;display:flex;min-width:0}
+.nav1-kp-wrap>button{flex:1}
+.kp-drop{position:absolute;top:100%;left:0;right:0;margin-top:6px;display:flex;flex-direction:column;gap:4px;
+  background:#fff;border:1px solid #e7eaef;border-radius:10px;padding:6px;box-shadow:0 10px 28px rgba(20,24,29,.16);
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .15s ease,transform .15s ease,visibility .15s;z-index:60}
+.nav1-kp-wrap:hover .kp-drop{opacity:1;visibility:visible;transform:translateY(0)}
+.kp-drop button{padding:11px 16px;border-radius:7px;background:transparent;color:#3a4049;font-size:23px;
+  font-weight:700;text-align:left;white-space:nowrap;width:100%}
+.kp-drop button:hover{background:#f0f2f6}
+.kp-drop button.on{background:#15181d;color:#fff}
+/* 모바일(세로)에서는 hover가 없어서 위 드롭다운 대신 케이프라이드 선택 시 항상 보이는
+   줄로 대체한다(아래 세로모드 섹션에서 표시로 전환) — 컴퓨터 화면에서는 항상 숨김. */
+.mob-ksub{display:none}
 .pip{width:7px;height:7px;border-radius:2px}
-.seg{display:flex;background:#e2e7ee;border-radius:8px;padding:3px;height:38px}
-.seg button{padding:0 18px;border-radius:6px;font-size:15.5px;font-weight:700;background:transparent;color:#7a828d;white-space:nowrap}
+.seg{display:flex;background:#e2e7ee;border-radius:8px;padding:3px;height:44px}
+.seg button{padding:0 18px;border-radius:6px;font-size:23px;font-weight:700;background:transparent;color:#7a828d;white-space:nowrap}
 .seg button.on{background:#2A6FDB;color:#fff}
 .seg.sm{background:#eceff4}
-.seg.sm button{padding:0 16px;font-size:15.5px}
+.seg.sm button{padding:0 16px;font-size:23px}
 .seg.sm button.on{background:#fff;color:#2A6FDB}
 .spacer{flex:1}
 
@@ -93,11 +106,11 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc .d{font-size:11.5px;margin-top:3px}
 .kc{flex:1;min-width:0;padding:0 20px 0 44px;display:flex;flex-direction:column;height:100%;
   justify-content:center;align-items:flex-start;text-align:left;overflow:hidden}
-.kc .l{font-size:16px;color:#8b93a0;font-weight:700;white-space:nowrap}
-.kc .v{font-size:38px;font-weight:800;letter-spacing:-.8px;white-space:nowrap;color:#15181d!important;margin-top:4px}
-.kc .v small{font-size:16px;font-weight:700;margin-left:3px;color:#15181d}
-.kc .d{font-size:15px;color:#a8b0bb;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:100%;margin-top:4px}
+.kc .l{font-size:23px;color:#8b93a0;font-weight:700;white-space:nowrap}
+.kc .v{font-size:45.6px;font-weight:800;letter-spacing:-.8px;white-space:nowrap;color:#15181d!important;margin-top:6px}
+.kc .v small{font-size:18px;font-weight:700;margin-left:3px;color:#15181d}
+.kc .d{font-size:23px;color:#a8b0bb;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;margin-top:6px}
 .kc .d b{font-weight:800}
 
 /* 차트 */
@@ -107,6 +120,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 .plot{display:flex;align-items:stretch;margin-top:var(--plot-margin-t)}
 .yax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding-right:9px}
 .yax span{font-size:15px;color:#b3bac3}
+/* 2026-09-14: 매출원가율 선그래프를 금액(막대) 축이 아니라 별도의 퍼센트 축 기준으로
+   그리면서, 그 퍼센트 범위를 표의 오른쪽에 따로 표시한다 — 왼쪽 축(.yax)과 대칭 구조. */
+.yax-r{align-items:flex-start;padding-right:0;padding-left:9px}
+.yax-r span{color:#FF6A00}
 .area{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden}
 .area-inner{height:100%;min-width:100%}
 .canvas{position:relative}
@@ -134,24 +151,27 @@ button{font-family:inherit;border:none;cursor:pointer}
 .xax u{display:block;font-size:14px;color:#b3bac3;text-decoration:none}
 .xax div.on b{color:#15181d;font-weight:800}
 .lgd{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:16px;padding-top:9px;border-top:1px solid #f1f3f6}
-.lgd span{font-size:16px;color:#6c7684;display:flex;align-items:center;gap:5px}
+.lgd span{font-size:23px;font-weight:400;color:#6c7684;display:flex;align-items:center;gap:5px}
 .lgd i{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
 .lgd i.ln{width:14px;height:0;border-top:2.5px solid;border-radius:0}
 
 /* 표 */
 .tcard{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow:hidden}
 .tw{flex:1;min-width:0;overflow:auto;margin-top:10px}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:17px;white-space:nowrap}
-th,td{padding:14px 10px;text-align:right;border-bottom:1px solid #f1f3f6}
-th{background:#fafbfc;font-size:15.5px;font-weight:700;color:#7a828d;position:sticky;top:0;z-index:2;
+/* 2026-09-14: 표를 큼직하게 키워서(글씨·여백 확대) 카드 높이 안에 6줄(6주/6개월)만
+   자연스럽게 들어오게 했다 — 별도 페이지네이션 없이, render()가 항상 표 스크롤을
+   맨 아래(최신 시점)로 맞춰두므로 "최근 6개"가 기본으로 보이고 나머지는 그대로 스크롤. */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:24px;white-space:nowrap}
+th,td{padding:20px 12px;text-align:right;border-bottom:1px solid #f1f3f6}
+th{background:#fafbfc;font-size:19px;font-weight:700;color:#7a828d;position:sticky;top:0;z-index:2;
   text-align:center;border-bottom:1px solid #e7eaef}
 th.g{text-align:center}
-th.r2{top:48px}
+th.r2{top:67px}
 th.sep,td.sep{border-left:1px solid #e7eaef}
 td:first-child,th:first-child{text-align:center;font-weight:700;background:#fff;position:sticky;left:0;z-index:3;
-  width:68px;min-width:68px}
+  width:86px;min-width:86px}
 th:first-child{background:#fafbfc;z-index:4}
-td.sale{font-weight:800;font-size:19px;letter-spacing:-.3px}
+td.sale{font-weight:800;font-size:27px;letter-spacing:-.3px}
 tbody tr:hover td{background:#fafbfd}
 tbody tr:hover td:first-child{background:#fafbfd}
 tr.cur td{background:#fffaef!important}
@@ -207,10 +227,14 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
-#stage.portrait .nav1 button{flex:0 0 auto;padding:0 20px}
-#stage.portrait .navrow{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap}
-#stage.portrait .nav2{flex:0 0 auto}
-#stage.portrait .nav2 button{flex:0 0 auto}
+#stage.portrait .nav1 button{flex:0 0 auto;padding:0 20px;font-size:16.5px}
+#stage.portrait .nav1-kp-wrap{flex:0 0 auto}
+/* 모바일(세로)엔 hover가 없으므로 케이프라이드 드롭다운은 숨기고, 대신 케이프라이드
+   선택 시 항상 보이는 줄(.mob-ksub)로 전사/MS팀 특정/MS팀/I팀을 고른다. */
+#stage.portrait .kp-drop{display:none}
+#stage.portrait .mob-ksub{display:flex;overflow-x:auto;overflow-y:hidden}
+#stage.portrait .mob-ksub .seg{height:36px}
+#stage.portrait .mob-ksub .seg button{flex:0 0 auto;font-size:13px;padding:0 11px}
 
 /* ══════════════════════ 진짜 모바일 전용 레이아웃 ══════════════════════
    예전엔 1920px 데스크탑 화면을 그대로 축소(transform:scale)해서 넣다 보니
@@ -226,11 +250,11 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .top{height:auto;flex-wrap:wrap;row-gap:6px}
 #stage.portrait .brand h1{font-size:21px}
 #stage.portrait .brand .unit{font-size:12px}
+#stage.portrait .pdfbtn{height:38px;font-size:14.5px;padding:0 16px}
 #stage.portrait .stepper .lbl{font-size:14px;min-width:92px}
-#stage.portrait .navrow{height:auto;padding-bottom:2px}
-#stage.portrait .nav2 button{height:36px;font-size:14px;padding:0 12px}
 #stage.portrait .seg{height:36px}
 #stage.portrait .seg button{font-size:13px;padding:0 11px}
+#stage.portrait .lgd span{font-size:13px}
 #stage.portrait .kc .d{white-space:normal;text-overflow:clip;overflow:visible;line-height:1.4}
 /* "전월 대비 ~" 와 "목표 ~"가 한 줄에 억지로 같이 있으면 "목표"가 중간에 잘려 다음 줄로
    넘어간다. 모바일에서는 가운뎃점 구분자 대신 아예 줄바꿈으로 분리한다. */
@@ -304,17 +328,20 @@ const LAYOUT = {
   PAD_H: 18, PAD_V: 14,              // #stage 좌우/상하 패딩
   GAP: 8,                            // #stage의 직계 자식(고정영역 / 차트·표 카드) 사이 간격
 
-  TOP_H: 50, NAV1_H: 42, NAVROW_H: 38, KBAR_H: 132,  // 고정영역 안의 4개 줄 높이
-  FIXED_GAP: 10,                     // 고정영역 안 4개 줄 사이 간격
+  /* 2026-09-14: navrow(월별/주별 + 케이프라이드 소분류 줄)를 없애고 그 자리를 상단요약(KBAR_H)에
+     넘겼다 — 월별/주별은 topright로, 소분류는 케이프라이드 탭 hover 드롭다운으로 옮김.
+     그만큼 TOP_H/NAV1_H/KBAR_H/CHD_H/LGD_H도 커진 글씨에 맞춰 함께 키웠다. */
+  TOP_H: 64, NAV1_H: 50, KBAR_H: 190,  // 고정영역 안의 3개 줄 높이
+  FIXED_GAP: 10,                     // 고정영역 안 3개 줄 사이 간격
 
   CHART_PAD_T: 12, CHART_PAD_B: 10,  // .chart/.tcard 카드 자체의 상하 패딩
-  CHD_H: 38,                         // 카드 제목 줄(막대/라인/표 토글 포함) 높이
+  CHD_H: 48,                         // 카드 제목 줄(막대/라인/표 토글 포함) 높이
   PLOT_MARGIN_T: 52,                 // 제목 줄과 실제 그래프 사이 여백
   XAX_H: 44,                         // x축 라벨 영역(전년비 라벨 있는 열 기준, 2줄로 가장 큰 경우)
-  LGD_H: 68,                         // 범례 영역(채널이 가장 많은 조직·2줄 기준 최댓값)
+  LGD_H: 90,                         // 범례 영역(채널이 가장 많은 조직·2줄 기준 최댓값)
 };
-/* 고정영역 전체 높이 = 4줄 + 그 사이 간격 3개 */
-LAYOUT.FIXED_ZONE_H = LAYOUT.TOP_H + LAYOUT.NAV1_H + LAYOUT.NAVROW_H + LAYOUT.KBAR_H + LAYOUT.FIXED_GAP*3;
+/* 고정영역 전체 높이 = 3줄 + 그 사이 간격 2개 */
+LAYOUT.FIXED_ZONE_H = LAYOUT.TOP_H + LAYOUT.NAV1_H + LAYOUT.KBAR_H + LAYOUT.FIXED_GAP*2;
 /* 모바일(세로)에서는 화면 하나에 다 우겨넣는 "무대" 개념 자체를 쓰지 않는다 — 카드 높이는
    내용에 맞춰 자동(auto)으로 늘어나고 페이지가 세로 스크롤된다. 대신 차트 캔버스만은 보기 좋은
    고정 높이를 직접 지정한다(막대 높이는 % 기반이라 이 값에 맞춰 알아서 다시 그려진다).
@@ -338,7 +365,6 @@ function applyLayout(){
   r.setProperty('--fixed-gap', LAYOUT.FIXED_GAP+'px');
   r.setProperty('--top-h', LAYOUT.TOP_H+'px');
   r.setProperty('--nav1-h', LAYOUT.NAV1_H+'px');
-  r.setProperty('--navrow-h', LAYOUT.NAVROW_H+'px');
   r.setProperty('--kbar-h', LAYOUT.KBAR_H+'px');
   r.setProperty('--card-h', LAYOUT.CARD_H+'px');
   r.setProperty('--chart-pad-t', LAYOUT.CHART_PAD_T+'px');
@@ -715,6 +741,8 @@ function fullWeeks(eObj){
 const NAV = [
  {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]}
 ];
+/* 케이프라이드 전용 소분류 — nav1 hover 드롭다운(컴퓨터)과 mob-ksub(모바일 세로) 둘 다 이 목록을 쓴다 */
+const KP_SUBS = [['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']];
 
 /* ══════════════════════ 유틸 ══════════════════════ */
 const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11, wi:33 };
@@ -758,14 +786,21 @@ function barChart(rs, chans, prev, e, curIdx){
   const last3 = new Set(rs.slice(-3).map(r=>r.id));
   const cmp = prev ? rs.map(r=>r.id).filter(id=>last3.has(id) && prev[id]) : [];
   const mx0 = Math.max(...rs.map(r=>r.s||0), ...cmp.map(id=>prev[id].s));
-  /* 선그래프 = 금액. 좌측 축 기준. 매출원가(법인) 또는 대출액(MS팀 특정) */
+  /* 선그래프: 대출액(MS팀 특정)은 금액이라 막대와 같은 좌측 축을 그대로 쓰지만,
+     매출원가율은 애초에 퍼센트 값이라 막대(금액) 축을 그대로 쓰면 위치가 왜곡된다
+     (예: 원가율 숫자는 커졌는데 선은 아래로 떨어져 보이는 문제) — 2026-09-14: 매출원가율은
+     자기만의 퍼센트 축(mxCost)으로 따로 그리고, 그 범위를 표 오른쪽(.yax-r)에 표시한다. */
   const lineKind = e.hasLoan ? 'loan' : (rs.some(r=>r.c!=null) ? 'cost' : null);
   const lineName = lineKind==='loan' ? '대출액' : '매출원가율';
+  const isCostPct = lineKind==='cost';
   const line = rs.map(r=> lineKind==='loan' ? (r.loan!=null?r.loan:null)
-                        : lineKind==='cost' ? (r.c!=null&&r.s!=null? r.s*r.c/100 : null) : null);
+                        : lineKind==='cost' ? (r.c!=null? r.c : null) : null);
+  const costVals = isCostPct ? line.filter(v=>v!=null) : [];
+  const mxCost = costVals.length ? Math.max(niceMax(Math.max(...costVals)*1.15), 20) : 100;
   const ticks=[0,1,2,3,4];
   const cap = (isM() && e.id && YCAP[e.id]) ? YCAP[e.id] : null;
   const mx = (cap && mx0<=cap) ? cap : niceCap(mx0);
+  const lineMax = isCostPct ? mxCost : mx;
   const cols=chans.map(x=>x.c), colsL=chans.map(x=>light(x.c));
 
   const seg=(vals,tot,cs)=> (!vals||!vals.length||tot<=0)
@@ -790,24 +825,26 @@ function barChart(rs, chans, prev, e, curIdx){
   const totalW = weights.reduce((a,b)=>a+b,0);
   const centers = []; let acc=0;
   for(let i=0;i<n;i++){ centers.push((acc+weights[i]/2)/totalW*100); acc+=weights[i]; }
-  const pts = line.map((v,i)=> v==null?null:`${centers[i].toFixed(3)},${(100-v/mx*100).toFixed(3)}`).filter(Boolean).join(' ');
+  const pts = line.map((v,i)=> v==null?null:`${centers[i].toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
   /* 점 위 라벨: 위치는 금액(v) 기준 그대로, 표시 글자만 원가율(%)로 (대출액 라인은 금액 그대로).
      막대 꼭대기(매출액 라벨)와 선 위 라벨이 겹칠 만큼 가까우면(원가율이 100%에 가까울 때 등)
      원가율 라벨을 선 위가 아니라 아래로 내려서 서로 안 겹치게 한다. */
   const dotLabel = (v,i) => lineKind==='cost' ? pct(rs[i].c) : n2(v);
   const dots = line.map((v,i)=> v==null?'':
     (()=>{
-      const barFrac = (rs[i].s||0)/mx, lineFrac = v/mx;
+      const barFrac = (rs[i].s||0)/mx, lineFrac = v/lineMax;
       const below = Math.abs(barFrac - lineFrac) < 0.08;
-      return `<div class="dotpt" data-i="${i}" style="position:absolute;left:${centers[i].toFixed(3)}%;top:${(100-v/mx*100).toFixed(3)}%;
+      const top = (100-v/lineMax*100).toFixed(3);
+      return `<div class="dotpt" data-i="${i}" style="position:absolute;left:${centers[i].toFixed(3)}%;top:${top}%;
       width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;
       background:#FF6A00;border:2px solid #fff"></div>
-     <div class="dotlab" data-i="${i}" style="left:${centers[i].toFixed(3)}%;top:${(100-v/mx*100).toFixed(3)}%${below?';transform:translate(-50%,30%)':''}">${dotLabel(v,i)}</div>`;
+     <div class="dotlab" data-i="${i}" style="left:${centers[i].toFixed(3)}%;top:${top}%${below?';transform:translate(-50%,30%)':''}">${dotLabel(v,i)}</div>`;
     })()).join('');
 
   CTX = { rs, chans, prev, e };
   const visibleN = isM() ? 5 : 8;  /* 모바일 세로 기본 노출 개수: 월별=5개(최근달 포함 5개월, 그 중 뒤 3개는 전년비교), 주별=8개 */
   const widthPct = isPortrait() ? Math.round(n/visibleN*100) : 100;  /* 가로(컴퓨터)는 12개 그대로 */
+  const rightAxis = isCostPct ? `<div class="yax yax-r" style="height:${H}px">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
   return `<div class="plot">
     <div class="yax" style="height:${H}px">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>
     <div class="area"><div class="area-inner" style="width:${widthPct}%"><div class="canvas" style="height:${H}px">
@@ -821,6 +858,7 @@ function barChart(rs, chans, prev, e, curIdx){
     <div class="xax">${rs.map((r,i)=>`<div class="${i===(curIdx!=null?curIdx:rs.length-1)?'on':''}" style="flex:${weights[i]}"><b>${labOf(r)}</b>
       ${prev&&prev[r.id]&&last3.has(r.id)?`<u>전년비 ${pct(r.s/prev[r.id].s*100)}</u>`:''}</div>`).join('')}</div>
     </div></div>
+    ${rightAxis}
   </div>
   <div class="lgd">
     ${chans.map(x=>`<span><i style="background:${x.c}"></i>${x.n}</span>`).join('')}
@@ -877,10 +915,13 @@ function yearLine(key, color){
   const mx = niceMax(Math.max(...ys.map(r=>r.s))*1.12);
   const cv = ys.map(r=>r.c).filter(v=>v!=null);
   const hasCost = cv.length>0;
+  /* 2026-09-14: barChart와 동일하게, 매출원가율은 매출액(mx) 축이 아니라 자기만의
+     퍼센트 축(mxCost)으로 그린다 — 오른쪽에 그 범위를 따로 표시한다. */
+  const mxCost = hasCost ? Math.max(niceMax(Math.max(...cv)*1.15), 20) : 100;
   const ticks=[0,1,2,3,4];
   const p1 = ys.map((r,i)=>`${(i/(n-1)*100).toFixed(3)},${(100-r.s/mx*100).toFixed(3)}`).join(' ');
   const p2 = hasCost ? ys.map((r,i)=> r.c==null?null
-      :`${(i/(n-1)*100).toFixed(3)},${(100-(r.s*r.c/100)/mx*100).toFixed(3)}`).filter(Boolean).join(' ') : '';
+      :`${(i/(n-1)*100).toFixed(3)},${(100-r.c/mxCost*100).toFixed(3)}`).filter(Boolean).join(' ') : '';
   /* 매주 눈금, 라벨은 9주 간격 + 마지막 주 */
   const show = i => i%9===0 || i===n-1;
   const marks = ys.map((r,i)=>{
@@ -892,6 +933,7 @@ function yearLine(key, color){
   }).join('');
   const visibleN = 15;  /* 모바일에서 한 화면에 보이는 주 수 — 나머지는 좌우로 스크롤해서 본다 */
   const widthPct = isPortrait() ? Math.round(n/visibleN*100) : 100;
+  const rightAxis = hasCost ? `<div class="yax yax-r" style="height:${H}px">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
   return `<div class="plot">
     <div class="yax" style="height:${H}px">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>
     <div class="area"><div class="area-inner" style="width:${widthPct}%"><div class="canvas" style="height:${H}px">
@@ -902,13 +944,14 @@ function yearLine(key, color){
           vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
         ${hasCost?`<polyline points="${p2}" fill="none" stroke="#C8842A" stroke-width="1.8"
           vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-dasharray="5 4"></polyline>`:''}</svg>
-      ${ys.map((r,i)=>`<div title="${r.yr}년 ${r.w}주 · 매출 ${n2(r.s)}${r.c!=null?' · 매출원가 '+n2(r.s*r.c/100):''}"
+      ${ys.map((r,i)=>`<div title="${r.yr}년 ${r.w}주 · 매출 ${n2(r.s)}${r.c!=null?' · 매출원가율 '+pct(r.c):''}"
         style="position:absolute;left:${(i/(n-1)*100).toFixed(3)}%;top:0;bottom:0;width:${(100/n).toFixed(2)}%;
         transform:translateX(-50%)"></div>`).join('')}
     </div><div style="position:relative;height:26px;margin-top:8px">${marks}</div></div></div>
+    ${rightAxis}
   </div>
   <div class="lgd"><span><i class="ln" style="border-color:${color}"></i>매출액</span>
-    ${hasCost?`<span><i class="ln" style="border-color:#C8842A"></i>매출원가</span>`:''}</div>`;
+    ${hasCost?`<span><i class="ln" style="border-color:#C8842A"></i>매출원가율</span>`:''}</div>`;
 }
 
 /* ══════════════════════ 팝업 ══════════════════════ */
@@ -962,7 +1005,10 @@ function donutChart(vals, chans, total){
      쪽(R/SW)만 키우면, 가운데 합계 구멍이 상대적으로 훨씬 커져서 안쪽 라벨이
      가운데 글자와 부대끼는 문제도 같이 줄어든다. */
   const R=160, SW=104;
-  const OUT=R+SW/2, C=2*Math.PI*R, TAU=Math.PI*2, MIN_GAP=54;
+  /* 2026-09-14: 폰트를 프리텐다드→IBM Plex Sans KR로 바꾸면서 글자 상하 여백(어센트/디센트)이
+     달라져, 기존 MIN_GAP(54)로는 바깥 라벨끼리 살짝 겹치는 경우가 생겼다(실측 겹침 테스트로
+     확인) — 새 폰트 기준으로 여유 있게 올렸다. */
+  const OUT=R+SW/2, C=2*Math.PI*R, TAU=Math.PI*2, MIN_GAP=68;
   /* 2026-09-10: "도넛이 할당된 공간을 꽉 채우는 느낌"과 "안내선이 너무 길다"는
      피드백 — 링 바깥 여백(W)을 고정값으로 넉넉히 남기지 않고, 이번 그래프에 실제로
      필요한 만큼만(=바깥 라벨 중 가장 넓은 한 줄의 글자폭 + 안내선 길이) 남긴다.
@@ -986,7 +1032,7 @@ function donutChart(vals, chans, total){
      3시/9시에서는 가장 넓은 줄의 가로폭이 온전히 반지름 방향으로 걸리고, 그 사이
      각도에서는 두 성분이 섞인다(sin/cos로 투영). 반지름 방향(링 두께 SW)과
      접선 방향(그 조각의 호 길이) 둘 다 여유가 있어야만 "안쪽"으로 둔다. */
-  const HALF_H = 30; // 이름/매출/비중 3줄 블록 높이의 절반(실제 tspan y좌표+줄별 ascent/descent 기준 실측)
+  const HALF_H = 34; // 이름/매출/비중 3줄 블록 높이의 절반(IBM Plex Sans KR 기준 실측 + 여유)
   const FIT_MARGIN = 3; // 실측 폭에 더하는 최소 안전 여유(px)
   const insideHalfW = s => Math.max(
     measureTextWidth(s.c.n,15,700), measureTextWidth(n2(s.v),17,800), measureTextWidth(pct(s.frac*100),12.5,400)
@@ -1290,10 +1336,13 @@ function pageSales(){
   const isKsub = S.nav2==='kp' && S.ksub!=='all';
   const prev = isKsub ? (isM()?buildKsubPrev(e):null) : (isM()?D[S.nav2].prevM:D[S.nav2].prevW);
   const chartKey = (S.nav2==='kp' && S.ksub!=='all') ? S.ksub : S.nav2;
-  const view = (isM() && S.view==='line') ? 'bar' : S.view;  /* 월별엔 라인 뷰가 없음 - 안전장치 */
+  /* "1년 흐름"(yearLine) 라인 뷰는 법인 3사(D.bo/bd/kp)만 지원한다 — buildYear()가 D에서만
+     읽으므로, 월별이거나 케이프라이드 소분류(MS팀 특정/MS팀/I팀)일 땐 막대로 안전하게 되돌린다. */
+  const view = ((isM() || isKsub) && S.view==='line') ? 'bar' : S.view;
+  const showLine = !isM() && !isKsub;
 
   const kbarHtml = kbar(rs, e, ci);
-  const viewToggle = `<div class="seg sm">${(isM()?[['bar','막대'],['table','표']]:[['bar','막대'],['line','라인'],['table','표']])
+  const viewToggle = `<div class="seg sm">${(showLine?[['bar','막대'],['line','라인'],['table','표']]:[['bar','막대'],['table','표']])
       .map(x=>`<button class="${S.view===x[0]?'on':''}" onclick="setView('${x[0]}')">${x[1]}</button>`).join('')}</div>`;
 
   let bodyHtml;
@@ -1347,27 +1396,32 @@ function buildScreenHtml(){
     <div class="topright">
       <button class="pdfbtn" id="pdfBtn" onclick="exportAllPdf()" title="보담/백두/케이프라이드 전체(월별·주별·막대·표) 24장을 PDF 한 파일로 저장">
         <span class="pdfico"></span>PDF 저장</button>
+      <div class="seg"><button class="${isM()?'on':''}" onclick="setMode('month')">월별</button>
+        <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>
       <div class="stepper">
         <button onclick="step(-1)" ${i<=navFloor?'disabled':''}>‹</button>
         <div class="lbl">${big}</div>
         <button onclick="step(1)" ${i>=rs.length-1?'disabled':''}>›</button></div>
     </div>
   </div>
-  <!-- 2026-09-09: 보담/백두/케이프라이드는 이제 최상단 카테고리 위치(원래 5개
-       카테고리 탭이 있던 자리)에 온다. 케이프라이드 선택 시에만 존재하는
-       전사/MS팀 특정/MS팀/I팀 소분류는 그 대신 이 줄(navrow) 좌측에 놓는다. -->
+  <!-- 2026-09-14: 보담/백두/케이프라이드는 최상단 카테고리 위치에 그대로 있고, 케이프라이드
+       선택 시에만 있던 전사/MS팀 특정/MS팀/I팀 소분류는 이제 별도 줄(navrow) 대신
+       케이프라이드 탭에 마우스를 올리면 펼쳐지는 드롭다운으로 옮겼다 — 그 줄이 없어진
+       만큼의 세로 공간은 아래 상단요약(kbar)이 넘겨받는다. -->
   <div class="nav1">${g.subs.map(x=>{
      const col = D[x.id].color;
-     return `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
+     const btn = `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
        style="${S.nav2===x.id?`background:${col};border-color:${col}`:''}">
-       <span class="pip" style="background:${S.nav2===x.id?'#fff':col}"></span>${x.n}</button>`;}).join('')}</div>
-  <div class="navrow">
-    ${S.nav2==='kp'?`<div class="seg sm">${[['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']]
-        .map(x=>`<button class="${S.ksub===x[0]?'on':''}" onclick="setKsub('${x[0]}')">${x[1]}</button>`).join('')}</div>`:''}
-    <div class="spacer"></div>
-      <div class="seg"><button class="${isM()?'on':''}" onclick="setMode('month')">월별</button>
-        <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>
-  </div>
+       <span class="pip" style="background:${S.nav2===x.id?'#fff':col}"></span>${x.n}</button>`;
+     if(x.id!=='kp') return btn;
+     const drop = KP_SUBS.map(([kv,kn])=>{
+       const on = S.nav2==='kp' && S.ksub===kv;
+       return `<button class="${on?'on':''}" onclick="selectKp('${kv}')">${kn}</button>`;
+     }).join('');
+     return `<div class="nav1-kp-wrap">${btn}<div class="kp-drop">${drop}</div></div>`;
+   }).join('')}</div>
+  ${S.nav2==='kp'?`<div class="mob-ksub"><div class="seg sm">${KP_SUBS
+      .map(x=>`<button class="${S.ksub===x[0]?'on':''}" onclick="setKsub('${x[0]}')">${x[1]}</button>`).join('')}</div></div>`:''}
   ${page.kbarHtml}
   </div>
   ${page.bodyHtml}`;
@@ -1375,9 +1429,28 @@ function buildScreenHtml(){
 function render(){
   document.getElementById('stage').innerHTML = buildScreenHtml();
   fit();
-  /* 표는 최근 구간(6개월/6주)이 먼저 보이도록 표 내부 스크롤은 맨 아래로, 헤더는 sticky로 고정 */
+  /* 표는 최근 구간(6개월/6주)이 먼저 보이도록 표 내부 스크롤은 기본적으로 맨 아래로 맞춘다.
+     2026-09-14: 표 글씨·행을 크게 키우면서 "그냥 맨 아래(scrollHeight)"로 맞추면 총 내용
+     높이가 행 높이의 정배수가 아닐 때 맨 위 행이 sticky 헤더에 반쯤 가려 잘려 보이는
+     문제가 두드러졌다 — 실제 행 경계(각 tr의 top)에 맞춰, 헤더 바로 아래에 어떤 행의
+     "윗변"이 정확히 오도록(잘린 행 없이) 맨 아래에 가장 가까운 위치로 스냅한다. */
   const twEl = document.querySelector('.tw');
-  if(twEl) twEl.scrollTop = twEl.scrollHeight;
+  if(twEl){
+    const table = twEl.querySelector('table');
+    const thead = table && table.querySelector('thead');
+    const theadH = thead ? thead.offsetHeight : 0;
+    const maxScroll = twEl.scrollHeight - twEl.clientHeight;
+    let target = maxScroll;
+    if(table){
+      let best = 0;
+      table.querySelectorAll('tbody tr').forEach(tr=>{
+        const c = tr.offsetTop - theadH;
+        if(c <= maxScroll + 0.5 && c > best) best = c;
+      });
+      target = Math.min(Math.max(best, 0), maxScroll);
+    }
+    twEl.scrollTop = target;
+  }
   /* 막대그래프도 처음엔 가장 최근(오른쪽 끝)이 보이도록 */
   const areaEl = document.querySelector('.area');
   if(areaEl) areaEl.scrollLeft = areaEl.scrollWidth;
@@ -1637,6 +1710,11 @@ function resetToLatest(){
   S.wi = (e.week||[]).length - 1;
 }
 function go2(v){ S.nav2=v; S.ksub='all';
+  resetToLatest();
+  closePop(); render(); }
+/* 케이프라이드 hover 드롭다운(혹은 모바일 mob-ksub)에서 소분류를 직접 고를 때 —
+   지금 보담/백두를 보고 있었어도 한 번에 케이프라이드의 그 소분류로 전환된다. */
+function selectKp(ksub){ S.nav2='kp'; S.ksub=ksub;
   resetToLatest();
   closePop(); render(); }
 function setMode(v){ S.mode=v; if(v==='month' && S.view==='line') S.view='bar'; closePop(); render(); }
