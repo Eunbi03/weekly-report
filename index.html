@@ -123,7 +123,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-14: 매출원가율 선그래프를 금액(막대) 축이 아니라 별도의 퍼센트 축 기준으로
    그리면서, 그 퍼센트 범위를 표의 오른쪽에 따로 표시한다 — 왼쪽 축(.yax)과 대칭 구조. */
 .yax-r{align-items:flex-start;padding-right:0;padding-left:9px}
-.yax-r span{color:#FF6A00}
+.yax-r span{color:#b3bac3}
 .area{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden}
 .area-inner{height:100%;min-width:100%}
 .canvas{position:relative}
@@ -158,19 +158,27 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 표 */
 .tcard{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow:hidden}
 .tw{flex:1;min-width:0;overflow:auto;margin-top:10px}
-/* 2026-09-14: 표를 큼직하게 키워서(글씨·여백 확대) 카드 높이 안에 6줄(6주/6개월)만
-   자연스럽게 들어오게 했다 — 별도 페이지네이션 없이, render()가 항상 표 스크롤을
-   맨 아래(최신 시점)로 맞춰두므로 "최근 6개"가 기본으로 보이고 나머지는 그대로 스크롤. */
+/* 2026-09-14: 표를 큼직하게 키워서(글씨·여백 확대) 카드 높이 안에 머리말 제외 7줄
+   (주별: 6주+합계 / 월별: 5개월+합계+전년동월)이 잘리지 않고 자연스럽게 들어오게 했다 —
+   별도 페이지네이션 없이, render()가 항상 표 스크롤을 "뒤에서 7번째 줄"에 맞춰두므로
+   최근 것이 기본으로 보이고 나머지는 그대로 스크롤(TABLE_VISIBLE_ROWS 참고).
+   세로 여백(padding)은 이 7줄이 실제로 카드 높이 안에 다 들어오도록(월별은 중간에 얇은
+   spacer행까지 끼어 더 빡빡함) 실측해서 잡은 값이라, 늘릴 땐 반드시 재검증할 것. */
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:24px;white-space:nowrap}
-th,td{padding:20px 12px;text-align:right;border-bottom:1px solid #f1f3f6}
+th,td{padding:14px 12px;text-align:right;border-bottom:1px solid #f1f3f6}
 th{background:#fafbfc;font-size:19px;font-weight:700;color:#7a828d;position:sticky;top:0;z-index:2;
   text-align:center;border-bottom:1px solid #e7eaef}
 th.g{text-align:center}
-th.r2{top:67px}
+th.r2{top:55px} /* 2026-09-14: th,td 세로 padding을 20→14px로 줄인 뒤 헤더 1행 실측 높이(55px)로 재보정 */
 th.sep,td.sep{border-left:1px solid #e7eaef}
-td:first-child,th:first-child{text-align:center;font-weight:700;background:#fff;position:sticky;left:0;z-index:3;
-  width:86px;min-width:86px}
-th:first-child{background:#fafbfc;z-index:4}
+/* 2026-09-14 버그 수정: 헤더 2번째 줄(채널별 "목표/매출/달성율")의 첫 칸은 진짜 "구분"
+   칸이 아니라 rowspan 때문에 그 줄의 DOM상 첫 th일 뿐인 "목표"(첫 채널)다 — 예전엔
+   `th:first-child`가 이 칸까지 걸려서 왼쪽 sticky 처리가 되는 바람에, 가로로 스크롤하면
+   이 "목표" 칸이 "구분" 칸 자리에 겹쳐 보이는 버그가 있었다. 진짜 "구분" 칸(헤더 1번째
+   줄의 첫 th)과 본문 행의 첫 칸에만 sticky-left를 걸도록 좁혔다. */
+tbody td:first-child, thead tr:first-child th:first-child{text-align:center;font-weight:700;background:#fff;
+  position:sticky;left:0;z-index:3;width:86px;min-width:86px}
+thead tr:first-child th:first-child{background:#fafbfc;z-index:4}
 td.sale{font-weight:800;font-size:27px;letter-spacing:-.3px}
 tbody tr:hover td{background:#fafbfd}
 tbody tr:hover td:first-child{background:#fafbfd}
@@ -749,6 +757,9 @@ const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11
 /* 월별 배열은 이제 항상 "전년 1~12월 + 올해 1월~기준월" 형태라, 인덱스 12가 곧 "올해 1월"이다.
    그 앞은 트레일링 계산용 전년 데이터일 뿐 직접 선택(현재 시점)할 수 없게 막는다. */
 const MONTH_FLOOR = 12;
+/* 표(주별/월별)를 열었을 때 기본으로 보이는 줄 수(머리말 제외, spacer 제외) — 주별은
+   "N주+합계", 월별은 "N개월+합계+전년동월"이 이 안에 들어온다. render()의 스크롤 스냅에서 씀. */
+const TABLE_VISIBLE_ROWS = 7;
 /* 2026-09-09: 막대그래프의 "최근 3개월 전년 비교"가 항상 3개월 다 채워지려면, 그 3개월이
    전부 올해(cur.year) 안에 있어야 한다(그 앞은 전년치라 "전전년" 데이터가 없어 비교 불가).
    그래서 막대그래프 창의 끝(윈도우 마지막 달)은 최소 "올해 3월"(MONTH_FLOOR+2)까지는
@@ -761,6 +772,9 @@ const pct=v=>(v==null||!isFinite(v))?'–':v.toFixed(1)+'%';
 const sum=a=>(a||[]).reduce((x,y)=>x+(y||0),0);
 const ach=(t,s)=>t>0?s/t*100:null;
 const ACC='#2A6FDB', GRN='#1F8A5B', RED='#D64545';
+/* 매출원가율 선그래프 오른쪽 보조축의 범위 — 조직마다 다르게 계산하지 않고 항상 고정
+   (0/50/100/150/200%), barChart와 yearLine 둘 다 이 값을 쓴다. */
+const COST_AXIS_MAX = 200;
 const isM=()=>S.mode==='month';
 const idx=()=>isM()?S.mi:S.wi;
 const niceMax=v=>{if(v<=0)return 1;const e=Math.pow(10,Math.floor(Math.log10(v)));return Math.ceil(v/e*2)/2*e;};
@@ -789,14 +803,14 @@ function barChart(rs, chans, prev, e, curIdx){
   /* 선그래프: 대출액(MS팀 특정)은 금액이라 막대와 같은 좌측 축을 그대로 쓰지만,
      매출원가율은 애초에 퍼센트 값이라 막대(금액) 축을 그대로 쓰면 위치가 왜곡된다
      (예: 원가율 숫자는 커졌는데 선은 아래로 떨어져 보이는 문제) — 2026-09-14: 매출원가율은
-     자기만의 퍼센트 축(mxCost)으로 따로 그리고, 그 범위를 표 오른쪽(.yax-r)에 표시한다. */
+     자기만의 퍼센트 축(mxCost)으로 따로 그리고, 그 범위를 표 오른쪽(.yax-r)에 표시한다.
+     범위는 조직마다 다르게 계산하지 않고 0/50/100/150/200%로 항상 고정한다(백두 기준). */
   const lineKind = e.hasLoan ? 'loan' : (rs.some(r=>r.c!=null) ? 'cost' : null);
   const lineName = lineKind==='loan' ? '대출액' : '매출원가율';
   const isCostPct = lineKind==='cost';
   const line = rs.map(r=> lineKind==='loan' ? (r.loan!=null?r.loan:null)
                         : lineKind==='cost' ? (r.c!=null? r.c : null) : null);
-  const costVals = isCostPct ? line.filter(v=>v!=null) : [];
-  const mxCost = costVals.length ? Math.max(niceMax(Math.max(...costVals)*1.15), 20) : 100;
+  const mxCost = COST_AXIS_MAX;
   const ticks=[0,1,2,3,4];
   const cap = (isM() && e.id && YCAP[e.id]) ? YCAP[e.id] : null;
   const mx = (cap && mx0<=cap) ? cap : niceCap(mx0);
@@ -827,18 +841,18 @@ function barChart(rs, chans, prev, e, curIdx){
   for(let i=0;i<n;i++){ centers.push((acc+weights[i]/2)/totalW*100); acc+=weights[i]; }
   const pts = line.map((v,i)=> v==null?null:`${centers[i].toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
   /* 점 위 라벨: 위치는 금액(v) 기준 그대로, 표시 글자만 원가율(%)로 (대출액 라인은 금액 그대로).
-     막대 꼭대기(매출액 라벨)와 선 위 라벨이 겹칠 만큼 가까우면(원가율이 100%에 가까울 때 등)
-     원가율 라벨을 선 위가 아니라 아래로 내려서 서로 안 겹치게 한다. */
+     2026-09-14: "막대 꼭대기(매출액) 라벨과 겹치나"는 barFrac/lineFrac(서로 다른 축 기준 비율)
+     비교만으론 실제 화면 겹침과 안 맞을 수 있어서(매출원가율이 자기만의 %축을 쓰게 되면서),
+     일단 기본(선 위)으로 그려두고 render() 이후 adjustDotLabels()가 실제 렌더된
+     .blab/.dotlab의 getBoundingClientRect()를 재서 진짜 겹칠 때만 아래로 내린다. */
   const dotLabel = (v,i) => lineKind==='cost' ? pct(rs[i].c) : n2(v);
   const dots = line.map((v,i)=> v==null?'':
     (()=>{
-      const barFrac = (rs[i].s||0)/mx, lineFrac = v/lineMax;
-      const below = Math.abs(barFrac - lineFrac) < 0.08;
       const top = (100-v/lineMax*100).toFixed(3);
       return `<div class="dotpt" data-i="${i}" style="position:absolute;left:${centers[i].toFixed(3)}%;top:${top}%;
       width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;
       background:#FF6A00;border:2px solid #fff"></div>
-     <div class="dotlab" data-i="${i}" style="left:${centers[i].toFixed(3)}%;top:${top}%${below?';transform:translate(-50%,30%)':''}">${dotLabel(v,i)}</div>`;
+     <div class="dotlab" data-i="${i}" style="left:${centers[i].toFixed(3)}%;top:${top}%">${dotLabel(v,i)}</div>`;
     })()).join('');
 
   CTX = { rs, chans, prev, e };
@@ -916,8 +930,9 @@ function yearLine(key, color){
   const cv = ys.map(r=>r.c).filter(v=>v!=null);
   const hasCost = cv.length>0;
   /* 2026-09-14: barChart와 동일하게, 매출원가율은 매출액(mx) 축이 아니라 자기만의
-     퍼센트 축(mxCost)으로 그린다 — 오른쪽에 그 범위를 따로 표시한다. */
-  const mxCost = hasCost ? Math.max(niceMax(Math.max(...cv)*1.15), 20) : 100;
+     퍼센트 축(mxCost)으로 그린다 — 오른쪽에 그 범위를 따로 표시하고, 조직과 무관하게
+     항상 0/50/100/150/200%로 고정한다. */
+  const mxCost = COST_AXIS_MAX;
   const ticks=[0,1,2,3,4];
   const p1 = ys.map((r,i)=>`${(i/(n-1)*100).toFixed(3)},${(100-r.s/mx*100).toFixed(3)}`).join(' ');
   const p2 = hasCost ? ys.map((r,i)=> r.c==null?null
@@ -1434,6 +1449,11 @@ function render(){
      높이가 행 높이의 정배수가 아닐 때 맨 위 행이 sticky 헤더에 반쯤 가려 잘려 보이는
      문제가 두드러졌다 — 실제 행 경계(각 tr의 top)에 맞춰, 헤더 바로 아래에 어떤 행의
      "윗변"이 정확히 오도록(잘린 행 없이) 맨 아래에 가장 가까운 위치로 스냅한다. */
+  /* 2026-09-14: "몇 줄이 보이는가"는 컨테이너 높이에 우연히 맞는 만큼이 아니라, 항상
+     정확히 TABLE_VISIBLE_ROWS줄(머리말 제외)이 되도록 "뒤에서 N번째 행"의 윗변에 맞춰
+     스크롤한다 — 폰트 렌더링이 환경마다 미묘하게 달라도 항상 같은 줄 수가 보인다.
+     spacer(전년행 앞의 얇은 구분용 빈 행)는 실제 "줄"로 세지 않는다 — 주별은 데이터
+     N주+합계, 월별은 데이터 N개월+합계+전년동월이 그 N줄 안에 들어오게 하기 위함. */
   const twEl = document.querySelector('.tw');
   if(twEl){
     const table = twEl.querySelector('table');
@@ -1442,12 +1462,9 @@ function render(){
     const maxScroll = twEl.scrollHeight - twEl.clientHeight;
     let target = maxScroll;
     if(table){
-      let best = 0;
-      table.querySelectorAll('tbody tr').forEach(tr=>{
-        const c = tr.offsetTop - theadH;
-        if(c <= maxScroll + 0.5 && c > best) best = c;
-      });
-      target = Math.min(Math.max(best, 0), maxScroll);
+      const rows = Array.from(table.querySelectorAll('tbody tr')).filter(tr=>!tr.classList.contains('spacer'));
+      const topRow = rows.length > TABLE_VISIBLE_ROWS ? rows[rows.length-TABLE_VISIBLE_ROWS] : rows[0];
+      if(topRow) target = Math.min(Math.max(topRow.offsetTop - theadH, 0), maxScroll);
     }
     twEl.scrollTop = target;
   }
@@ -1455,6 +1472,7 @@ function render(){
   const areaEl = document.querySelector('.area');
   if(areaEl) areaEl.scrollLeft = areaEl.scrollWidth;
   alignLine();
+  adjustDotLabels();
 }
 /* 무대를 화면에 맞춰 축소 */
 /* 가로 볼 때는 기존 339:191 그대로. 세로(모바일 세로)일 때만 기기별(아이폰/갤럭시) 화면비로 --H를 바꾼다.
@@ -1497,6 +1515,32 @@ function alignLine(root){
     pts.sort((a,b)=>a[0]-b[0]);
     poly.setAttribute('points', pts.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
   }
+}
+/* 선(매출원가율/대출액) 점 라벨이 같은 막대의 매출액 라벨(.blab)과 실제로 겹치면 아래로 내린다.
+   alignLine()과 같은 이유로 %계산이 아니라 실제 렌더된 DOM 사각형(getBoundingClientRect)을 잰다 —
+   원가율이 자기만의 축을 쓰게 되면서 "막대높이비율-선높이비율" 같은 간접 계산은 실제 화면 겹침과
+   안 맞을 수 있어서다. 매 render()마다 위치가 바뀌므로 항상 기본(선 위)으로 되돌린 뒤 다시 잰다. */
+function adjustDotLabels(root){
+  root = root || document;
+  const hit=(a,b)=> !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
+  root.querySelectorAll('.dotlab[data-i]').forEach(lab=>{
+    lab.style.transform = ''; lab.style.marginTop = '';
+    const i = lab.getAttribute('data-i');
+    const canvas = lab.closest('.canvas');
+    const bar = canvas && canvas.querySelector(`.bwrap[data-cur="${i}"]`);
+    const blab = bar && bar.querySelector('.blab');
+    if(!blab) return;
+    const br = blab.getBoundingClientRect();
+    if(!hit(lab.getBoundingClientRect(), br)) return;
+    /* 1차: 선 위 대신 아래로 */
+    lab.style.transform = 'translate(-50%,30%)';
+    let lr = lab.getBoundingClientRect();
+    if(!hit(lr, br)) return;
+    /* 2차: 막대(짧은 막대 등)와 원가율 점이 거의 같은 높이라 아래로 내려도 여전히 겹치면,
+       매출액 라벨(.blab) 아래로 확실히 빠져나갈 만큼 실측한 만큼만 추가로 내린다. */
+    const extra = (br.bottom - lr.top) + 4;
+    if(extra > 0) lab.style.marginTop = extra + 'px';
+  });
 }
 /* 모바일(세로): 축소 없이 실제 화면 폭 그대로, 세로로 자연스럽게 스크롤되는 레이아웃.
    데스크탑(가로): 기존 그대로 1920×1082 무대를 화면에 맞게 축소해서 보여준다. */
@@ -1659,6 +1703,7 @@ async function exportAllPdf(){
                위치로 재정렬)를 pdfStage에도 똑같이 해줘야 한다 — 안 하면 선그래프가
                부정확한 위치로 캡처된다. */
             alignLine(pdfStage);
+            adjustDotLabels(pdfStage);
           }
 
           await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
