@@ -129,8 +129,16 @@ button{font-family:inherit;border:none;cursor:pointer}
    테두리(border-top, JS에서 인라인으로 지정)를 두르고, 카드 제목은 "이름 매출원가율"이
    아니라 이름만 굵게(색은 회색→검정, 크기는 기존 21px 그대로 유지). 월/주 증감(화살표)은
    더 이상 별도 줄이 아니라 값 바로 뒤에 붙는다(.kc-sum-delta) — 화살표가 숫자 앞, +,-
-   부호 없음(costPctDeltaInline 참고). 세 번째 줄(.kc-sum-sub)은 매출액·달성율을 월/주
-   컬럼과 똑같이 좌(월)/우(주)로 나눠 보여준다 — 기존 .hp-delta(19px) 스타일 그대로 재사용. */
+   부호 없음(costPctDeltaInline 참고).
+   2026-09-19(피드백 4차, G2): 매출액·달성율 줄(.kc-sum-sub, 구버전)은 월/주 두 값과는
+   완전히 별개인 flex row(justify-content:space-between)로 만들어서, 그 줄의 왼쪽/오른쪽
+   끝을 카드 좌우 끝에 맞췄었다 — 반면 위 .kc-sum-row의 월/주 두 블록은 내용 길이만큼만
+   차지하는 auto 너비라, 예를 들어 백두처럼 "주"쪽 값이 "–%"처럼 짧으면 그 블록은 카드
+   왼쪽 절반 근처에 있는데 그 아래 매출액·달성율 줄의 오른쪽 항목은 카드 맨 끝까지 밀려나
+   버려서 서로 안 맞았다("월,주 영역 아래에 매출액과 달성율이 잘 배치되어 보이니?" 피드백).
+   같은 폭 기준으로 맞추려 하지 않고, 매출액·달성율 줄 자체를 없애고 그 텍스트를 각자의
+   .kc-sum-item 안, 그 값(.kc-sum-main) 바로 아래에 넣는 구조로 바꿨다 — 이제 두 블록의
+   너비가 얼마든 그 블록 자신의 아래에 자기 매출액·달성율이 그대로 붙어서 항상 맞는다. */
 .kbar-sum{flex:0 0 168px}
 .kc-sum{flex:1;min-width:0;padding:14px 26px;display:flex;flex-direction:column;justify-content:center;gap:8px}
 .kc-sum .l{font-size:21px;color:#15181d;font-weight:800;white-space:nowrap}
@@ -139,9 +147,13 @@ button{font-family:inherit;border:none;cursor:pointer}
    상자"는 UI 요소가 아니라 "월 값끼리, 주 값끼리 묶어서 생각해달라"는 뜻이었던 것으로
    정정 — 테두리·배경이 있는 박스(.kc-sum-box)는 빼고, 사진과 같은 얇은 구분선
    (.kc-sum-div) 레이아웃으로 되돌렸다. */
-.kc-sum-row{display:flex;align-items:center;gap:16px}
+.kc-sum-row{display:flex;align-items:flex-start;gap:16px}
 .kc-sum-div{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
-.kc-sum-item{display:flex;align-items:baseline;gap:8px}
+/* 2026-09-19(G2): 값 줄(.kc-sum-main)과 그 아래 매출액·달성율 줄(.hp-delta)을 세로로
+   쌓는 컬럼 — 각 블록(월/주)이 자기 폭만큼만 차지하고, 그 안에서는 항상 위아래로 정확히
+   맞물린다. */
+.kc-sum-item{display:flex;flex-direction:column;gap:4px}
+.kc-sum-item .kc-sum-main{display:flex;align-items:baseline;gap:8px}
 .kc-sum-item .u{font-size:17px;color:#a8b0bb;font-weight:700}
 .kc-sum-item b{font-size:34px;font-weight:800;color:#15181d;letter-spacing:-.6px}
 .kc-sum-item b small{font-size:15px;font-weight:700;margin-left:2px;color:#15181d}
@@ -149,8 +161,8 @@ button{font-family:inherit;border:none;cursor:pointer}
    달리 기존 전월대비/전주대비 줄과 같았던 19px을 그대로 유지한다(item1: 기존 텍스트 크기 유지). */
 .kc-sum-item .kc-sum-delta{font-size:19px;font-weight:800;margin-left:2px;white-space:nowrap}
 /* 매출액·달성율 줄 — 돈가 위젯의 .hp-delta와 완전히 같은 스타일(19px)을 그대로 재사용,
-   월(좌)/주(우)로 나눠서 위 .kc-sum-row의 두 컬럼과 같은 좌우 배치를 맞춘다. */
-.kc-sum-sub{display:flex;justify-content:space-between;gap:16px}
+   이제 각 .kc-sum-item 안에 직접 들어있어 그 블록의 값 바로 아래에 자연스럽게 붙는다. */
+.kc-sum-item .hp-delta{margin-top:0}
 
 /* 2026-09-15: 전체 요약 화면 상단(돈가 박스) — PDF저장/월별·주별/스테퍼가 없는 대신
    이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
@@ -186,8 +198,14 @@ button{font-family:inherit;border:none;cursor:pointer}
    샌드위치로 보이던 것. "화면에 회색 배경이 있으면 하나의 흰색 박스로 카드 만들어서
    내용 넣어줘"라는 요청대로, 이 바깥 래퍼에서 공용 .card(흰 배경+테두리+그림자)를 떼어내
    레이아웃(flex/스크롤/패딩)만 담당하게 했다 — 이제 실제로 보이는 흰 박스는 엔티티당
-   .sumsec 하나뿐이고, 그 밑은 #stage 자체와 같은 회색 배경(.sumscroll)이 그대로 이어진다. */
-.sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:18px 20px 16px;overflow:hidden}
+   .sumsec 하나뿐이고, 그 밑은 #stage 자체와 같은 회색 배경(.sumscroll)이 그대로 이어진다.
+   2026-09-19(피드백 4차, G1): 위 F1에서 흰 박스(.card)만 떼어내고 .sumcard 자신의 padding
+   (18px 20px 16px)은 그대로 남겨뒀더니, "예전 박스가 있던 자리가 그대로 여백으로 남아있다"는
+   피드백 — 맞는 말이다. 이 padding은 원래 "흰 테두리 박스 안쪽 여백"이었는데 이제 그 박스가
+   없으니 존재 이유가 없는 죽은 공백이다(#stage 자체의 padding(--pad-v/--pad-h)과
+   .sumscroll의 padding(14px)이 이미 각각 자기 역할을 하고 있어 이걸 또 더할 필요가 없다).
+   .sumcard의 padding을 0으로 없애 이 이중 여백을 제거한다. */
+.sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
 /* 2026-09-17(item1): 법인/팀별 구분이 흐릿하다는 피드백 — 스크롤 영역 배경을 무대 바탕색
    (#f3f5f8, kbar 카드들이 놓이는 색과 동일)으로 깔아서, 그 위에 놓이는 각 .sumsec(아래)이
    흰 카드로 뚜렷하게 도드라져 보이게 한다. */
@@ -307,16 +325,16 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc-sum b{font-size:26px}
 #stage.portrait .kc-sum .l{font-size:15px}
 #stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
-#stage.portrait .kc-sum-sub .hp-delta{font-size:12px}
+#stage.portrait .kc-sum-item .hp-delta{font-size:12px;white-space:normal}
 /* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주가 한 줄에 다 안 들어가고
-   카드 밖으로 흘러넘쳤다(회귀) — 월/주를 좌우가 아니라 위아래로 쌓아서 해결. */
+   카드 밖으로 흘러넘쳤다(회귀) — 월/주를 좌우가 아니라 위아래로 쌓아서 해결.
+   2026-09-19(G2): .kc-sum-item이 이제 (값줄+매출액줄) 세로 컬럼이라 모바일에서 별도
+   flex-wrap 처리가 필요 없다 — 값줄(.kc-sum-main)만 좁으면 줄바꿈되게 한다. */
 #stage.portrait .kc-sum-row{flex-direction:column;align-items:flex-start;gap:6px}
 #stage.portrait .kc-sum-div{display:none}
-#stage.portrait .kc-sum-item{flex-wrap:wrap;row-gap:2px}
-#stage.portrait .kc-sum-sub{flex-direction:column;gap:2px}
-#stage.portrait .kc-sum-sub .hp-delta{white-space:normal}
+#stage.portrait .kc-sum-item .kc-sum-main{flex-wrap:wrap;row-gap:2px}
 #stage.portrait .kc-sum{overflow:hidden}
-#stage.portrait .sumcard{padding:12px}
+#stage.portrait .sumcard{padding:0}
 #stage.portrait .sumscroll{padding:8px}
 
 /* 차트 */
@@ -1682,13 +1700,15 @@ function summaryCostCard(id){
   return `<div class="card kc-sum" style="border-top:3px solid ${e.color}">
     <div class="l">${e.name}</div>
     <div class="kc-sum-row">
-      <div class="kc-sum-item"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
+      <div class="kc-sum-item">
+        <div class="kc-sum-main"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
+        <div class="hp-delta">${costSalesSubText(mLast)}</div>
+      </div>
       <div class="kc-sum-div"></div>
-      <div class="kc-sum-item"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
-    </div>
-    <div class="kc-sum-sub">
-      <div class="hp-delta">${costSalesSubText(mLast)}</div>
-      <div class="hp-delta">${costSalesSubText(wLast)}</div>
+      <div class="kc-sum-item">
+        <div class="kc-sum-main"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
+        <div class="hp-delta">${costSalesSubText(wLast)}</div>
+      </div>
     </div>
   </div>`;
 }
