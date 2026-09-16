@@ -60,10 +60,14 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* PDF 캡처용 오프스크린 스테이지 — 실제 화면(#stage)과 완전히 같은 1920×1082 고정 크기
    박스로 캡처해서, 모든 페이지가 항상 같은 가로세로 비율이 되고 여백 없이 꽉 차게 한다.
    #stage와 똑같이 overflow:hidden 고정 크기로 두고(박스 자체를 늘리지 않음), 표가
-   넘치는 경우엔 exportAllPdf()가 표 자체를 transform:scale로 줄여서 이 박스 안에 맞춘다. */
+   넘치는 경우엔 exportSummaryPdf()가 내용 자체를 transform:scale로 줄여서 이 박스 안에 맞춘다. */
 #pdfStage{position:fixed;left:-99999px;top:0;width:1920px;height:1082px;background:#f3f5f8;
   display:flex;flex-direction:column;gap:var(--gap);padding:var(--pad-v) var(--pad-h);overflow:hidden}
 #pdfStage .tw{overflow:hidden}
+/* 2026-09-16: 전체요약 PDF(exportSummaryPdf)도 표와 같은 이유로 스크롤바 없이 항상
+   축소(transform:scale)만으로 맞춘다 — overflow:auto인 채로 두면 레이아웃상 넘치는
+   높이 때문에 실제로는 다 줄어들어 안 보여야 할 스크롤바가 캡처에 찍힐 수 있다. */
+#pdfStage .sumscroll{overflow:hidden}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
@@ -892,7 +896,8 @@ const NAV = [
 const KP_SUBS = [['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']];
 
 /* ══════════════════════ 유틸 ══════════════════════ */
-const S = { nav1:'sales', nav2:'bo', mode:'month', ksub:'all', view:'bar', mi:11, wi:33 };
+/* 2026-09-16: 처음 접속했을 때 기본으로 보이는 화면을 보담이 아닌 전체 요약으로 변경 */
+const S = { nav1:'sales', nav2:'summary', mode:'month', ksub:'all', view:'bar', mi:11, wi:33 };
 /* 월별 배열은 이제 항상 "전년 1~12월 + 올해 1월~기준월" 형태라, 인덱스 12가 곧 "올해 1월"이다.
    그 앞은 트레일링 계산용 전년 데이터일 뿐 직접 선택(현재 시점)할 수 없게 막는다. */
 const MONTH_FLOOR = 12;
@@ -1504,8 +1509,10 @@ function pageSales(){
   let bodyHtml;
   if(view==='table'){
     /* 2026-09-09: 화면의 주별 표는 원래대로 전체 이력(fullWeeks)을 다 보여준다.
-       PDF 일괄 저장(exportAllPdf)에서만은 막대그래프와 똑같이 최근 12주(트레일링
-       윈도우, rs)로 맞춰 달라는 요청 — PDF_EXPORT_MODE일 때만 분기한다. */
+       PDF_EXPORT_MODE일 때만(예전 조직별 일괄 PDF 저장 시절 요청) 막대그래프와 똑같이
+       최근 12주(트레일링 윈도우, rs)로 맞춘다 — 2026-09-16 현재는 PDF 저장이 전체요약
+       전용(exportSummaryPdf)으로 바뀌어 이 분기가 실제로 타는 경로는 없지만, 조직별
+       화면 자체의 정상 동작(항상 false→fullWeeks)에는 영향이 없어 그대로 둔다. */
     const weekTableRs = PDF_EXPORT_MODE ? rs : fullWeeks(e);
     bodyHtml = table(isM()?rs:weekTableRs, e.chans, prev, e, ci>=0?rs[ci].id:rs[rs.length-1].id, `${e.name} ${isM()?'월별':'주별'} 표`, viewToggle);
   } else if(view==='line'){
@@ -1654,9 +1661,8 @@ function buildSummaryScreen(g, navHtml){
   const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
   const wowUp = hp.wow!=null && hp.wow>=0;
   const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
-  /* 2026-09-16: 돈가 전주대비 증감(숫자+화살표)은 이 위젯 한정으로 증가=파랑/감소=빨강
-     (모든 페이지 공통의 "증가=초록" 규칙과 별개 — 사용자가 이 위젯만 명시적으로 요청). */
-  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#2A6FDB' : '#D64545');
+  /* 2026-09-16: 돈가 전주대비 증감(숫자+화살표) 색도 다른 곳과 동일하게 증가=초록/감소=빨강으로 통일 */
+  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#1F8A5B' : '#D64545');
 
   const cutoff = window.__DASH_CUTOFF__;
   const monthBig = cutoff ? `${cutoff.month}월` : '';
@@ -1673,6 +1679,8 @@ function buildSummaryScreen(g, navHtml){
       <h1>${g.n}</h1>
       <span class="unit">(단위:백만 원)</span></div>
     <div class="hogprice">
+      <button class="pdfbtn" id="pdfBtn" onclick="exportSummaryPdf()" title="전체 요약을 인쇄용 3페이지 PDF로 저장">
+        <span class="pdfico"></span>PDF 저장</button>
       <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
       <div class="hp-box">돈가 <b>${priceStr}</b></div>
     </div>
@@ -1687,9 +1695,11 @@ function buildSummaryScreen(g, navHtml){
   </div></div></div>`;
 }
 
-/* 2026-09-09: render()가 만들던 화면 HTML을 buildScreenHtml()로 분리했다 — PDF 일괄
-   내보내기(exportAllPdf)가 화면에 보이는 것과 똑같은 마크업을 오프스크린 컨테이너에
-   그대로 재사용해야 해서다(따로 만들면 나중에 화면 디자인이 바뀔 때 둘이 어긋난다). */
+/* 2026-09-09: render()가 만들던 화면 HTML을 buildScreenHtml()로 분리했다 — 조직별
+   화면(보담/케이프라이드/백두)과 전체요약 화면이 이 함수 하나를 공유한다.
+   2026-09-16: 전체요약 PDF 저장(exportSummaryPdf)은 이 함수를 쓰지 않고 별도의
+   buildSummaryPdfPage()(브랜드바/내비 없는 인쇄용 레이아웃)를 쓴다 — 다만 표/차트
+   자체(summarySection/sumTable/sumChart)는 화면과 PDF가 그대로 공유한다. */
 function buildScreenHtml(){
   /* 세로(모바일)/가로 여부에 맞는 카드·캔버스 높이를 먼저 확정해 둔다 — 이 값이 아래
      pageSales()의 barChart/table에서 인라인 px로 그대로 쓰이므로, HTML을 만들기 전인
@@ -1731,8 +1741,6 @@ function buildScreenHtml(){
       <h1>${g.n}</h1>
       <span class="unit">(단위:백만 원)</span></div>
     <div class="topright">
-      <button class="pdfbtn" id="pdfBtn" onclick="exportAllPdf()" title="보담/백두/케이프라이드 전체(월별·주별·막대·표) 24장을 PDF 한 파일로 저장">
-        <span class="pdfico"></span>PDF 저장</button>
       <div class="seg"><button class="${isM()?'on':''}" onclick="setMode('month')">월별</button>
         <button class="${!isM()?'on':''}" onclick="setMode('week')">주별</button></div>
       <div class="stepper">
@@ -1793,7 +1801,7 @@ function render(){
 /* "화면이 세로로 길쭉한가"만 보면 컴퓨터에서 창을 좁게/세로로 만든 경우까지 모바일로 오인한다.
    그래서 "실제 모바일 기기인지"까지 같이 확인한다 — 컴퓨터는 창 모양이 어떻든 이 조건에 절대 안 걸린다. */
 const IS_MOBILE_DEVICE = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
-/* 2026-09-09: PDF 일괄 저장(exportAllPdf) 중에는 실제 기기가 모바일/세로여도 항상
+/* 2026-09-09: PDF 저장(exportSummaryPdf) 중에는 실제 기기가 모바일/세로여도 항상
    데스크탑 레이아웃(가로 막대그래프 등)으로 캡처해야 인쇄용 PDF가 일관되게 나온다.
    isPortrait()를 호출하는 모든 곳(barChart 폭 계산 등 포함)에 한 번에 적용되도록
    전역 플래그로 강제한다. */
@@ -1937,25 +1945,75 @@ window.addEventListener('orientationchange', fit);
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit).catch(()=>{});
 window.addEventListener('load', fit);
 
-/* ══════════════════════ PDF 일괄 저장 ══════════════════════
-   2026-09-09: 보담/백두/케이프라이드(케이는 전사·MS팀 특정·MS팀·I팀 4가지)를
-   월별/주별 × 막대/표로 조합한 24장을 한 번에 PDF 한 파일로 뽑는 기능.
-   - 화면(#stage)은 절대 건드리지 않는다 — 오프스크린 컨테이너(#pdfStage)에
-     buildScreenHtml()이 만드는 것과 완전히 같은 마크업을 그대로 넣고 그것만 캡처한다.
-     그래서 내보내는 도중에도 실제 화면은 전혀 깜빡이거나 바뀌지 않는다.
-   - 표는 화면과 달리(.tw{overflow:auto}로 스크롤) 잘리면 안 되는데, #pdfStage는 #stage와
-     똑같이 1920×1082 고정 크기(overflow:hidden)라서 컨테이너를 늘릴 수 없다 — 대신
-     케이MS처럼 채널이 많아 표가 카드 폭/높이보다 커지면 표 자체를 transform:scale로
-     통째로 줄여서(exportAllPdf 안 로직) 그 안에 맞춘 뒤 캡처한다. 글씨는 작아질 수 있지만
-     stage 크기 자체는 모든 페이지에서 항상 동일해서 페이지 비율/여백이 흔들리지 않는다. */
-const PDF_COMBOS = [
-  {nav2:'bo', ksub:'all', label:'보담'},
-  {nav2:'bd', ksub:'all', label:'백두'},
-  {nav2:'kp', ksub:'all', label:'케이프라이드 · 전사'},
-  {nav2:'kp', ksub:'ms_t', label:'케이프라이드 · MS팀 특정'},
-  {nav2:'kp', ksub:'ms', label:'케이프라이드 · MS팀'},
-  {nav2:'kp', ksub:'it', label:'케이프라이드 · I팀'},
+/* ══════════════════════ PDF 저장(전체 요약, exportSummaryPdf) ══════════════════════
+   2026-09-16: 예전엔 각 조직 화면(보담/백두/케이프라이드)마다 PDF 저장 버튼이 있어서
+   화면 그대로(월별·주별×막대·표 24장)를 통째로 내보냈는데, 이제 그 버튼들은 없애고
+   전체 요약 화면 하나에만 PDF 버튼을 둔다 — 대신 이 버튼이 만드는 PDF는 "화면 그대로"가
+   아니라 사용자가 준 참고 사진과 똑같은 별도의 인쇄용 3페이지 레이아웃이다:
+     1페이지 = 보담+백두 (상단에 매출원가율 3장 + 돈가 1장, 총 4장 KPI 카드 포함)
+     2페이지 = 케이프라이드(전사)+MS팀 특정 (KPI 카드 없음)
+     3페이지 = MS팀+I팀 (KPI 카드 없음)
+   이 페이지 그룹 순서(보담+백두 묶음)는 화면 전체요약의 표시 순서(보담→케이프라이드→
+   MS팀특정→MS팀→I팀→백두)와 다르다 — 사용자가 사진과 동일하게 이 순서가 맞다고
+   확인해줬다.
+   - 화면(#stage)은 건드리지 않는다 — 오프스크린 #pdfStage에 buildSummaryPdfPage()가
+     만드는, 화면용 마크업과는 다른 전용 레이아웃(브랜드바/내비 없이 "9월"/"37주차"
+     제목 + KPI행(1페이지만) + 표+차트 섹션 2개)만 넣고 그것만 캡처한다.
+   - 표/차트 자체는 summarySection()/sumTable()/sumChart()를 그대로 재사용한다 — 화면과
+     로직을 이원화하면 나중에 화면 디자인이 바뀔 때 서로 어긋난다.
+   - 페이지당 엔티티 2개(+1페이지는 KPI행까지)라 세로로 넘칠 수 있어, 기존 표
+     축소(transform:scale) 로직과 같은 원리로 .sumwrap 전체를 실측해서 필요하면 통째로
+     줄여 반드시 한 페이지(1920×1082) 안에 담는다 — "3페이지를 넘지 않는다"는 요구사항의
+     핵심 안전장치. */
+function pdfEntityFor(key){
+  if(key==='ms_t') return KSUB.ms_t;
+  if(key==='ms') return KSUB.ms;
+  if(key==='it') return KSUB.it;
+  return D[key];
+}
+/* 2026-09-16: 사용자가 첨부 사진으로 직접 확인해 준 페이지 그룹 순서. */
+const PDF_SUMMARY_GROUPS = [
+  { keys:['bo','bd'], kpi:true },
+  { keys:['kp','ms_t'], kpi:false },
+  { keys:['ms','it'], kpi:false },
 ];
+/* 상단 KPI 4번째 카드(돈가) — 앞의 3장(summaryCostCard)과 완전히 같은 .kc-sum
+   마크업/클래스를 그대로 써서, .kbar가 flex:1로 4장을 자동으로 균등 배분(크기·간격
+   동일)하게 한다. */
+function pdfHogPriceCard(){
+  const hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
+  const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
+  const wowUp = hp.wow!=null && hp.wow>=0;
+  const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
+  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#1F8A5B' : '#D64545');
+  return `<div class="card kc-sum">
+    <div class="l">돈가</div>
+    <div class="kc-sum-row">
+      <div class="kc-sum-item"><b>${priceStr}</b></div>
+      <div class="kc-sum-item"><span class="u">전주대비</span><b style="color:${wowColor}">${wowStr}</b></div>
+    </div>
+  </div>`;
+}
+/* PDF 전용 페이지 한 장. 화면의 buildSummaryScreen()과 달리 브랜드바/돈가위젯/내비가
+   없고, group.keys에 있는 엔티티 2개 분량의 섹션만 담는다. group.kpi가 true인
+   페이지(1페이지)에만 4장짜리 KPI 카드 행을 위에 붙인다. */
+function buildSummaryPdfPage(group){
+  const cutoff = window.__DASH_CUTOFF__;
+  const monthBig = cutoff ? `${cutoff.month}월` : '';
+  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  const ents = group.keys.map(pdfEntityFor);
+  const monthSections = ents.map(e=>summarySection(e, e.month, '월')).join('');
+  const weekSections = ents.map(e=>summarySection(e, e.week, '주')).join('');
+  const kpiRow = group.kpi
+    ? `<div class="fixed-zone"><div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}${pdfHogPriceCard()}</div></div>`
+    : '';
+  return `${kpiRow}
+  <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
+    <div class="sumcol"><div class="sumcol-h">${monthBig}</div>${monthSections}</div>
+    <div class="sumdivider"></div>
+    <div class="sumcol"><div class="sumcol-h">${weekBig}</div>${weekSections}</div>
+  </div></div></div>`;
+}
 function loadScriptOnce(src){
   return new Promise((resolve,reject)=>{
     if(document.querySelector(`script[data-lazy="${src}"]`)){ resolve(); return; }
@@ -1966,7 +2024,7 @@ function loadScriptOnce(src){
     document.head.appendChild(s);
   });
 }
-async function exportAllPdf(){
+async function exportSummaryPdf(){
   const btn = document.getElementById('pdfBtn');
   if(!btn || btn.disabled) return;
   btn.disabled = true;
@@ -1977,8 +2035,9 @@ async function exportAllPdf(){
   document.body.appendChild(overlay);
   const setProgress = msg=>{ const el = overlay.querySelector('div'); if(el) el.textContent = msg; };
 
-  /* 지금 화면 상태(어느 탭/월별·주별/막대·표 보고 있었는지)를 그대로 보존했다가 끝나고 복원한다 */
-  const saved = { nav1:S.nav1, nav2:S.nav2, mode:S.mode, ksub:S.ksub, view:S.view, mi:S.mi, wi:S.wi };
+  /* 이 화면(전체 요약)의 실제 S 상태는 건드리지 않는다 — buildSummaryPdfPage()는 S와
+     무관하게 항상 각 엔티티의 최신 month/week 배열만 보고 그리므로, 저장/복원할 필요가
+     없다(화면도 export 도중 전혀 바뀌지 않는다). */
   FORCE_DESKTOP_EXPORT = true;
   PDF_EXPORT_MODE = true;
 
@@ -1992,105 +2051,55 @@ async function exportAllPdf(){
       loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
     ]);
     const { jsPDF } = window.jspdf;
-    /* 2026-09-09: 페이지마다 여백/비율이 들쭉날쭉하다는 피드백 — #pdfStage를 화면(#stage)과
-       똑같은 1920×1082 고정 크기로 캡처하고(표가 넘치면 컨테이너를 늘리는 대신 표 쪽을
-       transform:scale로 줄여서 그 안에 맞춘다), PDF 페이지 크기 자체도 그 비율(1920:1082)에
-       정확히 맞춰서 만든다 — 그러면 모든 페이지가 서로 같은 가로세로 비율이 되고,
-       이미지가 페이지 전체를 여백 없이 꽉 채운다(letterbox 없음). */
+    /* #pdfStage와 똑같은 1920×1082 비율로 페이지 크기를 맞춰서, 이미지가 페이지 전체를
+       여백 없이 꽉 채운다(letterbox 없음). */
     const PAGE_W_MM = 320, PAGE_H_MM = PAGE_W_MM * (LAYOUT.STAGE_H / LAYOUT.STAGE_W);
     const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:[PAGE_W_MM, PAGE_H_MM] });
 
-    let pageIdx = 0;
-    const total = PDF_COMBOS.length * 2 * 2;
-    for(const combo of PDF_COMBOS){
-      S.nav2 = combo.nav2; S.ksub = combo.ksub;
-      resetToLatest();
-      for(const mode of ['month','week']){
-        S.mode = mode;
-        for(const view of ['bar','table']){
-          S.view = view;
-          pageIdx++;
-          setProgress(`PDF 생성 중… (${pageIdx}/${total})\n${combo.label} · ${mode==='month'?'월별':'주별'} · ${view==='bar'?'막대':'표'}`);
+    for(let pageIdx=0; pageIdx<PDF_SUMMARY_GROUPS.length; pageIdx++){
+      const group = PDF_SUMMARY_GROUPS[pageIdx];
+      setProgress(`PDF 생성 중… (${pageIdx+1}/${PDF_SUMMARY_GROUPS.length})`);
 
-          applyLayout();
-          pdfStage.innerHTML = buildScreenHtml();
+      pdfStage.innerHTML = buildSummaryPdfPage(group);
 
-          if(view==='table'){
-            /* 표는 화면과 달리(스크롤로 최근 구간만 보여주는 대신) 스크롤 없이 한 페이지
-               안에 통째로 다 담겨야 하는데, 컨테이너 폭을 늘리면(채널 많은 케이MS 등)
-               페이지마다 비율이 달라져 버린다 — 대신 표 자체를 카드 영역(.tw) 안에 들어올
-               때까지 통째로 축소(transform:scale)한다. 글씨가 작아질 수 있지만 stage
-               크기(1920×1082)는 모든 페이지에서 항상 동일하게 유지된다.
-               (주의: .tw를 scrollTop으로 먼저 스크롤해둔 뒤 table에 transform:scale을
-               걸면, 표 헤더(position:sticky)가 스크롤 오프셋과 뒤섞여 캡처 결과에서
-               통째로 사라지는 문제가 있었다 — 그래서 스크롤은 아예 하지 않고, 축소만으로
-               전체 표(헤더 포함)가 항상 들어오게 한다.) */
-            const twEl = pdfStage.querySelector('.tw');
-            const tableEl = twEl ? twEl.querySelector('table') : null;
-            if(twEl && tableEl){
-              /* table{width:100%} 기본 CSS 때문에 scrollWidth는 항상 컨테이너 폭을
-                 그대로 돌려준다(진짜 내용 너비가 아님) — 채널 적은 표(I팀/백두 등)의
-                 진짜 너비를 재려면 잠깐 max-content로 풀었다가 재고 원복해야 한다. */
-              const prevW = tableEl.style.width;
-              tableEl.style.width = 'max-content';
-              const naturalW = tableEl.scrollWidth, naturalH = tableEl.scrollHeight;
-              tableEl.style.width = prevW;
-
-              const widthRatio = twEl.clientWidth / naturalW;
-              const heightRatio = twEl.clientHeight / naturalH;
-              const scale = Math.min(widthRatio, heightRatio, 1);
-
-              /* 2026-09-10: 채널 수가 적은 조직(I팀·백두 등)은 줄 수(12개월/12주+합계)가
-                 항상 같아서 세로 기준으로 축소비율이 정해지는데(= heightRatio가 더
-                 작아서 scale을 그게 결정), 그러면 가로는 원래도 컨테이너보다 좁았던
-                 표가 그대로 축소되어 오른쪽에 큰 빈 공간이 남는다. 세로가 축소비율을
-                 결정하는 경우엔 가로에 여유가 있다는 뜻이므로, 축소 전에 표 폭을
-                 "축소하고 나면 정확히 컨테이너 폭이 되는 값"까지 늘리고
-                 table-layout:fixed로 그 여유를 각 열에 고르게 배분한다 — 글자 크기는
-                 그대로 두고 열 너비만 넓어진다.
-                 ⚠ "표가 원래(축소 전) 컨테이너보다 좁을 때만"(naturalW <= clientWidth,
-                 즉 widthRatio>=1) 적용해야 한다 — heightRatio와 widthRatio를 그냥
-                 비교하면 보담처럼 원래 더 넓어서 축소 중이던 표까지(두 비율이
-                 우연히 비슷해서) 여기 걸려 폭을 더 늘려버리고, 그 결과 페이지
-                 오른쪽 끝이 잘려나가는 문제가 있었다(실측으로 확인). 가로가 이미
-                 좁은 비율로 꽉 차는 넓은 표(MS팀 등)도 widthRatio<1이라 자동으로
-                 제외된다. */
-              if(scale < 1 && widthRatio >= 1){
-                tableEl.style.tableLayout = 'fixed';
-                tableEl.style.width = (twEl.clientWidth / scale) + 'px';
-              }
-              if(scale < 1){ tableEl.style.transformOrigin = 'top left'; tableEl.style.transform = `scale(${scale})`; }
-            }
-          } else {
-            /* render()가 화면(#stage)에 대해 매번 하는 후처리(막대그래프 선/점을 실측
-               위치로 재정렬)를 pdfStage에도 똑같이 해줘야 한다 — 안 하면 선그래프가
-               부정확한 위치로 캡처된다. */
-            alignLine(pdfStage);
-            adjustDotLabels(pdfStage);
-          }
-
-          await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-
-          /* 2026-09-09: PNG+scale:2로 24장을 그대로 넣으면 jsPDF가 최종 파일을 만들 때
-             내부적으로 문자열 하나로 합치는 과정에서 "Invalid string length"로 실패할 만큼
-             용량이 커진다(실측). 표/차트 이미지는 사진이 아니라 선·글자 위주라 JPEG로도
-             화질 손실이 거의 안 보이면서 용량은 크게 줄어서, JPEG로 바꿨다.
-             2026-09-10: 그래도 글자가 살짝 흐릿하다는 피드백 — scale 1.5→1.8, JPEG 품질
-             0.85→0.9로 올렸다(24장 전체 기준 약 6.9MB→10MB, 생성 시간은 거의 그대로).
-             scale:2까지도(실측 12MB, 에러 없음) 가능은 하지만 용량 대비 체감 차이가
-             크지 않아 이 값으로 맞췄다 — 더 선명하게 원하면 scale을 올리면 된다. */
-          const canvas = await html2canvas(pdfStage, { scale:1.8, backgroundColor:'#f3f5f8', useCORS:true });
-          const imgData = canvas.toDataURL('image/jpeg', 0.9);
-
-          if(pageIdx > 1) doc.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
-          doc.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, undefined, 'FAST');
+      /* 표 축소 로직과 같은 원리 — 이번엔 표 하나가 아니라 .sumwrap(엔티티 2개치
+         표+차트 전체, 1페이지는 KPI행까지)을 통째로 실측해서, 고정 페이지(1920×1082)
+         안에 다 안 들어올 것 같으면 transform:scale로 전체를 줄여 반드시 한 페이지 안에
+         담는다. .sumscroll은 #pdfStage 안에서 overflow:hidden으로 오버라이드해뒀으므로
+         (위 CSS 참고) 스크롤바가 캡처에 찍히는 일은 없다. */
+      const scrollEl = pdfStage.querySelector('.sumscroll');
+      const wrapEl = pdfStage.querySelector('.sumwrap');
+      if(scrollEl && wrapEl){
+        const naturalW = wrapEl.scrollWidth, naturalH = wrapEl.scrollHeight;
+        const widthRatio = scrollEl.clientWidth / naturalW;
+        const heightRatio = scrollEl.clientHeight / naturalH;
+        const scale = Math.min(widthRatio, heightRatio, 1);
+        if(scale < 1){
+          wrapEl.style.transformOrigin = 'top left';
+          wrapEl.style.transform = `scale(${scale})`;
         }
       }
+
+      /* render()가 화면에 대해 매번 하는 후처리(요약 차트 선/점을 실측 위치로 재정렬)를
+         pdfStage에도 그대로 해줘야 한다 — scale 적용 후에 실측해야 축소된 실제 위치를
+         정확히 잡는다. */
+      alignSummaryLines(pdfStage);
+      adjustSummaryDotLabels(pdfStage);
+
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+      /* PNG 대신 JPEG(용량 절감, jsPDF의 "Invalid string length" 방지 — exportAllPdf 시절
+         24장에서 실측된 문제라 3장뿐인 지금은 여유가 있지만 그대로 유지한다). */
+      const canvas = await html2canvas(pdfStage, { scale:1.8, backgroundColor:'#f3f5f8', useCORS:true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+
+      if(pageIdx > 0) doc.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
+      doc.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, undefined, 'FAST');
     }
 
     const t = new Date();
     const ymd = `${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-    doc.save(`주간매출자료_전체_${ymd}.pdf`);
+    doc.save(`주간매출자료_전체요약_${ymd}.pdf`);
   }catch(err){
     console.error('[대시보드] PDF 생성 실패:', err);
     alert('PDF 생성 중 문제가 발생했습니다: ' + ((err&&err.message)||err));
@@ -2099,8 +2108,6 @@ async function exportAllPdf(){
     PDF_EXPORT_MODE = false;
     if(pdfStage && pdfStage.parentNode) pdfStage.parentNode.removeChild(pdfStage);
     if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    Object.assign(S, saved);
-    render();
     btn.disabled = false;
   }
 }
