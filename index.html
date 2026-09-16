@@ -161,8 +161,10 @@ button{font-family:inherit;border:none;cursor:pointer}
    달리 기존 전월대비/전주대비 줄과 같았던 19px을 그대로 유지한다(item1: 기존 텍스트 크기 유지). */
 .kc-sum-item .kc-sum-delta{font-size:19px;font-weight:800;margin-left:2px;white-space:nowrap}
 /* 매출액·달성율 줄 — 돈가 위젯의 .hp-delta와 완전히 같은 스타일(19px)을 그대로 재사용,
-   이제 각 .kc-sum-item 안에 직접 들어있어 그 블록의 값 바로 아래에 자연스럽게 붙는다. */
-.kc-sum-item .hp-delta{margin-top:0}
+   이제 각 .kc-sum-item 안에 직접 들어있어 그 블록의 값 바로 아래에 자연스럽게 붙는다.
+   2026-09-19(피드백 7차): "매출액·달성율 볼드처리한거 빼줘" — 기본 .hp-delta가
+   font-weight:700이라 이 줄도 같이 두꺼웠다. 크기(19px)는 그대로 두고 굵기만 400으로. */
+.kc-sum-item .hp-delta{margin-top:0;font-weight:400}
 
 /* 2026-09-15: 전체 요약 화면 상단(돈가 박스) — PDF저장/월별·주별/스테퍼가 없는 대신
    이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
@@ -236,6 +238,16 @@ button{font-family:inherit;border:none;cursor:pointer}
    칸에 놓인다 — 내부(돈가 박스+전주대비)는 왼쪽 정렬(기본 flex 정렬)이라 "돈가는
    왼쪽 정렬로" 요청과도 맞는다. */
 .sumtitle-hp{display:flex;align-items:center;gap:14px}
+/* 2026-09-19(피드백 7차): PDF 전용 돈가(.sumtitle-hp) 텍스트 크기·굵기·색 재조정 —
+   웹 상단바(.hogprice)의 .hp-box/.hp-delta는 건드리지 않고 이 안에서만 덮어쓴다.
+   "돈가"와 숫자 둘 다 상단요약 카드 타이틀(.kc-sum .l, 21px)과 같은 크기로 줄이고,
+   "돈가" 글자만 굵게 + 매출액·달성율 색(#8b93a0)으로, 숫자(<b>)는 기존처럼 굵은 검정 유지. */
+.sumtitle-hp .hp-box{font-size:21px;font-weight:400;color:#15181d;letter-spacing:-.3px;white-space:nowrap}
+.sumtitle-hp .hp-box .hp-label{font-weight:800;color:#8b93a0}
+.sumtitle-hp .hp-box b{font-weight:800;color:#15181d}
+/* "전주대비" 라벨은 굵기 없이, 내용 섹션 표 머리말(.sumtable th, 14px)과 같은 크기로 —
+   화살표+숫자(<b>)는 위 범용 규칙(.hp-delta b{font-weight:800})이 그대로 적용돼 계속 굵다. */
+.sumtitle-hp .hp-delta{font-size:14px;font-weight:400}
 /* 2026-09-17(item1): 각 법인/팀 섹션을 흰 카드로 감싸서 서로 뚜렷하게 구분되게 한다.
    2026-09-18(피드백 2차, item6): 엔티티당 카드 1장 — "보담 월,주가 한 카드" 요청대로
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
@@ -1870,8 +1882,11 @@ function summaryTitleRow(withHogPrice){
   let hpHtml = '';
   if(withHogPrice){
     const {priceStr, wowStr, wowColor} = hogPriceParts();
+    /* 2026-09-19(피드백 7차): PDF 전용 이 줄만(웹 상단바 .hogprice는 그대로) "돈가" 라벨을
+       따로 스타일링할 수 있게 <span class="hp-label">로 감쌌다 — 아래 .sumtitle-hp
+       CSS 참고(사이즈는 라벨/숫자 동일, 굵기·색은 라벨만 따로). */
     hpHtml = `<div class="sumtitle-hp">
-      <div class="hp-box">돈가 <b>${priceStr}</b></div>
+      <div class="hp-box"><span class="hp-label">돈가</span> <b>${priceStr}</b></div>
       <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
     </div>`;
   }
@@ -2266,7 +2281,16 @@ async function exportSummaryPdf(){
          표+차트 전체, 1페이지는 KPI행까지)을 통째로 실측해서, 고정 페이지(1920×1082)
          안에 다 안 들어올 것 같으면 transform:scale로 전체를 줄여 반드시 한 페이지 안에
          담는다. .sumscroll은 #pdfStage 안에서 overflow:hidden으로 오버라이드해뒀으므로
-         (위 CSS 참고) 스크롤바가 캡처에 찍히는 일은 없다. */
+         (위 CSS 참고) 스크롤바가 캡처에 찍히는 일은 없다.
+         2026-09-19(피드백 6차): 1페이지(KPI행이 있어 세로 여유가 더 적은 페이지)에서 세로가
+         넘쳐 scale이 1보다 작게 걸리면, transform:scale은 가로/세로를 똑같은 비율로 줄이기
+         때문에 세로만 부족했을 뿐인데도 가로까지 같이 줄어들어 — 위 KPI 카드 행(스케일 안 됨)
+         보다 내용 섹션의 오른쪽 끝선이 짧아져 보였다("첫 장 오른쪽 끝 라인이 이상해" 피드백).
+         너비는 스케일 전 값(scrollEl.clientWidth, 위 KPI 행과 정확히 같은 폭)을 그대로
+         유지해야 하므로, transform으로 줄어들 비율만큼 style.width를 미리 반비례해서
+         넓혀둔다 — scale 적용 후 실제 렌더 너비 = (clientWidth/scale)×scale = clientWidth로
+         항상 원래 폭 그대로 유지되고, 세로만 의도한 대로 줄어든다(표/차트는 세로 높이가
+         가로폭과 무관하게 고정·자연 높이라 폭을 넓혀도 실측했던 naturalH가 바뀌지 않는다). */
       const scrollEl = pdfStage.querySelector('.sumscroll');
       const wrapEl = pdfStage.querySelector('.sumwrap');
       if(scrollEl && wrapEl){
@@ -2275,6 +2299,7 @@ async function exportSummaryPdf(){
         const heightRatio = scrollEl.clientHeight / naturalH;
         const scale = Math.min(widthRatio, heightRatio, 1);
         if(scale < 1){
+          wrapEl.style.width = (scrollEl.clientWidth / scale) + 'px';
           wrapEl.style.transformOrigin = 'top left';
           wrapEl.style.transform = `scale(${scale})`;
         }
