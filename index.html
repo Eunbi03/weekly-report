@@ -15,7 +15,7 @@ body{color:#15181d;font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFo
   -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums lining-nums}
 /* 191mm : 339mm = 16:9 고정 무대. 화면 크기에 맞춰 자동 축소 */
 :root{ --W:1920px; --H:1082px; --pad-h:18px; --pad-v:14px; --gap:8px; --fixed-gap:10px;
-  --top-h:64px; --nav1-h:50px; --kbar-h:190px; --card-h:722px;
+  --top-h:64px; --nav1-h:50px; --kbar-h:168px; --card-h:744px;
   --chart-pad-t:12px; --chart-pad-b:10px; --chd-h:48px; --plot-margin-t:52px }
 #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 #stage{width:var(--W);height:var(--H);flex:none;background:#f3f5f8;transform-origin:center center;
@@ -110,25 +110,42 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc .v{font-size:23px;margin-top:3px}
 #stage.portrait .kc .v small{font-size:13px}
 #stage.portrait .kc .d{font-size:11.5px;margin-top:3px}
+/* 2026-09-17(item2): 조직별 화면 상단요약 카드(.kc)의 글씨 크기·스타일을 전체요약
+   화면의 상단요약 카드(.kc-sum)와 동일하게 맞췄다 — 제목 23→21px, 값 45.6→34px
+   (자간도 -.8→-.6px로 통일), 작은글씨(단위) 18→15px, 증감줄 23→19px(색도 .kc-sum .l/
+   .hp-delta와 같은 회색 #8b93a0으로). */
 .kc{flex:1;min-width:0;padding:0 20px 0 44px;display:flex;flex-direction:column;height:100%;
   justify-content:center;align-items:flex-start;text-align:left;overflow:hidden}
-.kc .l{font-size:23px;color:#8b93a0;font-weight:700;white-space:nowrap}
-.kc .v{font-size:45.6px;font-weight:800;letter-spacing:-.8px;white-space:nowrap;color:#15181d!important;margin-top:6px}
-.kc .v small{font-size:18px;font-weight:700;margin-left:3px;color:#15181d}
-.kc .d{font-size:23px;color:#a8b0bb;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+.kc .l{font-size:21px;color:#8b93a0;font-weight:700;white-space:nowrap}
+.kc .v{font-size:34px;font-weight:800;letter-spacing:-.6px;white-space:nowrap;color:#15181d!important;margin-top:6px}
+.kc .v small{font-size:15px;font-weight:700;margin-left:3px;color:#15181d}
+.kc .d{font-size:19px;color:#8b93a0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   max-width:100%;margin-top:6px}
 .kc .d b{font-weight:800}
 
-/* 2026-09-15: 전체 요약 화면 전용 상단요약 — 보담/케이프라이드/백두 3장, 각 카드에 월·주
-   매출원가율을 나란히 보여준다(일반 kbar보다 사용 높이를 줄임). */
-.kbar-sum{flex:0 0 128px}
-.kc-sum{flex:1;min-width:0;padding:16px 26px;display:flex;flex-direction:column;justify-content:center;gap:10px}
-.kc-sum .l{font-size:21px;color:#8b93a0;font-weight:700;white-space:nowrap}
-.kc-sum-row{display:flex;gap:34px;align-items:baseline}
+/* 2026-09-15: 전체 요약 화면 전용 상단요약 — 보담/케이프라이드/백두 3장, 각 카드에
+   월·주 매출원가율을 나란히 보여준다(일반 kbar보다 사용 높이를 줄임).
+   2026-09-18(피드백): 사용자가 사진으로 준 참고 디자인대로 각 카드 위쪽에 법인 브랜드색
+   테두리(border-top, JS에서 인라인으로 지정)를 두르고, 카드 제목은 "이름 매출원가율"이
+   아니라 이름만 굵게(색은 회색→검정, 크기는 기존 21px 그대로 유지). 월/주 증감(화살표)은
+   더 이상 별도 줄이 아니라 값 바로 뒤에 붙는다(.kc-sum-delta) — 화살표가 숫자 앞, +,-
+   부호 없음(costPctDeltaInline 참고). 세 번째 줄(.kc-sum-sub)은 매출액·달성율을 월/주
+   컬럼과 똑같이 좌(월)/우(주)로 나눠 보여준다 — 기존 .hp-delta(19px) 스타일 그대로 재사용. */
+.kbar-sum{flex:0 0 168px}
+.kc-sum{flex:1;min-width:0;padding:14px 26px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.kc-sum .l{font-size:21px;color:#15181d;font-weight:800;white-space:nowrap}
+.kc-sum-row{display:flex;align-items:center;gap:16px}
+.kc-sum-div{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
 .kc-sum-item{display:flex;align-items:baseline;gap:8px}
 .kc-sum-item .u{font-size:17px;color:#a8b0bb;font-weight:700}
 .kc-sum-item b{font-size:34px;font-weight:800;color:#15181d;letter-spacing:-.6px}
 .kc-sum-item b small{font-size:15px;font-weight:700;margin-left:2px;color:#15181d}
+/* 2026-09-18: 월/주 값 바로 뒤에 붙는 인라인 증감(화살표+%p) — 값(34px)과 달리 기존
+   전월대비/전주대비 줄과 같았던 19px을 그대로 유지한다(item1: 기존 텍스트 크기 유지). */
+.kc-sum-item .kc-sum-delta{font-size:19px;font-weight:800;margin-left:2px;white-space:nowrap}
+/* 매출액·달성율 줄 — 돈가 위젯의 .hp-delta와 완전히 같은 스타일(19px)을 그대로 재사용,
+   월(좌)/주(우)로 나눠서 위 .kc-sum-row의 두 컬럼과 같은 좌우 배치를 맞춘다. */
+.kc-sum-sub{display:flex;justify-content:space-between;gap:16px}
 
 /* 2026-09-15: 전체 요약 화면 상단(돈가 박스) — PDF저장/월별·주별/스테퍼가 없는 대신
    이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
@@ -136,9 +153,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .hogprice{display:flex;align-items:center;gap:18px}
 /* 2026-09-16: "전주대비" 라벨은 [Size no.3](19px, .sumsec-h와 동일)로, 색은 상단 KPI
    카드의 매출원가율 타이틀(.kc-sum .l)과 같은 회색(#8b93a0)으로 고정. 증감 숫자·화살표(<b>)
-   색은 증가=파랑/감소=빨강으로 JS에서 인라인 지정한다(돈가 위젯 한정 예외). */
-.hogprice .hp-delta{font-size:19px;font-weight:700;color:#8b93a0;white-space:nowrap}
-.hogprice .hp-delta b{font-weight:800}
+   색은 증가=파랑/감소=빨강으로 JS에서 인라인 지정한다(돈가 위젯 한정 예외).
+   2026-09-17: 이 스타일을 돈가 위젯 전용(.hogprice .hp-delta)에서 범용(.hp-delta)으로
+   풀었다 — 매출원가율 카드들의 전월대비/전주대비(item3·4)도 정확히 같은 크기·스타일이어야
+   해서, 같은 클래스를 그대로 재사용하기 위함(item3: "전주대비" 라벨과 증감숫자 크기를
+   동일하게 해달라는 요청도 이 클래스 하나로 라벨/숫자가 항상 같은 19px을 쓰게 되어 해결). */
+.hp-delta{font-size:19px;font-weight:700;color:#8b93a0;white-space:nowrap}
+.hp-delta b{font-weight:800}
 /* 돈가 값 자체는 [Size no.2](23px, .chd h2와 동일)로 축소 */
 .hogprice .hp-box{font-size:23px;font-weight:800;letter-spacing:-.3px;color:#15181d;
   border:1px solid #e7eaef;border-radius:10px;padding:4px 22px;background:#fff;white-space:nowrap}
@@ -149,25 +170,37 @@ button{font-family:inherit;border:none;cursor:pointer}
    다 못 들어가므로, 이 카드 하나(.sumcard) 안에서만 세로 스크롤한다(다른 화면의 .tw와
    같은 방식) — 바깥 무대(#stage) 자체는 기존처럼 고정 크기·스크롤 없음을 유지. */
 .sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:18px 20px 16px;overflow:hidden}
-.sumscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+/* 2026-09-17(item1): 법인/팀별 구분이 흐릿하다는 피드백 — 스크롤 영역 배경을 무대 바탕색
+   (#f3f5f8, kbar 카드들이 놓이는 색과 동일)으로 깔아서, 그 위에 놓이는 각 .sumsec(아래)이
+   흰 카드로 뚜렷하게 도드라져 보이게 한다. */
+.sumscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#f3f5f8;border-radius:10px;padding:14px}
 .sumwrap{display:flex;gap:26px;align-items:flex-start}
 .sumcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
 .sumdivider{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
-/* 2026-09-16: 스크롤해도 "9월"/"37주차" 제목이 상단에 고정되도록 sticky 처리 —
-   가장 가까운 스크롤 조상인 .sumscroll 기준으로 붙는다. */
-.sumcol-h{font-size:30px;font-weight:800;letter-spacing:-.5px;position:sticky;top:0;
-  background:#fff;z-index:5;padding-bottom:4px}
-.sumsec{display:flex;flex-direction:column;gap:8px}
+/* 2026-09-17(item2): "9월"/"37주차" 제목은 이제 이 컬럼 안이 아니라 상단 KPI 카드보다도
+   위, 전용 줄(.sumtitlerow, buildSummaryScreen/buildSummaryPdfPage 참고)에서 한 번만
+   보여준다 — 스크롤 중에도 항상 보이므로(더 이상 이 스크롤 영역 안에 있지 않다) sticky는
+   더 이상 필요 없다. 폰트 스타일(크기/굵기/자간)만 그대로 재사용한다. */
+.sumtitlerow{display:flex;align-items:center;gap:26px}
+.sumtitle-spacer{width:1px;flex:0 0 1px}
+.sumcol-h{font-size:30px;font-weight:800;letter-spacing:-.5px}
+/* 2026-09-18(item3·4, PDF 전용): 돈가를 KPI 카드에서 빼서 "9월"/"37주차" 제목과 같은
+   줄 맨 오른쪽에 둔다 — margin-left:auto로 줄 끝에 붙이되, 내부(돈가 박스+전주대비)는
+   그대로 왼쪽 정렬(기본 flex 정렬)이라 "돈가는 왼쪽 정렬로" 요청과 어긋나지 않는다. */
+.sumtitle-hp{display:flex;align-items:center;gap:14px;margin-left:auto}
+/* 2026-09-17(item1): 각 법인/팀 섹션을 흰 카드로 감싸서 서로 뚜렷하게 구분되게 한다. */
+.sumsec{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #e7eaef;
+  border-radius:10px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,24,29,.04)}
 .sumsec-h{font-size:19px;font-weight:800;letter-spacing:-.3px}
 /* 2026-09-16: 표(행 개수에 따라 세로 길이가 제각각)와 차트가 stretch로 서로 높이를
    맞추던 걸 풀었다 — 차트는 항상 고정 높이(아래 .sumchart)로 통일하고, 표는 자기
    내용(채널 수)만큼의 자연 높이를 그대로 갖는다. */
 .sumsec-body{display:flex;gap:14px;align-items:flex-start}
 .sumtable{flex:0 0 44%;min-width:0}
-.sumtable table{width:100%;border-collapse:collapse;font-size:13px}
-/* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경 + 사이즈를 [Size no.4](=표/차트 내용 텍스트,
-   13px)로 통일 */
-.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:13px;text-align:center;position:static;border-bottom:none}
+/* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
+.sumtable table{width:100%;border-collapse:collapse;font-size:14px}
+/* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경. 2026-09-17: 본문(td)과 같이 14px로. */
+.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:14px;text-align:center;position:static;border-bottom:none}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
@@ -186,16 +219,22 @@ button{font-family:inherit;border:none;cursor:pointer}
    2026-09-16: 240px → 480px(2배) → 360px → 320px로 재조정. */
 .sumchart{flex:1;min-width:0;height:320px}
 .sc{display:flex;flex-direction:column;height:100%}
-/* 2026-09-16: 좌(측 값 축)/막대 플롯/우(원가율% 축)를 한 줄에 배치하는 행 — 기존엔
-   .sc-plot 하나만 있어서 왼쪽 축이 없었다(item2). */
-.sc-plotrow{display:flex;align-items:stretch;flex:1;min-height:110px;gap:6px}
+/* 2026-09-17(item6) 버그 수정: x축(월/주 라벨)이 막대 그래프 가운데가 아니라 왼쪽으로
+   쏠려 보이던 문제 — 예전엔 .sc-xax가 .sc-plotrow(축+플롯+축을 담은 flex row) "바깥"의
+   형제 요소라서, 폭이 .sc-plot(막대 영역)이 아니라 좌우 값축까지 포함한 전체 폭 기준으로
+   나뉘어 막대와 라벨의 칸 경계가 서로 달랐다(메인 대시보드의 .xax는 .area-inner 안,
+   즉 .bars와 같은 폭 안에 있어서 이 문제가 없다). CSS Grid로 바꿔서 .sc-plot과 .sc-xax가
+   "같은 열(2번째 컬럼)"을 공유하게 하면, 왼쪽/오른쪽 축 폭이 얼마든(내용에 따라 auto)
+   항상 정확히 같은 폭 위에 라벨이 놓인다 — JS 실측 없이 구조 자체로 보장된다. */
+.sc-grid{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:minmax(110px,1fr) auto;
+  column-gap:6px;flex:1;min-height:0}
 /* 왼쪽(매출액) 축 — 메인 대시보드의 .yax와 같은 구조. .sc-bars와 똑같은 padding-top(18px,
    막대 위 라벨 자리)을 줘서 눈금 간격이 막대 높이 비율과 정확히 일치하게 한다. */
-.sc-yax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
-  padding:18px 5px 0 0;flex:0 0 auto}
+.sc-yax{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
+  padding:18px 5px 0 0}
 .sc-yax span{font-size:13px;color:#b3bac3}
-.sc-yax-r{align-items:flex-start;padding:18px 0 0 5px}
-.sc-plot{position:relative;flex:1;min-width:0}
+.sc-yax-r{grid-column:3;align-items:flex-start;padding:18px 0 0 5px}
+.sc-plot{grid-column:2;grid-row:1;position:relative;min-width:0}
 /* 2026-09-16 버그 수정: 막대가 위쪽 기준으로 붙어 보이던 문제(item1) — .sc-col에
    align-items가 없어 높이가 100%가 아닌 .sc-bar가 교차축(세로) 기준 flex-start(위)로
    붙었었다. flex-end를 줘서 항상 바닥(x축) 기준으로 자라도록 고정한다. */
@@ -213,10 +252,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-ovl{position:absolute;top:18px;left:4px;right:4px;bottom:0;pointer-events:none;z-index:3}
 .sc-dotlab{position:absolute;font-size:13px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
-.sc-xax{display:flex;gap:8px;margin-top:6px}
+/* item6 수정으로 .sc-plot과 같은 grid 열(2번째)에 놓인다 — .sc-bars와 같은 gap(8px)만
+   유지하면 칸 경계가 자동으로 막대와 일치한다. */
+.sc-xax{grid-column:2;grid-row:2;display:flex;gap:8px;margin-top:6px}
 .sc-xax div{flex:1;text-align:center;font-size:13px;color:#7a828d;font-weight:600}
+/* 2026-09-17(item5): 범례 글씨가 작다는 피드백으로 13px→14px */
 .sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
-.sc-lgd span{font-size:13px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd span{font-size:14px;color:#6c7684;display:flex;align-items:center;gap:4px}
 .sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
 .sc-lgd i.ln{width:12px;height:0;border-top:2px solid;border-radius:0}
 
@@ -226,6 +268,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .hogprice{flex-wrap:wrap;gap:8px 14px}
 #stage.portrait .hogprice .hp-box{font-size:18px;padding:4px 14px}
 #stage.portrait .hogprice .hp-delta{font-size:13px}
+#stage.portrait .sumtitlerow{flex-direction:column;align-items:flex-start;gap:4px}
+#stage.portrait .sumtitle-spacer{display:none}
+#stage.portrait .sumtitle-hp{margin-left:0}
 #stage.portrait .sumwrap{flex-direction:column;gap:16px}
 #stage.portrait .sumdivider{display:none}
 #stage.portrait .sumcol-h{font-size:22px}
@@ -234,7 +279,18 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .sumchart{flex:none;width:100%;height:150px}
 #stage.portrait .kc-sum b{font-size:26px}
 #stage.portrait .kc-sum .l{font-size:15px}
+#stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
+#stage.portrait .kc-sum-sub .hp-delta{font-size:12px}
+/* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주가 한 줄에 다 안 들어가고
+   카드 밖으로 흘러넘쳤다(회귀) — 월/주를 좌우가 아니라 위아래로 쌓아서 해결. */
+#stage.portrait .kc-sum-row{flex-direction:column;align-items:flex-start;gap:6px}
+#stage.portrait .kc-sum-div{display:none}
+#stage.portrait .kc-sum-item{flex-wrap:wrap;row-gap:2px}
+#stage.portrait .kc-sum-sub{flex-direction:column;gap:2px}
+#stage.portrait .kc-sum-sub .hp-delta{white-space:normal}
+#stage.portrait .kc-sum{overflow:hidden}
 #stage.portrait .sumcard{padding:12px}
+#stage.portrait .sumscroll{padding:8px}
 
 /* 차트 */
 .chart{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
@@ -287,12 +343,17 @@ button{font-family:inherit;border:none;cursor:pointer}
    최근 것이 기본으로 보이고 나머지는 그대로 스크롤(TABLE_VISIBLE_ROWS 참고).
    세로 여백(padding)은 이 7줄이 실제로 카드 높이 안에 다 들어오도록(월별은 중간에 얇은
    spacer행까지 끼어 더 빡빡함) 실측해서 잡은 값이라, 늘릴 땐 반드시 재검증할 것. */
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:24px;white-space:nowrap}
+/* 2026-09-17(item4): 표 본문 글씨가 크다는 피드백으로 24px→22px, 매출액 칸(td.sale)과
+   머리말(th)도 같은 비율로 함께 줄였다. */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:22px;white-space:nowrap}
 th,td{padding:14px 12px;text-align:right;border-bottom:1px solid #f1f3f6}
-th{background:#fafbfc;font-size:19px;font-weight:700;color:#7a828d;position:sticky;top:0;z-index:2;
-  text-align:center;border-bottom:1px solid #e7eaef}
+/* 2026-09-17(item3): 머리말 세로 폭이 너무 길다는 피드백으로 머리말만 세로 padding을
+   14px→8px로 줄였다(본문 행 padding은 그대로 14px 유지 — TABLE_VISIBLE_ROWS 행 높이
+   계산에 영향 없음). th.r2의 top 값은 이 변경 후 실측한 새 1행 높이로 재보정했다. */
+th{background:#fafbfc;font-size:18px;font-weight:700;color:#7a828d;position:sticky;top:0;z-index:2;
+  text-align:center;border-bottom:1px solid #e7eaef;padding:8px 12px}
 th.g{text-align:center}
-th.r2{top:55px} /* 2026-09-14: th,td 세로 padding을 20→14px로 줄인 뒤 헤더 1행 실측 높이(55px)로 재보정 */
+th.r2{top:41px} /* 2026-09-17: 머리말 padding 14px→8px 축소 후 1행 실측 높이(41px)로 재보정 */
 th.sep,td.sep{border-left:1px solid #e7eaef}
 /* 2026-09-14 버그 수정: 헤더 2번째 줄(채널별 "목표/매출/달성율")의 첫 칸은 진짜 "구분"
    칸이 아니라 rowspan 때문에 그 줄의 DOM상 첫 th일 뿐인 "목표"(첫 채널)다 — 예전엔
@@ -302,7 +363,7 @@ th.sep,td.sep{border-left:1px solid #e7eaef}
 tbody td:first-child, thead tr:first-child th:first-child{text-align:center;font-weight:700;background:#fff;
   position:sticky;left:0;z-index:3;width:86px;min-width:86px}
 thead tr:first-child th:first-child{background:#fafbfc;z-index:4}
-td.sale{font-weight:800;font-size:27px;letter-spacing:-.3px}
+td.sale{font-weight:800;font-size:25px;letter-spacing:-.3px}
 tbody tr:hover td{background:#fafbfd}
 tbody tr:hover td:first-child{background:#fafbfd}
 tr.cur td{background:#fffaef!important}
@@ -462,7 +523,11 @@ const LAYOUT = {
   /* 2026-09-14: navrow(월별/주별 + 케이프라이드 소분류 줄)를 없애고 그 자리를 상단요약(KBAR_H)에
      넘겼다 — 월별/주별은 topright로, 소분류는 케이프라이드 탭 hover 드롭다운으로 옮김.
      그만큼 TOP_H/NAV1_H/KBAR_H/CHD_H/LGD_H도 커진 글씨에 맞춰 함께 키웠다. */
-  TOP_H: 64, NAV1_H: 50, KBAR_H: 190,  // 고정영역 안의 3개 줄 높이
+  /* 2026-09-17(item1): 조직별 화면(보담/케이프라이드/백두)의 상단요약(KPI) 세로 높이를
+     전체요약 화면의 상단요약(kbar-sum, 168px)과 똑같이 맞춰달라는 요청 — 190→168.
+     이 값이 줄어든 만큼 CARD_H(아래 recalcCardLayout)가 자동으로 늘어나 내용 카드
+     (차트/표)가 더 커진다. */
+  TOP_H: 64, NAV1_H: 50, KBAR_H: 168,  // 고정영역 안의 3개 줄 높이
   FIXED_GAP: 10,                     // 고정영역 안 3개 줄 사이 간격
 
   CHART_PAD_T: 12, CHART_PAD_B: 10,  // .chart/.tcard 카드 자체의 상하 패딩
@@ -1544,17 +1609,45 @@ function sumHeaderColor(entity){
   return entity.color;
 }
 
+/* 2026-09-18(피드백): "전월대비/전주대비" 별도 줄 대신, 화살표+%p를 월/주 값 바로
+   뒤에 붙인다. 사용자 요청대로 화살표가 숫자보다 앞에 오고, +,- 부호는 쓰지 않는다
+   (증가/감소는 화살표(▲/▼)와 색으로만 구분). ±0.05%p 미만은 회색으로 처리하는 기존
+   규칙(kbar()의 dp() 헬퍼)은 그대로 따른다. */
+function costPctDeltaInline(curC, prevC){
+  if(curC==null || prevC==null || !isFinite(curC) || !isFinite(prevC)) return '';
+  const v = curC - prevC;
+  const up = v>=0;
+  const color = Math.abs(v)<.05 ? '#a8b0bb' : (up ? '#1F8A5B' : '#D64545');
+  return `<b class="kc-sum-delta" style="color:${color}">${up?'▲':'▼'}${Math.abs(v).toFixed(1)}%p</b>`;
+}
+/* 2026-09-18(피드백): 카드 세 번째 줄 — "매출액 · 달성율"을 월(좌)/주(우)로 나눠서
+   보여준다. kbar()의 c1/c3(월간·주간 매출액/목표달성율)과 같은 데이터(r.s/r.t, ach())를
+   그대로 쓴다. */
+function costSalesSubText(row){
+  if(!row) return '매출액 – · 달성율 –';
+  const a = ach(row.t, row.s);
+  return `매출액 ${n2(row.s)} · 달성율 ${a!=null?a.toFixed(1)+'%':'–'}`;
+}
+/* 2026-09-18(피드백): 참고 사진대로 재구성 — 카드 위쪽에 법인 브랜드색 테두리
+   (border-top, 인라인), 제목은 "이름"만(기존 "이름 매출원가율" 문구는 뺐다), 월/주
+   원가율 값 옆에 증감이 인라인으로 붙고, 그 아래 매출액·달성율을 월/주로 나눠 보여준다. */
 function summaryCostCard(id){
   const e = D[id];
   const mArr = e.month||[], wArr = e.week||[];
-  const mLast = mArr[mArr.length-1], wLast = wArr[wArr.length-1];
+  const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
+  const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
   const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
   const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
-  return `<div class="card kc-sum">
-    <div class="l">${e.name} 매출원가율</div>
+  return `<div class="card kc-sum" style="border-top:3px solid ${e.color}">
+    <div class="l">${e.name}</div>
     <div class="kc-sum-row">
-      <div class="kc-sum-item"><span class="u">월</span><b>${mc}<small>%</small></b></div>
-      <div class="kc-sum-item"><span class="u">주</span><b>${wc}<small>%</small></b></div>
+      <div class="kc-sum-item"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
+      <div class="kc-sum-div"></div>
+      <div class="kc-sum-item"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
+    </div>
+    <div class="kc-sum-sub">
+      <div class="hp-delta">${costSalesSubText(mLast)}</div>
+      <div class="hp-delta">${costSalesSubText(wLast)}</div>
     </div>
   </div>`;
 }
@@ -1624,8 +1717,10 @@ function sumChart(entity, win){
   const leftAxis = `<div class="sc-yax">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>`;
   const rightAxis = isCostPct ? `<div class="sc-yax sc-yax-r">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
   const xax = win.map(r=>`<div>${labOf(r)}</div>`).join('');
+  /* 2026-09-17(item6): .sc-xax를 .sc-grid의 2번째 열(=.sc-plot과 같은 열)에 두는 grid
+     레이아웃으로 바꿨다 — 자세한 이유는 위 .sc-grid CSS 주석 참고. */
   return `<div class="sc">
-    <div class="sc-plotrow">
+    <div class="sc-grid">
       ${leftAxis}
       <div class="sc-plot">
         <div class="sc-bars">${bars}</div>
@@ -1635,8 +1730,8 @@ function sumChart(entity, win){
             vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>${dots}</div>`:''}
       </div>
       ${rightAxis}
+      <div class="sc-xax">${xax}</div>
     </div>
-    <div class="sc-xax">${xax}</div>
     <div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
       ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
     </div>
@@ -1656,17 +1751,48 @@ function summarySection(entity, rs, unitLabel){
   </div>`;
 }
 
-function buildSummaryScreen(g, navHtml){
+/* 2026-09-18(피드백): 돈가(가격/전주대비) 문자열 조립을 한 곳으로 모았다 — 웹 상단바
+   (.hogprice)와 PDF 제목줄(.sumtitle-hp) 양쪽에서 그대로 재사용한다. 전주대비 표기는
+   화살표가 숫자 앞, +,- 부호 없음(다른 상단요약 증감과 동일한 규칙, 웹/PDF 모두 적용). */
+function hogPriceParts(){
   const hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
   const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
   const wowUp = hp.wow!=null && hp.wow>=0;
-  const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
-  /* 2026-09-16: 돈가 전주대비 증감(숫자+화살표) 색도 다른 곳과 동일하게 증가=초록/감소=빨강으로 통일 */
-  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#1F8A5B' : '#D64545');
-
+  const wowColor = hp.wow==null ? '#a8b0bb' : (wowUp ? '#1F8A5B' : '#D64545');
+  const wowStr = hp.wow!=null ? `${wowUp?'▲':'▼'}${Math.abs(hp.wow).toLocaleString('ko-KR')}` : '–';
+  return {priceStr, wowStr, wowColor};
+}
+/* 2026-09-17(item2): "9월"/"37주차" 제목 줄 — 상단 KPI 카드(kbar-sum)가 다루는 게 바로
+   이 월/주차 데이터이므로, 그 정보의 기준이 되는 제목이 KPI 카드보다 위에 오는 게 맞다는
+   피드백으로 전용 함수로 뺐다. 화면(buildSummaryScreen)과 PDF(buildSummaryPdfPage)가
+   똑같이 이 함수 하나를 쓴다. 좌(월)/우(주) 두 칸의 폭이 아래 .sumwrap의 두 .sumcol과
+   정확히 같은 비율로 나뉘도록, .sumdivider(1px)와 같은 폭의 투명 스페이서를 사이에 넣어
+   gap 폭까지 그대로 맞췄다.
+   2026-09-18(item3·4, PDF 전용): withHogPrice가 true면(=PDF 1페이지) 돈가를 KPI
+   카드에서 빼서 이 줄 맨 오른쪽(.sumtitle-hp, margin-left:auto)에 붙인다 — 웹 화면은
+   기존처럼 상단바에 돈가가 그대로 있으므로 호출부에서 인자를 넘기지 않는다. */
+function summaryTitleRow(withHogPrice){
   const cutoff = window.__DASH_CUTOFF__;
   const monthBig = cutoff ? `${cutoff.month}월` : '';
   const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  let hpHtml = '';
+  if(withHogPrice){
+    const {priceStr, wowStr, wowColor} = hogPriceParts();
+    hpHtml = `<div class="sumtitle-hp">
+      <div class="hp-box">돈가 <b>${priceStr}</b></div>
+      <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
+    </div>`;
+  }
+  return `<div class="sumtitlerow">
+    <div class="sumcol-h">${monthBig}</div>
+    <div class="sumtitle-spacer"></div>
+    <div class="sumcol-h">${weekBig}</div>
+    ${hpHtml}
+  </div>`;
+}
+
+function buildSummaryScreen(g, navHtml){
+  const {priceStr, wowStr, wowColor} = hogPriceParts();
 
   const ents = SUMMARY_ENTITIES();
   const monthSections = ents.map(e=>summarySection(e, e.month, '월')).join('');
@@ -1686,12 +1812,13 @@ function buildSummaryScreen(g, navHtml){
     </div>
   </div>
   ${navHtml}
+  ${summaryTitleRow()}
   <div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>
   </div>
   <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
-    <div class="sumcol"><div class="sumcol-h">${monthBig}</div>${monthSections}</div>
+    <div class="sumcol">${monthSections}</div>
     <div class="sumdivider"></div>
-    <div class="sumcol"><div class="sumcol-h">${weekBig}</div>${weekSections}</div>
+    <div class="sumcol">${weekSections}</div>
   </div></div></div>`;
 }
 
@@ -1977,41 +2104,25 @@ const PDF_SUMMARY_GROUPS = [
   { keys:['kp','ms_t'], kpi:false },
   { keys:['ms','it'], kpi:false },
 ];
-/* 상단 KPI 4번째 카드(돈가) — 앞의 3장(summaryCostCard)과 완전히 같은 .kc-sum
-   마크업/클래스를 그대로 써서, .kbar가 flex:1로 4장을 자동으로 균등 배분(크기·간격
-   동일)하게 한다. */
-function pdfHogPriceCard(){
-  const hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
-  const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
-  const wowUp = hp.wow!=null && hp.wow>=0;
-  const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
-  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#1F8A5B' : '#D64545');
-  return `<div class="card kc-sum">
-    <div class="l">돈가</div>
-    <div class="kc-sum-row">
-      <div class="kc-sum-item"><b>${priceStr}</b></div>
-      <div class="kc-sum-item"><span class="u">전주대비</span><b style="color:${wowColor}">${wowStr}</b></div>
-    </div>
-  </div>`;
-}
-/* PDF 전용 페이지 한 장. 화면의 buildSummaryScreen()과 달리 브랜드바/돈가위젯/내비가
-   없고, group.keys에 있는 엔티티 2개 분량의 섹션만 담는다. group.kpi가 true인
-   페이지(1페이지)에만 4장짜리 KPI 카드 행을 위에 붙인다. */
+/* PDF 전용 페이지 한 장. 화면의 buildSummaryScreen()과 달리 브랜드바/내비가 없고,
+   group.keys에 있는 엔티티 2개 분량의 섹션만 담는다. group.kpi가 true인 페이지(1페이지)
+   에만 3장짜리 KPI 카드 행을 붙인다.
+   2026-09-18(item3·4, 피드백): "상단요약(KPI 카드)을 가장 위로, 월/주차 제목은 그
+   아래"로 순서를 다시 바꿨다(2026-09-17 item2는 화면 기준 요청이었고, 이번 피드백은
+   PDF 한정 요청). 돈가는 더 이상 4번째 카드가 아니라 summaryTitleRow(true)를 통해
+   제목 줄 오른쪽에 인라인으로 붙는다. */
 function buildSummaryPdfPage(group){
-  const cutoff = window.__DASH_CUTOFF__;
-  const monthBig = cutoff ? `${cutoff.month}월` : '';
-  const weekBig = cutoff ? `${cutoff.week}주차` : '';
   const ents = group.keys.map(pdfEntityFor);
   const monthSections = ents.map(e=>summarySection(e, e.month, '월')).join('');
   const weekSections = ents.map(e=>summarySection(e, e.week, '주')).join('');
   const kpiRow = group.kpi
-    ? `<div class="fixed-zone"><div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}${pdfHogPriceCard()}</div></div>`
+    ? `<div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>`
     : '';
-  return `${kpiRow}
+  return `<div class="fixed-zone">${kpiRow}${summaryTitleRow(group.kpi)}</div>
   <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
-    <div class="sumcol"><div class="sumcol-h">${monthBig}</div>${monthSections}</div>
+    <div class="sumcol">${monthSections}</div>
     <div class="sumdivider"></div>
-    <div class="sumcol"><div class="sumcol-h">${weekBig}</div>${weekSections}</div>
+    <div class="sumcol">${weekSections}</div>
   </div></div></div>`;
 }
 function loadScriptOnce(src){
