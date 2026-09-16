@@ -155,7 +155,10 @@ button{font-family:inherit;border:none;cursor:pointer}
   background:#fff;z-index:5;padding-bottom:4px}
 .sumsec{display:flex;flex-direction:column;gap:8px}
 .sumsec-h{font-size:19px;font-weight:800;letter-spacing:-.3px}
-.sumsec-body{display:flex;gap:14px;align-items:stretch}
+/* 2026-09-16: 표(행 개수에 따라 세로 길이가 제각각)와 차트가 stretch로 서로 높이를
+   맞추던 걸 풀었다 — 차트는 항상 고정 높이(아래 .sumchart)로 통일하고, 표는 자기
+   내용(채널 수)만큼의 자연 높이를 그대로 갖는다. */
+.sumsec-body{display:flex;gap:14px;align-items:flex-start}
 .sumtable{flex:0 0 44%;min-width:0}
 .sumtable table{width:100%;border-collapse:collapse;font-size:13px}
 /* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경 + 사이즈를 [Size no.4](=표/차트 내용 텍스트,
@@ -175,7 +178,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtable td.dcell.dn{background:#fdecea;color:#c0392b;font-weight:700}
 /* 2026-09-16: 증가 배경/글자색을 파랑→초록 계열로 변경(모든 페이지 공통 요청) */
 .sumtable td.dcell.up{background:#e8f5ef;color:#1F8A5B;font-weight:700}
-.sumchart{flex:1;min-width:0}
+/* 모든 섹션에서 막대그래프 세로 길이를 동일하게 고정(표 길이와 무관) —
+   채널 11개(MS팀 특정/MS팀)의 범례가 두 줄이 돼도 넉넉하도록 잡은 값 */
+.sumchart{flex:1;min-width:0;height:240px}
 .sc{display:flex;flex-direction:column;height:100%}
 /* 2026-09-16: 좌(측 값 축)/막대 플롯/우(원가율% 축)를 한 줄에 배치하는 행 — 기존엔
    .sc-plot 하나만 있어서 왼쪽 축이 없었다(item2). */
@@ -1524,6 +1529,13 @@ function pageSales(){
    없고, 대신 돈가 박스를 둔다. 조직별 스테퍼 상태(S.mi/S.wi)와 무관하게 항상 각
    엔티티의 month/week 배열 "마지막" 항목(=readCutoff 기준 최신)만 본다. */
 const SUMMARY_ENTITIES = () => [D.bo, D.kp, KSUB.ms_t, KSUB.ms, KSUB.it, D.bd];
+/* 2026-09-16: 케이프라이드/MS팀 특정/MS팀/I팀은 모두 케이프라이드 소속이므로, 전체 요약
+   화면의 표 머리말 색상은 넷 다 케이프라이드 주황색으로 통일한다(각 엔티티 고유 브랜드색
+   자체는 그대로 두고, 이 표 헤더 색만 별도로 매핑). */
+function sumHeaderColor(entity){
+  if(entity===D.kp || entity===KSUB.ms_t || entity===KSUB.ms || entity===KSUB.it) return D.kp.color;
+  return entity.color;
+}
 
 function summaryCostCard(id){
   const e = D[id];
@@ -1558,7 +1570,7 @@ function sumTable(entity, prevRow, curRow, unitLabel){
   const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}</tr>`;
   /* 기존 표(.tw table)용 전역 th{background:#fafbfc}가 특정도 더 높은 요소별 배경이라
      <tr style="background">만으론 안 먹힌다(th 자체가 불투명) — th 각각에 직접 건다. */
-  const thStyle = `style="background:${entity.color}"`;
+  const thStyle = `style="background:${sumHeaderColor(entity)}"`;
   return `<table><thead><tr>
       <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th></tr></thead>
     <tbody>${rows}${totRow}</tbody></table>`;
