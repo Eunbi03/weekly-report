@@ -204,12 +204,24 @@ button{font-family:inherit;border:none;cursor:pointer}
    피드백 — 맞는 말이다. 이 padding은 원래 "흰 테두리 박스 안쪽 여백"이었는데 이제 그 박스가
    없으니 존재 이유가 없는 죽은 공백이다(#stage 자체의 padding(--pad-v/--pad-h)과
    .sumscroll의 padding(14px)이 이미 각각 자기 역할을 하고 있어 이걸 또 더할 필요가 없다).
-   .sumcard의 padding을 0으로 없애 이 이중 여백을 제거한다. */
-.sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
+   .sumcard의 padding을 0으로 없애 이 이중 여백을 제거한다.
+   2026-09-19(피드백 5차, H2): 위/아래(제목줄→내용섹션) 간격이 상단 카테고리(nav)→상단요약
+   카드(kbar-sum) 간격(=--fixed-gap, 10px)과 다르게 보인다는 피드백 — #stage 자체의
+   flex gap(--gap, 8px)에 아래 .sumscroll의 padding-top(14px)이 더해져 실제로는 22px나
+   됐던 것. .sumscroll의 top padding을 걷어내고(아래), 그 대신 이 margin-top(2px)만
+   더해서 정확히 8+2=10px로 --fixed-gap과 맞춘다(다른 화면(.kbar→.chart 등)에 쓰이는
+   공용 --gap 자체는 그대로 두고, 전체요약 화면 전용으로만 보정). */
+.sumcard{flex:1;min-height:0;margin-top:2px;display:flex;flex-direction:column;padding:0;overflow:hidden}
 /* 2026-09-17(item1): 법인/팀별 구분이 흐릿하다는 피드백 — 스크롤 영역 배경을 무대 바탕색
    (#f3f5f8, kbar 카드들이 놓이는 색과 동일)으로 깔아서, 그 위에 놓이는 각 .sumsec(아래)이
-   흰 카드로 뚜렷하게 도드라져 보이게 한다. */
-.sumscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#f3f5f8;border-radius:10px;padding:14px}
+   흰 카드로 뚜렷하게 도드라져 보이게 한다.
+   2026-09-19(피드백 5차, H1): 이 padding(좌우 14px)이 위쪽 상단요약 카드(kbar-sum, #stage의
+   기본 padding(18px)만큼만 인셋됨)보다 14px 더 안쪽으로 들어가 있어서, 내용 섹션(.sumsec)의
+   좌우 끝선이 위 카드들의 좌우 끝선과 안 맞았다("끝라인이 안 맞아 보이지 않아?" 피드백) —
+   좌우 padding을 0으로 없애서 .sumsec이 #stage의 기본 padding(18px)에만 맞춰지게 하고,
+   위쪽 padding도 0으로(대신 .sumcard의 margin-top 2px, 위 참고) 없앤다. 아래쪽 padding만
+   스크롤 맨 끝 여백용으로 그대로 남긴다. */
+.sumscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#f3f5f8;border-radius:10px;padding:0 0 14px 0}
 .sumwrap{display:flex;flex-direction:column;gap:20px}
 /* 2026-09-17(item2): "9월"/"37주차" 제목은 컬럼 안이 아니라 상단 KPI 카드보다도 위,
    전용 줄(.sumtitlerow, buildSummaryScreen/buildSummaryPdfPage 참고)에서 한 번만
@@ -334,8 +346,11 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc-sum-div{display:none}
 #stage.portrait .kc-sum-item .kc-sum-main{flex-wrap:wrap;row-gap:2px}
 #stage.portrait .kc-sum{overflow:hidden}
-#stage.portrait .sumcard{padding:0}
-#stage.portrait .sumscroll{padding:8px}
+#stage.portrait .sumcard{padding:0;margin-top:2px}
+/* 2026-09-19(피드백 5차, H1·H2, 모바일): 데스크탑과 같은 이유로 좌우 padding은 없애고
+   (상단요약 카드와 좌우 끝선을 맞춤), 위 padding도 없앤 뒤 .sumcard의 margin-top(2px)으로
+   대체해 상단 간격을 --fixed-gap(10px)에 맞춘다. 아래쪽만 기존처럼 8px 유지. */
+#stage.portrait .sumscroll{padding:0 0 8px 0}
 
 /* 차트 */
 .chart{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
