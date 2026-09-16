@@ -34,7 +34,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .brand{display:flex;align-items:center;gap:10px}
 .brand .bar{width:8px;height:24px;border-radius:2px}
 .brand h1{font-size:45.6px;font-weight:800;letter-spacing:-.5px}
-.brand .unit{font-size:23px;color:#9aa3af;font-weight:700;margin-left:2px}
+/* 2026-09-16: "(단위:백만 원)" 텍스트 — 모든 페이지 공통. 볼드 제거 + 사이즈를
+   [Size no.3](=전체 요약 화면 내용 섹션의 법인/팀 타이틀 .sumsec-h와 동일한 19px)로 통일. */
+.brand .unit{font-size:19px;color:#9aa3af;font-weight:400;margin-left:2px}
 .stepper{display:flex;align-items:center;background:#fff;border:1px solid #e7eaef;border-radius:10px;
   padding:5px 6px;gap:2px}
 .stepper button{width:30px;height:34px;border-radius:7px;background:transparent;color:#7a828d;
@@ -128,9 +130,13 @@ button{font-family:inherit;border:none;cursor:pointer}
    이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
 .top-summary{height:auto;flex:0 0 auto}
 .hogprice{display:flex;align-items:center;gap:18px}
-.hogprice .hp-delta{font-size:23px;font-weight:700;color:#15181d;white-space:nowrap}
-.hogprice .hp-delta b{font-weight:800;color:#15181d}
-.hogprice .hp-box{font-size:45.6px;font-weight:800;letter-spacing:-.8px;color:#15181d;
+/* 2026-09-16: "전주대비" 라벨은 [Size no.3](19px, .sumsec-h와 동일)로, 색은 상단 KPI
+   카드의 매출원가율 타이틀(.kc-sum .l)과 같은 회색(#8b93a0)으로 고정. 증감 숫자·화살표(<b>)
+   색은 증가=파랑/감소=빨강으로 JS에서 인라인 지정한다(돈가 위젯 한정 예외). */
+.hogprice .hp-delta{font-size:19px;font-weight:700;color:#8b93a0;white-space:nowrap}
+.hogprice .hp-delta b{font-weight:800}
+/* 돈가 값 자체는 [Size no.2](23px, .chd h2와 동일)로 축소 */
+.hogprice .hp-box{font-size:23px;font-weight:800;letter-spacing:-.3px;color:#15181d;
   border:1px solid #e7eaef;border-radius:10px;padding:4px 22px;background:#fff;white-space:nowrap}
 .hogprice .hp-box b{font-weight:800}
 
@@ -143,18 +149,22 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumwrap{display:flex;gap:26px;align-items:flex-start}
 .sumcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
 .sumdivider{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
-.sumcol-h{font-size:30px;font-weight:800;letter-spacing:-.5px}
+/* 2026-09-16: 스크롤해도 "9월"/"37주차" 제목이 상단에 고정되도록 sticky 처리 —
+   가장 가까운 스크롤 조상인 .sumscroll 기준으로 붙는다. */
+.sumcol-h{font-size:30px;font-weight:800;letter-spacing:-.5px;position:sticky;top:0;
+  background:#fff;z-index:5;padding-bottom:4px}
 .sumsec{display:flex;flex-direction:column;gap:8px}
 .sumsec-h{font-size:19px;font-weight:800;letter-spacing:-.3px}
 .sumsec-body{display:flex;gap:14px;align-items:stretch}
 .sumtable{flex:0 0 44%;min-width:0}
 .sumtable table{width:100%;border-collapse:collapse;font-size:13px}
-.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:12.5px;text-align:right;position:static;border-bottom:none}
+/* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경 + 사이즈를 [Size no.4](=표/차트 내용 텍스트,
+   13px)로 통일 */
+.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:13px;text-align:center;position:static;border-bottom:none}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
-.sumtable thead tr:first-child th:first-child{position:static;left:auto;width:auto;min-width:0;background:inherit;text-align:left}
-.sumtable th:first-child{text-align:left}
+.sumtable thead tr:first-child th:first-child{position:static;left:auto;width:auto;min-width:0;background:inherit;text-align:center}
 .sumtable td{padding:6px 8px;text-align:right;border-bottom:1px solid #f1f3f6;color:#3a4049}
 /* 기존 표(.tw table)의 전역 규칙(tbody td:first-child에 sticky-left+고정폭 86px)이
    이 표에도 적용돼버려서 첫 칸(거래처명)이 좁게 고정되고 sticky까지 걸린다 — 이 표는
@@ -163,27 +173,50 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtable td.nm{text-align:left;font-weight:600}
 .sumtable tr.tot td{font-weight:800;background:#f2f5f9;border-top:1.5px solid #15181d}
 .sumtable td.dcell.dn{background:#fdecea;color:#c0392b;font-weight:700}
-.sumtable td.dcell.up{background:#eaf3ff;color:#2A6FDB;font-weight:700}
+/* 2026-09-16: 증가 배경/글자색을 파랑→초록 계열로 변경(모든 페이지 공통 요청) */
+.sumtable td.dcell.up{background:#e8f5ef;color:#1F8A5B;font-weight:700}
 .sumchart{flex:1;min-width:0}
 .sc{display:flex;flex-direction:column;height:100%}
-.sc-plot{position:relative;flex:1;min-height:110px;display:flex;align-items:flex-end;gap:8px;padding:18px 4px 0}
-.sc-col{flex:1;min-width:0;display:flex;justify-content:center;height:100%}
+/* 2026-09-16: 좌(측 값 축)/막대 플롯/우(원가율% 축)를 한 줄에 배치하는 행 — 기존엔
+   .sc-plot 하나만 있어서 왼쪽 축이 없었다(item2). */
+.sc-plotrow{display:flex;align-items:stretch;flex:1;min-height:110px;gap:6px}
+/* 왼쪽(매출액) 축 — 메인 대시보드의 .yax와 같은 구조. .sc-bars와 똑같은 padding-top(18px,
+   막대 위 라벨 자리)을 줘서 눈금 간격이 막대 높이 비율과 정확히 일치하게 한다. */
+.sc-yax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
+  padding:18px 5px 0 0;flex:0 0 auto}
+.sc-yax span{font-size:13px;color:#b3bac3}
+.sc-yax-r{align-items:flex-start;padding:18px 0 0 5px}
+.sc-plot{position:relative;flex:1;min-width:0}
+/* 2026-09-16 버그 수정: 막대가 위쪽 기준으로 붙어 보이던 문제(item1) — .sc-col에
+   align-items가 없어 높이가 100%가 아닌 .sc-bar가 교차축(세로) 기준 flex-start(위)로
+   붙었었다. flex-end를 줘서 항상 바닥(x축) 기준으로 자라도록 고정한다. */
+.sc-bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:8px;padding:18px 4px 0}
+.sc-col{flex:1;min-width:0;display:flex;justify-content:center;align-items:flex-end;height:100%}
 .sc-bar{position:relative;width:56%;min-width:14px;display:flex;align-items:flex-end}
-.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#3a4049;white-space:nowrap}
+.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;color:#3a4049;white-space:nowrap}
 .sc-stk{width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:2px 2px 0 0;overflow:hidden}
 .sc-stk span{display:block;width:100%}
+/* 2026-09-16(item3): 매출원가율(또는 대출액) 꺾은선 오버레이 — .sc-bars와 정확히 같은
+   padding(18px 4px 0)만큼 안쪽으로 들여서, 두 레이어의 0~100% 좌표계가 막대와 일치하게 한다.
+   자체 padding을 주지 않고 top/left/right로 직접 지정하는 이유: absolute 자식의 %는
+   이 요소의 padding-box(=자기 자신의 padding 포함 전체 상자) 기준으로 계산되기 때문에,
+   여기서 padding을 또 주면 오히려 좌표계가 어긋난다. */
+.sc-ovl{position:absolute;top:18px;left:4px;right:4px;bottom:0;pointer-events:none;z-index:3}
+.sc-dotlab{position:absolute;font-size:13px;font-weight:700;color:#15181d;white-space:nowrap;
+  background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
 .sc-xax{display:flex;gap:8px;margin-top:6px}
-.sc-xax div{flex:1;text-align:center;font-size:11px;color:#7a828d;font-weight:600}
+.sc-xax div{flex:1;text-align:center;font-size:13px;color:#7a828d;font-weight:600}
 .sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
-.sc-lgd span{font-size:11px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd span{font-size:13px;color:#6c7684;display:flex;align-items:center;gap:4px}
 .sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
+.sc-lgd i.ln{width:12px;height:0;border-top:2px solid;border-radius:0}
 
 /* 2026-09-15: 전체 요약 화면 — 모바일(세로)에서는 좌/우 2컬럼(월/주)과 표+차트 좌우배치가
    좁은 화면에 다 안 들어가고 겹쳐 보여서, 세로 하나로 쌓는다. */
 #stage.portrait .top-summary{flex-wrap:wrap;row-gap:8px}
 #stage.portrait .hogprice{flex-wrap:wrap;gap:8px 14px}
-#stage.portrait .hogprice .hp-box{font-size:28px;padding:4px 14px}
-#stage.portrait .hogprice .hp-delta{font-size:15px}
+#stage.portrait .hogprice .hp-box{font-size:18px;padding:4px 14px}
+#stage.portrait .hogprice .hp-delta{font-size:13px}
 #stage.portrait .sumwrap{flex-direction:column;gap:16px}
 #stage.portrait .sumdivider{display:none}
 #stage.portrait .sumcol-h{font-size:22px}
@@ -1360,7 +1393,9 @@ function table(rs, chans, prev, e, curId, title, toggle){
 function kbar(rs, e, ci){
   const cur=rs[ci], pr=rs[ci-1];
   const a=ach(cur.t,cur.s), pa=pr?ach(pr.t,pr.s):null;
-  const UP='#2A6FDB', DN='#D64545';
+  /* 2026-09-16: 증가 표시색을 파랑→초록(GRN, #1F8A5B)으로 변경 — 모든 페이지 공통 요청.
+     감소(DN)는 기존 그대로. */
+  const UP='#1F8A5B', DN='#D64545';
   /* 퍼센트포인트 증감 표기 */
   const dp=(c,p,note)=>{
     if(c==null||p==null||!isFinite(c)||!isFinite(p)) return note||'&nbsp;';
@@ -1529,21 +1564,64 @@ function sumTable(entity, prevRow, curRow, unitLabel){
     <tbody>${rows}${totRow}</tbody></table>`;
 }
 
-/* 간이 막대그래프 — 기존 barChart()와 같은 채널 색상을 쓰되, 선그래프/전년비교/목표선 없이
-   최근 5개 기간만 보여준다(item7: 월별이면 5개월, 주별이면 5주). */
+/* 간이 막대그래프 — 기존 barChart()와 같은 채널 색상을 쓰되, 전년비교/목표선 없이
+   최근 5개 기간만 보여준다(월별이면 5개월, 주별이면 5주).
+   2026-09-16: item2(왼쪽 값 축)·item3(매출원가율/대출액 꺾은선) 추가 — 메인 대시보드의
+   barChart()와 같은 방식(왼쪽=금액축, 원가율은 자기만의 %축을 오른쪽에 별도 표시,
+   고정범위 0/50/100/150/200%)을 그대로 따른다. 다만 여기는 막대 폭이 전부 동일해서
+   메인처럼 폭 가중치 계산은 필요 없고, 점의 가로 위치만 alignSummaryLines()가 실측으로
+   보정한다(세로 위치는 .sc-bars/.sc-ovl의 padding을 맞춰뒀기 때문에 %계산만으로 정확하다). */
 function sumChart(entity, win){
   const chans = entity.chans;
   const mx = Math.max(1, ...win.map(r=>r.s||0));
-  const bars = win.map(r=>{
+  const n = win.length || 1;
+  const lineKind = entity.hasLoan ? 'loan' : (win.some(r=>r.c!=null) ? 'cost' : null);
+  const lineName = lineKind==='loan' ? '대출액' : '매출원가율';
+  const isCostPct = lineKind==='cost';
+  const mxCost = COST_AXIS_MAX;
+  const lineMax = isCostPct ? mxCost : mx;
+  const line = win.map(r=> lineKind==='loan' ? (r.loan!=null?r.loan:null)
+                        : lineKind==='cost' ? (r.c!=null? r.c : null) : null);
+  const ticks=[0,1,2,3,4];
+
+  const bars = win.map((r,i)=>{
     const h = (r.s||0)/mx*100;
     const tot = sum(r.ch||[]) || r.s || 1;
     const segs = (r.ch||[]).map((v,j)=> v>0?`<span style="height:${(v/tot*100).toFixed(2)}%;background:${chans[j].c}"></span>`:'').reverse().join('');
-    return `<div class="sc-col"><div class="sc-bar" style="height:${h.toFixed(2)}%">
+    return `<div class="sc-col"><div class="sc-bar" data-cur="${i}" style="height:${h.toFixed(2)}%">
       <b class="sc-lab">${n2(r.s)}</b><div class="sc-stk">${segs}</div></div></div>`;
   }).join('');
+
+  const dotLabel = (v,i) => lineKind==='cost' ? pct(win[i].c) : n2(v);
+  const dots = line.map((v,i)=> v==null?'':(()=>{
+    const top = (100-v/lineMax*100).toFixed(3);
+    const left = ((i+.5)/n*100).toFixed(3); /* 초기값 — alignSummaryLines()가 실제 막대 중심으로 다시 맞춘다 */
+    return `<div class="sc-dotpt" data-i="${i}" style="position:absolute;left:${left}%;top:${top}%;
+      width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#FF6A00;border:2px solid #fff"></div>
+     <div class="sc-dotlab" data-i="${i}" style="left:${left}%;top:${top}%">${dotLabel(v,i)}</div>`;
+  })()).join('');
+  const initPts = line.map((v,i)=> v==null?null:`${((i+.5)/n*100).toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
+
+  const leftAxis = `<div class="sc-yax">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>`;
+  const rightAxis = isCostPct ? `<div class="sc-yax sc-yax-r">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
   const xax = win.map(r=>`<div>${labOf(r)}</div>`).join('');
-  return `<div class="sc"><div class="sc-plot">${bars}</div><div class="sc-xax">${xax}</div>
-    <div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}</div></div>`;
+  return `<div class="sc">
+    <div class="sc-plotrow">
+      ${leftAxis}
+      <div class="sc-plot">
+        <div class="sc-bars">${bars}</div>
+        ${lineKind?`<div class="sc-ovl"><svg class="sc-lnsvg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
+          viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polyline points="${initPts}" fill="none" stroke="#FF6A00" stroke-width="2"
+            vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>${dots}</div>`:''}
+      </div>
+      ${rightAxis}
+    </div>
+    <div class="sc-xax">${xax}</div>
+    <div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
+      ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
+    </div>
+  </div>`;
 }
 
 function summarySection(entity, rs, unitLabel){
@@ -1564,6 +1642,9 @@ function buildSummaryScreen(g, navHtml){
   const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
   const wowUp = hp.wow!=null && hp.wow>=0;
   const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
+  /* 2026-09-16: 돈가 전주대비 증감(숫자+화살표)은 이 위젯 한정으로 증가=파랑/감소=빨강
+     (모든 페이지 공통의 "증가=초록" 규칙과 별개 — 사용자가 이 위젯만 명시적으로 요청). */
+  const wowColor = hp.wow==null ? '#15181d' : (wowUp ? '#2A6FDB' : '#D64545');
 
   const cutoff = window.__DASH_CUTOFF__;
   const monthBig = cutoff ? `${cutoff.month}월` : '';
@@ -1580,7 +1661,7 @@ function buildSummaryScreen(g, navHtml){
       <h1>${g.n}</h1>
       <span class="unit">(단위:백만 원)</span></div>
     <div class="hogprice">
-      <div class="hp-delta">전주대비 <b>${wowStr}</b></div>
+      <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
       <div class="hp-box">돈가 <b>${priceStr}</b></div>
     </div>
   </div>
@@ -1691,6 +1772,8 @@ function render(){
   if(areaEl) areaEl.scrollLeft = areaEl.scrollWidth;
   alignLine();
   adjustDotLabels();
+  alignSummaryLines();
+  adjustSummaryDotLabels();
 }
 /* 무대를 화면에 맞춰 축소 */
 /* 가로 볼 때는 기존 339:191 그대로. 세로(모바일 세로)일 때만 기기별(아이폰/갤럭시) 화면비로 --H를 바꾼다.
@@ -1756,6 +1839,56 @@ function adjustDotLabels(root){
     if(!hit(lr, br)) return;
     /* 2차: 막대(짧은 막대 등)와 원가율 점이 거의 같은 높이라 아래로 내려도 여전히 겹치면,
        매출액 라벨(.blab) 아래로 확실히 빠져나갈 만큼 실측한 만큼만 추가로 내린다. */
+    const extra = (br.bottom - lr.top) + 4;
+    if(extra > 0) lab.style.marginTop = extra + 'px';
+  });
+}
+/* 2026-09-16: 전체 요약 화면의 간이 차트(sumChart)용 — alignLine()과 똑같은 이유(막대 사이
+   고정 px gap 때문에 %계산만으론 오차가 생김)로, 실제 렌더된 막대(.sc-bar) 중심을 재서
+   선/점의 가로 위치를 다시 맞춘다. 세로 위치는 .sc-bars/.sc-ovl의 padding을 맞춰뒀기
+   때문에 보정이 필요 없다. 요약 화면이 아닌 페이지에는 .sc-lnsvg가 없으므로 그냥 아무 일도
+   하지 않는다. */
+function alignSummaryLines(root){
+  root = root || document;
+  root.querySelectorAll('.sc-lnsvg').forEach(svg=>{
+    const plot = svg.closest('.sc-plot'); if(!plot) return;
+    const svgRect = svg.getBoundingClientRect();
+    if(svgRect.width<=0) return;
+    const poly = svg.querySelector('polyline');
+    const pts = [];
+    plot.querySelectorAll('.sc-dotpt[data-i]').forEach(dot=>{
+      const i = dot.getAttribute('data-i');
+      const bar = plot.querySelector(`.sc-bar[data-cur="${i}"]`);
+      if(!bar) return;
+      const bRect = bar.getBoundingClientRect();
+      const xPct = ((bRect.left + bRect.width/2) - svgRect.left) / svgRect.width * 100;
+      dot.style.left = xPct.toFixed(3)+'%';
+      const lab = plot.querySelector(`.sc-dotlab[data-i="${i}"]`);
+      if(lab) lab.style.left = xPct.toFixed(3)+'%';
+      pts.push([+i, xPct, dot.style.top]);
+    });
+    if(poly && pts.length){
+      pts.sort((a,b)=>a[0]-b[0]);
+      poly.setAttribute('points', pts.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
+    }
+  });
+}
+/* adjustDotLabels()와 같은 로직을 sumChart의 .sc-dotlab/.sc-lab 쌍에 적용 */
+function adjustSummaryDotLabels(root){
+  root = root || document;
+  const hit=(a,b)=> !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
+  root.querySelectorAll('.sc-dotlab[data-i]').forEach(lab=>{
+    lab.style.transform = ''; lab.style.marginTop = '';
+    const i = lab.getAttribute('data-i');
+    const plot = lab.closest('.sc-plot');
+    const bar = plot && plot.querySelector(`.sc-bar[data-cur="${i}"]`);
+    const blab = bar && bar.querySelector('.sc-lab');
+    if(!blab) return;
+    const br = blab.getBoundingClientRect();
+    if(!hit(lab.getBoundingClientRect(), br)) return;
+    lab.style.transform = 'translate(-50%,30%)';
+    let lr = lab.getBoundingClientRect();
+    if(!hit(lr, br)) return;
     const extra = (br.bottom - lr.top) + 4;
     if(extra > 0) lab.style.marginTop = extra + 'px';
   });
