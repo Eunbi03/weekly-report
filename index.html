@@ -113,6 +113,87 @@ button{font-family:inherit;border:none;cursor:pointer}
   max-width:100%;margin-top:6px}
 .kc .d b{font-weight:800}
 
+/* 2026-09-15: 전체 요약 화면 전용 상단요약 — 보담/케이프라이드/백두 3장, 각 카드에 월·주
+   매출원가율을 나란히 보여준다(일반 kbar보다 사용 높이를 줄임). */
+.kbar-sum{flex:0 0 128px}
+.kc-sum{flex:1;min-width:0;padding:16px 26px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.kc-sum .l{font-size:21px;color:#8b93a0;font-weight:700;white-space:nowrap}
+.kc-sum-row{display:flex;gap:34px;align-items:baseline}
+.kc-sum-item{display:flex;align-items:baseline;gap:8px}
+.kc-sum-item .u{font-size:17px;color:#a8b0bb;font-weight:700}
+.kc-sum-item b{font-size:34px;font-weight:800;color:#15181d;letter-spacing:-.6px}
+.kc-sum-item b small{font-size:15px;font-weight:700;margin-left:2px;color:#15181d}
+
+/* 2026-09-15: 전체 요약 화면 상단(돈가 박스) — PDF저장/월별·주별/스테퍼가 없는 대신
+   이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
+.top-summary{height:auto;flex:0 0 auto}
+.hogprice{display:flex;align-items:center;gap:18px}
+.hogprice .hp-delta{font-size:23px;font-weight:700;color:#15181d;white-space:nowrap}
+.hogprice .hp-delta b{font-weight:800;color:#15181d}
+.hogprice .hp-box{font-size:45.6px;font-weight:800;letter-spacing:-.8px;color:#15181d;
+  border:1px solid #e7eaef;border-radius:10px;padding:4px 22px;background:#fff;white-space:nowrap}
+.hogprice .hp-box b{font-weight:800}
+
+/* 2026-09-15: 전체 요약 화면 본문 — 좌(월)/우(주) 2컬럼, 각 컬럼 안에 조직 6개(보담>
+   케이프라이드>MS팀 특정>MS팀>I팀>백두) 섹션이 세로로 쌓인다. 섹션 수가 많아 한 화면에
+   다 못 들어가므로, 이 카드 하나(.sumcard) 안에서만 세로 스크롤한다(다른 화면의 .tw와
+   같은 방식) — 바깥 무대(#stage) 자체는 기존처럼 고정 크기·스크롤 없음을 유지. */
+.sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:18px 20px 16px;overflow:hidden}
+.sumscroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.sumwrap{display:flex;gap:26px;align-items:flex-start}
+.sumcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
+.sumdivider{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
+.sumcol-h{font-size:30px;font-weight:800;letter-spacing:-.5px}
+.sumsec{display:flex;flex-direction:column;gap:8px}
+.sumsec-h{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.sumsec-body{display:flex;gap:14px;align-items:stretch}
+.sumtable{flex:0 0 44%;min-width:0}
+.sumtable table{width:100%;border-collapse:collapse;font-size:13px}
+.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:12.5px;text-align:right;position:static;border-bottom:none}
+/* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
+   근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
+   화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
+.sumtable thead tr:first-child th:first-child{position:static;left:auto;width:auto;min-width:0;background:inherit;text-align:left}
+.sumtable th:first-child{text-align:left}
+.sumtable td{padding:6px 8px;text-align:right;border-bottom:1px solid #f1f3f6;color:#3a4049}
+/* 기존 표(.tw table)의 전역 규칙(tbody td:first-child에 sticky-left+고정폭 86px)이
+   이 표에도 적용돼버려서 첫 칸(거래처명)이 좁게 고정되고 sticky까지 걸린다 — 이 표는
+   가로 스크롤이 없으므로 원래대로 되돌린다. */
+.sumtable td:first-child{position:static;width:auto;min-width:0;background:transparent}
+.sumtable td.nm{text-align:left;font-weight:600}
+.sumtable tr.tot td{font-weight:800;background:#f2f5f9;border-top:1.5px solid #15181d}
+.sumtable td.dcell.dn{background:#fdecea;color:#c0392b;font-weight:700}
+.sumtable td.dcell.up{background:#eaf3ff;color:#2A6FDB;font-weight:700}
+.sumchart{flex:1;min-width:0}
+.sc{display:flex;flex-direction:column;height:100%}
+.sc-plot{position:relative;flex:1;min-height:110px;display:flex;align-items:flex-end;gap:8px;padding:18px 4px 0}
+.sc-col{flex:1;min-width:0;display:flex;justify-content:center;height:100%}
+.sc-bar{position:relative;width:56%;min-width:14px;display:flex;align-items:flex-end}
+.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#3a4049;white-space:nowrap}
+.sc-stk{width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:2px 2px 0 0;overflow:hidden}
+.sc-stk span{display:block;width:100%}
+.sc-xax{display:flex;gap:8px;margin-top:6px}
+.sc-xax div{flex:1;text-align:center;font-size:11px;color:#7a828d;font-weight:600}
+.sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
+.sc-lgd span{font-size:11px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
+
+/* 2026-09-15: 전체 요약 화면 — 모바일(세로)에서는 좌/우 2컬럼(월/주)과 표+차트 좌우배치가
+   좁은 화면에 다 안 들어가고 겹쳐 보여서, 세로 하나로 쌓는다. */
+#stage.portrait .top-summary{flex-wrap:wrap;row-gap:8px}
+#stage.portrait .hogprice{flex-wrap:wrap;gap:8px 14px}
+#stage.portrait .hogprice .hp-box{font-size:28px;padding:4px 14px}
+#stage.portrait .hogprice .hp-delta{font-size:15px}
+#stage.portrait .sumwrap{flex-direction:column;gap:16px}
+#stage.portrait .sumdivider{display:none}
+#stage.portrait .sumcol-h{font-size:22px}
+#stage.portrait .sumsec-body{flex-direction:column}
+#stage.portrait .sumtable{flex:none;width:100%}
+#stage.portrait .sumchart{flex:none;width:100%;height:150px}
+#stage.portrait .kc-sum b{font-size:26px}
+#stage.portrait .kc-sum .l{font-size:15px}
+#stage.portrait .sumcard{padding:12px}
+
 /* 차트 */
 .chart{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .chd{display:flex;justify-content:space-between;align-items:center;gap:16px;flex:0 0 var(--chd-h)}
@@ -459,6 +540,22 @@ function readCutoff(wb){
   if(week==null||year==null||month==null) throw new Error('집계 시트의 주차/년/월(A2/B2/C2) 값을 읽을 수 없습니다');
   return { week, year, month };
 }
+/* 전체 요약 화면 우측 상단 "돈가" — 집계 시트의 별도 표(F~J열, 4행부터 주차순)에서
+   F열(주차)이 기준 주차(readCutoff().week)와 같은 행을 찾아 I열(돈가·2주치)과
+   J열(전주대비)을 읽는다. A2/B2/C2(컷오프)와는 다른 표라 별도로 찾아야 한다.
+   미래 주차 행은 I열이 비어있고 J열엔 이전 값 기준 수식 찌꺼기가 남아있을 수 있어서,
+   반드시 "기준 주차와 F열이 정확히 일치하는 행"만 신뢰한다. */
+function readHogPrice(wb, cutoff){
+  const rows = aoa(wb, '집계');
+  const fCol = colNum('F'), iCol = colNum('I'), jCol = colNum('J');
+  for(let r=4; r<=rows.length; r++){
+    const wk = numAt(cellAt(rows, r, fCol));
+    if(wk===cutoff.week){
+      return { price: numAt(cellAt(rows, r, iCol)), wow: numAt(cellAt(rows, r, jCol)) };
+    }
+  }
+  return { price:null, wow:null };
+}
 
 /* chan spec: [name,color,tgtLetter] → 매출 = 목표+1칸  |  [name,color,null,salesLetter] → 목표 없음, 매출은 salesLetter 그대로 */
 function readRow(rows, r, chans, opt){
@@ -711,6 +808,7 @@ async function bootstrapData(){
   // 1년 흐름(yearLine) 차트 — 올해 1월 이전(전년 8~12월) 구간은 전년 비교 시트의 월별값을 씀
   window.__DASH_LEGACY__ = { bo:boL, bd:bdL, kp:kpL };
   window.__DASH_CUTOFF__ = cutoff;
+  window.__DASH_HOGPRICE__ = readHogPrice(wb, cutoff);
 }
 
 /* ---------- 1년 선그래프용 — 전년(주별 실측 없음) 구간은 월별 값을 주 단위로 배분한 파생값 ---------- */
@@ -746,8 +844,11 @@ function fullWeeks(eObj){
 /* 2026-09-09: 주간매출자료 외 5개 카테고리(식육사업본부/계열화사업본부/M본부/새말센터/
    SCM·경영·자금) 탭은 사용자 요청으로 제거 — 그 탭들이 쓰던 PDF 뷰어 관련 코드
    (probePdf/pagePdf/renderPdfInto 등)도 전부 같이 정리했다. 원본은 커밋 96e1168 참고. */
+/* 2026-09-15: "전체 요약" 탭 추가 + 순서를 전체요약>보담>케이프라이드>백두로 재정렬.
+   'summary'는 D/KSUB에 대응하는 실제 조직 엔티티가 없는 특수 탭이라, 이 id를 다루는
+   곳(nav1 렌더링, buildScreenHtml)에서 항상 별도로 분기해야 한다. */
 const NAV = [
- {id:'sales', n:'주간매출자료', subs:[{id:'bo',n:'보담'},{id:'bd',n:'백두'},{id:'kp',n:'케이프라이드'}]}
+ {id:'sales', n:'주간매출자료', subs:[{id:'summary',n:'전체 요약'},{id:'bo',n:'보담'},{id:'kp',n:'케이프라이드'},{id:'bd',n:'백두'}]}
 ];
 /* 케이프라이드 전용 소분류 — nav1 hover 드롭다운(컴퓨터)과 mob-ksub(모바일 세로) 둘 다 이 목록을 쓴다 */
 const KP_SUBS = [['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','I팀']];
@@ -1383,6 +1484,116 @@ function pageSales(){
   return { kbarHtml, bodyHtml };
 }
 
+/* ══════════════════════ 전체 요약 화면 ══════════════════════
+   2026-09-15: 최근 시점(월/주 각각 최신)만 훑어보는 용도라 스테퍼/PDF/월별·주별 토글이
+   없고, 대신 돈가 박스를 둔다. 조직별 스테퍼 상태(S.mi/S.wi)와 무관하게 항상 각
+   엔티티의 month/week 배열 "마지막" 항목(=readCutoff 기준 최신)만 본다. */
+const SUMMARY_ENTITIES = () => [D.bo, D.kp, KSUB.ms_t, KSUB.ms, KSUB.it, D.bd];
+
+function summaryCostCard(id){
+  const e = D[id];
+  const mArr = e.month||[], wArr = e.week||[];
+  const mLast = mArr[mArr.length-1], wLast = wArr[wArr.length-1];
+  const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
+  const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
+  return `<div class="card kc-sum">
+    <div class="l">${e.name} 매출원가율</div>
+    <div class="kc-sum-row">
+      <div class="kc-sum-item"><span class="u">월</span><b>${mc}<small>%</small></b></div>
+      <div class="kc-sum-item"><span class="u">주</span><b>${wc}<small>%</small></b></div>
+    </div>
+  </div>`;
+}
+
+/* 거래처(채널)별 전월/금월(또는 전주/금주) 매출액 + 증감 — 증감은 감소=붉은색, 증가=푸른색 */
+function sumTable(entity, prevRow, curRow, unitLabel){
+  const chans = entity.chans;
+  const dcell = (pv,cv) => {
+    if(pv==null || cv==null) return `<td class="dcell">–</td>`;
+    const diff = cv-pv;
+    const cls = diff<0 ? 'dn' : (diff>0 ? 'up' : '');
+    return `<td class="dcell ${cls}">${diff>=0?'+':''}${n2(diff)}</td>`;
+  };
+  const rows = chans.map((c,j)=>{
+    const pv = prevRow && prevRow.ch ? prevRow.ch[j] : null;
+    const cv = curRow && curRow.ch ? curRow.ch[j] : null;
+    return `<tr><td class="nm">${c.n}</td><td>${pv!=null?n2(pv):'–'}</td><td>${cv!=null?n2(cv):'–'}</td>${dcell(pv,cv)}</tr>`;
+  }).join('');
+  const pT = prevRow?prevRow.s:null, cT = curRow?curRow.s:null;
+  const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}</tr>`;
+  /* 기존 표(.tw table)용 전역 th{background:#fafbfc}가 특정도 더 높은 요소별 배경이라
+     <tr style="background">만으론 안 먹힌다(th 자체가 불투명) — th 각각에 직접 건다. */
+  const thStyle = `style="background:${entity.color}"`;
+  return `<table><thead><tr>
+      <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th></tr></thead>
+    <tbody>${rows}${totRow}</tbody></table>`;
+}
+
+/* 간이 막대그래프 — 기존 barChart()와 같은 채널 색상을 쓰되, 선그래프/전년비교/목표선 없이
+   최근 5개 기간만 보여준다(item7: 월별이면 5개월, 주별이면 5주). */
+function sumChart(entity, win){
+  const chans = entity.chans;
+  const mx = Math.max(1, ...win.map(r=>r.s||0));
+  const bars = win.map(r=>{
+    const h = (r.s||0)/mx*100;
+    const tot = sum(r.ch||[]) || r.s || 1;
+    const segs = (r.ch||[]).map((v,j)=> v>0?`<span style="height:${(v/tot*100).toFixed(2)}%;background:${chans[j].c}"></span>`:'').reverse().join('');
+    return `<div class="sc-col"><div class="sc-bar" style="height:${h.toFixed(2)}%">
+      <b class="sc-lab">${n2(r.s)}</b><div class="sc-stk">${segs}</div></div></div>`;
+  }).join('');
+  const xax = win.map(r=>`<div>${labOf(r)}</div>`).join('');
+  return `<div class="sc"><div class="sc-plot">${bars}</div><div class="sc-xax">${xax}</div>
+    <div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}</div></div>`;
+}
+
+function summarySection(entity, rs, unitLabel){
+  const win = (rs||[]).slice(-5);
+  const cur = rs && rs.length ? rs[rs.length-1] : null;
+  const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
+  return `<div class="sumsec">
+    <div class="sumsec-h">${entity.name}</div>
+    <div class="sumsec-body">
+      <div class="sumtable">${sumTable(entity, prev, cur, unitLabel)}</div>
+      <div class="sumchart">${sumChart(entity, win)}</div>
+    </div>
+  </div>`;
+}
+
+function buildSummaryScreen(g, navHtml){
+  const hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
+  const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
+  const wowUp = hp.wow!=null && hp.wow>=0;
+  const wowStr = hp.wow!=null ? `${wowUp?'+':''}${hp.wow.toLocaleString('ko-KR')} ${wowUp?'▲':'▼'}` : '–';
+
+  const cutoff = window.__DASH_CUTOFF__;
+  const monthBig = cutoff ? `${cutoff.month}월` : '';
+  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+
+  const ents = SUMMARY_ENTITIES();
+  const monthSections = ents.map(e=>summarySection(e, e.month, '월')).join('');
+  const weekSections = ents.map(e=>summarySection(e, e.week, '주')).join('');
+
+  return `
+  <div class="fixed-zone">
+  <div class="top top-summary">
+    <div class="brand"><div class="bar" style="background:#15181d"></div>
+      <h1>${g.n}</h1>
+      <span class="unit">(단위:백만 원)</span></div>
+    <div class="hogprice">
+      <div class="hp-delta">전주대비 <b>${wowStr}</b></div>
+      <div class="hp-box">돈가 <b>${priceStr}</b></div>
+    </div>
+  </div>
+  ${navHtml}
+  <div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>
+  </div>
+  <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
+    <div class="sumcol"><div class="sumcol-h">${monthBig}</div>${monthSections}</div>
+    <div class="sumdivider"></div>
+    <div class="sumcol"><div class="sumcol-h">${weekBig}</div>${weekSections}</div>
+  </div></div></div>`;
+}
+
 /* 2026-09-09: render()가 만들던 화면 HTML을 buildScreenHtml()로 분리했다 — PDF 일괄
    내보내기(exportAllPdf)가 화면에 보이는 것과 똑같은 마크업을 오프스크린 컨테이너에
    그대로 재사용해야 해서다(따로 만들면 나중에 화면 디자인이 바뀔 때 둘이 어긋난다). */
@@ -1393,6 +1604,24 @@ function buildScreenHtml(){
   recalcCardLayout(isPortrait());
   const g = NAV.find(x=>x.id===S.nav1);
   if(g.subs.length && !g.subs.some(x=>x.id===S.nav2)) S.nav2 = g.subs[0].id;
+
+  /* 2026-09-15: nav1 렌더링은 '전체 요약'(가짜 엔티티, D['summary'] 없음) 탭이 생기면서
+     일반 조직 페이지와 요약 페이지 양쪽에서 똑같이 써야 해서 별도로 뺐다. */
+  const navHtml = `<div class="nav1">${g.subs.map(x=>{
+     const col = x.id==='summary' ? '#15181d' : D[x.id].color;
+     const btn = `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
+       style="${S.nav2===x.id?`background:${col};border-color:${col}`:''}">
+       <span class="pip" style="background:${S.nav2===x.id?'#fff':col}"></span>${x.n}</button>`;
+     if(x.id!=='kp') return btn;
+     const drop = KP_SUBS.map(([kv,kn])=>{
+       const on = S.nav2==='kp' && S.ksub===kv;
+       return `<button class="${on?'on':''}" onclick="selectKp('${kv}')">${kn}</button>`;
+     }).join('');
+     return `<div class="nav1-kp-wrap">${btn}<div class="kp-drop">${drop}</div></div>`;
+   }).join('')}</div>`;
+
+  if(S.nav2==='summary') return buildSummaryScreen(g, navHtml);
+
   const e = ent();
   const rs = rows();
   const navFloor = isM() ? MONTH_FLOOR : 0;
@@ -1423,18 +1652,7 @@ function buildScreenHtml(){
        선택 시에만 있던 전사/MS팀 특정/MS팀/I팀 소분류는 이제 별도 줄(navrow) 대신
        케이프라이드 탭에 마우스를 올리면 펼쳐지는 드롭다운으로 옮겼다 — 그 줄이 없어진
        만큼의 세로 공간은 아래 상단요약(kbar)이 넘겨받는다. -->
-  <div class="nav1">${g.subs.map(x=>{
-     const col = D[x.id].color;
-     const btn = `<button class="${S.nav2===x.id?'on':''}" onclick="go2('${x.id}')"
-       style="${S.nav2===x.id?`background:${col};border-color:${col}`:''}">
-       <span class="pip" style="background:${S.nav2===x.id?'#fff':col}"></span>${x.n}</button>`;
-     if(x.id!=='kp') return btn;
-     const drop = KP_SUBS.map(([kv,kn])=>{
-       const on = S.nav2==='kp' && S.ksub===kv;
-       return `<button class="${on?'on':''}" onclick="selectKp('${kv}')">${kn}</button>`;
-     }).join('');
-     return `<div class="nav1-kp-wrap">${btn}<div class="kp-drop">${drop}</div></div>`;
-   }).join('')}</div>
+  ${navHtml}
   ${S.nav2==='kp'?`<div class="mob-ksub"><div class="seg sm">${KP_SUBS
       .map(x=>`<button class="${S.ksub===x[0]?'on':''}" onclick="setKsub('${x[0]}')">${x[1]}</button>`).join('')}</div></div>`:''}
   ${page.kbarHtml}
@@ -1750,6 +1968,9 @@ function go1(v){ S.nav1=v; const g=NAV.find(x=>x.id===v); S.nav2=g.subs.length?g
 /* 조직마다 월별 배열 길이가 달라서(D류=12개월, KSUB류=20개월), 조직을 바꿀 때마다
    항상 "가장 최근 시점"으로 인덱스를 다시 맞춘다. */
 function resetToLatest(){
+  /* '전체 요약' 탭은 D['summary']가 존재하지 않고(가짜 엔티티), 스테퍼(S.mi/S.wi)도
+     아예 쓰지 않는 화면이라 여기서 손댈 게 없다 — ent()를 호출하면 그대로 크래시난다. */
+  if(S.nav2==='summary') return;
   const e = ent();
   S.mi = (e.month||[]).length - 1;
   S.wi = (e.week||[]).length - 1;
