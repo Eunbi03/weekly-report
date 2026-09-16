@@ -132,16 +132,15 @@ button{font-family:inherit;border:none;cursor:pointer}
    부호 없음(costPctDeltaInline 참고). 세 번째 줄(.kc-sum-sub)은 매출액·달성율을 월/주
    컬럼과 똑같이 좌(월)/우(주)로 나눠 보여준다 — 기존 .hp-delta(19px) 스타일 그대로 재사용. */
 .kbar-sum{flex:0 0 168px}
-.kc-sum{flex:1;min-width:0;padding:12px 20px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.kc-sum{flex:1;min-width:0;padding:14px 26px;display:flex;flex-direction:column;justify-content:center;gap:8px}
 .kc-sum .l{font-size:21px;color:#15181d;font-weight:800;white-space:nowrap}
-/* 2026-09-18(피드백 2차, item5): 월/주가 "따로 놀지" 않도록, 원가율+증감과
-   매출액·달성율을 하나의 상자(.kc-sum-box)에 같이 담고, 그 상자 두 개(월/주)를
-   나란히 배치한다 — 이전엔 원가율 줄과 매출액·달성율 줄이 카드 전체에서 각각
-   따로 좌우로 나뉘어 있어 같은 기간(월 또는 주) 값끼리 시각적으로 묶여 보이지
-   않았다. */
-.kc-sum-boxes{display:flex;gap:10px;flex:1;min-height:0}
-.kc-sum-box{flex:1;min-width:0;border:1px solid #e7eaef;border-radius:8px;background:#fafbfc;
-  padding:8px 12px;display:flex;flex-direction:column;justify-content:center;gap:6px;overflow:hidden}
+/* 2026-09-18(피드백 3차): item5(두 개의 "상자") 요청을 실제 테두리 있는 박스 UI로
+   구현했었는데, 사용자가 다시 보낸 참고 사진에는 그런 박스 테두리가 없었다 — "두 개의
+   상자"는 UI 요소가 아니라 "월 값끼리, 주 값끼리 묶어서 생각해달라"는 뜻이었던 것으로
+   정정 — 테두리·배경이 있는 박스(.kc-sum-box)는 빼고, 사진과 같은 얇은 구분선
+   (.kc-sum-div) 레이아웃으로 되돌렸다. */
+.kc-sum-row{display:flex;align-items:center;gap:16px}
+.kc-sum-div{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
 .kc-sum-item{display:flex;align-items:baseline;gap:8px}
 .kc-sum-item .u{font-size:17px;color:#a8b0bb;font-weight:700}
 .kc-sum-item b{font-size:34px;font-weight:800;color:#15181d;letter-spacing:-.6px}
@@ -150,8 +149,8 @@ button{font-family:inherit;border:none;cursor:pointer}
    달리 기존 전월대비/전주대비 줄과 같았던 19px을 그대로 유지한다(item1: 기존 텍스트 크기 유지). */
 .kc-sum-item .kc-sum-delta{font-size:19px;font-weight:800;margin-left:2px;white-space:nowrap}
 /* 매출액·달성율 줄 — 돈가 위젯의 .hp-delta와 완전히 같은 스타일(19px)을 그대로 재사용,
-   같은 상자(.kc-sum-box) 안에서 원가율 바로 아래에 놓인다. */
-.kc-sum-box .hp-delta{white-space:normal}
+   월(좌)/주(우)로 나눠서 위 .kc-sum-row의 두 컬럼과 같은 좌우 배치를 맞춘다. */
+.kc-sum-sub{display:flex;justify-content:space-between;gap:16px}
 
 /* 2026-09-15: 전체 요약 화면 상단(돈가 박스) — PDF저장/월별·주별/스테퍼가 없는 대신
    이 자리에 돈가(2주치 평균)와 전주대비를 보여준다. 증감 색은(item1 요청) 검정 고정. */
@@ -179,7 +178,15 @@ button{font-family:inherit;border:none;cursor:pointer}
    법인·팀이 카드 2장(월 1장+주 1장)으로 쪼개져 있었다 — "보담 월,주가 한 카드"라는
    요청대로, 이제 엔티티당 카드 1장(.sumsec)뿐이고 그 안에서 월/주를 나란히 보여준다
    (.sumsec-periods, 아래). 그래서 .sumwrap은 더 이상 좌우 2컬럼이 아니라 세로로 쌓이는
-   카드 목록 하나다. */
+   카드 목록 하나다.
+   2026-09-19(피드백 3차, F1): "박스를 3개 만들어서 넣었는데 무슨 햄버거냐" — 이 영역이
+   흰 바탕 카드(구 .card.sumcard, #stage와 같은 회색 f3f5f8 위에 굳이 또 흰 테두리+그림자
+   박스를 하나 더 씌움) → 그 안에 다시 회색 .sumscroll(어차피 #stage 배경과 같은 색이라
+   시각적으로는 불필요한 추가 레이어) → 그 안에 흰 .sumsec 카드, 이렇게 흰-회색-흰 3겹
+   샌드위치로 보이던 것. "화면에 회색 배경이 있으면 하나의 흰색 박스로 카드 만들어서
+   내용 넣어줘"라는 요청대로, 이 바깥 래퍼에서 공용 .card(흰 배경+테두리+그림자)를 떼어내
+   레이아웃(flex/스크롤/패딩)만 담당하게 했다 — 이제 실제로 보이는 흰 박스는 엔티티당
+   .sumsec 하나뿐이고, 그 밑은 #stage 자체와 같은 회색 배경(.sumscroll)이 그대로 이어진다. */
 .sumcard{flex:1;min-height:0;display:flex;flex-direction:column;padding:18px 20px 16px;overflow:hidden}
 /* 2026-09-17(item1): 법인/팀별 구분이 흐릿하다는 피드백 — 스크롤 영역 배경을 무대 바탕색
    (#f3f5f8, kbar 카드들이 놓이는 색과 동일)으로 깔아서, 그 위에 놓이는 각 .sumsec(아래)이
@@ -300,11 +307,14 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc-sum b{font-size:26px}
 #stage.portrait .kc-sum .l{font-size:15px}
 #stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
-#stage.portrait .kc-sum-box .hp-delta{font-size:12px}
-/* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주 상자를 나란히 두면 다 안
-   들어가고 카드 밖으로 흘러넘쳤다(회귀) — 좌우가 아니라 위아래로 쌓아서 해결. */
-#stage.portrait .kc-sum-boxes{flex-direction:column;gap:6px}
+#stage.portrait .kc-sum-sub .hp-delta{font-size:12px}
+/* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주가 한 줄에 다 안 들어가고
+   카드 밖으로 흘러넘쳤다(회귀) — 월/주를 좌우가 아니라 위아래로 쌓아서 해결. */
+#stage.portrait .kc-sum-row{flex-direction:column;align-items:flex-start;gap:6px}
+#stage.portrait .kc-sum-div{display:none}
 #stage.portrait .kc-sum-item{flex-wrap:wrap;row-gap:2px}
+#stage.portrait .kc-sum-sub{flex-direction:column;gap:2px}
+#stage.portrait .kc-sum-sub .hp-delta{white-space:normal}
 #stage.portrait .kc-sum{overflow:hidden}
 #stage.portrait .sumcard{padding:12px}
 #stage.portrait .sumscroll{padding:8px}
@@ -347,7 +357,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .xax u{display:block;font-size:14px;color:#b3bac3;text-decoration:none}
 .xax div.on b{color:#15181d;font-weight:800}
 .lgd{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:16px;padding-top:9px;border-top:1px solid #f1f3f6}
-.lgd span{font-size:23px;font-weight:400;color:#6c7684;display:flex;align-items:center;gap:5px}
+/* 2026-09-19(피드백 3차, F3): 범례 글씨 크기를 표 머리말(th) 글씨 크기(18px)와 동일하게 —
+   색상(#6c7684)·굵기(400)는 기존 그대로 유지, 크기만 맞춘다. */
+.lgd span{font-size:18px;font-weight:400;color:#6c7684;display:flex;align-items:center;gap:5px}
 .lgd i{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
 .lgd i.ln{width:14px;height:0;border-top:2.5px solid;border-radius:0}
 
@@ -361,8 +373,11 @@ button{font-family:inherit;border:none;cursor:pointer}
    세로 여백(padding)은 이 7줄이 실제로 카드 높이 안에 다 들어오도록(월별은 중간에 얇은
    spacer행까지 끼어 더 빡빡함) 실측해서 잡은 값이라, 늘릴 땐 반드시 재검증할 것. */
 /* 2026-09-17(item4): 표 본문 글씨가 크다는 피드백으로 24px→22px, 매출액 칸(td.sale)과
-   머리말(th)도 같은 비율로 함께 줄였다. */
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:22px;white-space:nowrap}
+   머리말(th)도 같은 비율로 함께 줄였다.
+   2026-09-19(피드백 3차, F3): 표 본문 글씨 크기를 머리말(th, 18px)과 동일하게 맞춘다 —
+   색상·굵기는 각 셀(td.sale/.hot/.cool/tr.py 등)에 이미 지정된 값을 그대로 유지하고
+   크기만 바꾼다. */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:18px;white-space:nowrap}
 th,td{padding:14px 12px;text-align:right;border-bottom:1px solid #f1f3f6}
 /* 2026-09-17(item3): 머리말 세로 폭이 너무 길다는 피드백으로 머리말만 세로 padding을
    14px→8px로 줄였다(본문 행 padding은 그대로 14px 유지 — TABLE_VISIBLE_ROWS 행 높이
@@ -380,7 +395,7 @@ th.sep,td.sep{border-left:1px solid #e7eaef}
 tbody td:first-child, thead tr:first-child th:first-child{text-align:center;font-weight:700;background:#fff;
   position:sticky;left:0;z-index:3;width:86px;min-width:86px}
 thead tr:first-child th:first-child{background:#fafbfc;z-index:4}
-td.sale{font-weight:800;font-size:25px;letter-spacing:-.3px}
+td.sale{font-weight:800;font-size:18px;letter-spacing:-.3px}
 tbody tr:hover td{background:#fafbfd}
 tbody tr:hover td:first-child{background:#fafbfd}
 tr.cur td{background:#fffaef!important}
@@ -463,7 +478,7 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .stepper .lbl{font-size:14px;min-width:92px}
 #stage.portrait .seg{height:36px}
 #stage.portrait .seg button{font-size:13px;padding:0 11px}
-#stage.portrait .lgd span{font-size:13px}
+#stage.portrait .lgd span{font-size:11.5px}
 #stage.portrait .kc .d{white-space:normal;text-overflow:clip;overflow:visible;line-height:1.4}
 /* "전월 대비 ~" 와 "목표 ~"가 한 줄에 억지로 같이 있으면 "목표"가 중간에 잘려 다음 줄로
    넘어간다. 모바일에서는 가운뎃점 구분자 대신 아예 줄바꿈으로 분리한다. */
@@ -484,14 +499,16 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
    사이에 끼어 보이는 더 심한 문제가 생겼다. 그래서 세로 스냅만 걷어낸다 — 머리말이 스크롤해도
    계속 위에 떠 있는 기능(position:sticky;top)은 원래 desktop과 똑같이 그대로 살려 둔다.
    (가로 스크롤 스냅만 유지: 이건 스냅과 세로 위치가 무관해서 문제를 일으키지 않는다.) */
-#stage.portrait table{font-size:14px}
+/* 2026-09-19(피드백 3차, F3): 모바일도 데스크탑과 같은 규칙 — 표 본문/범례 글씨를
+   머리말(th, 11.5px) 크기와 맞춘다. */
+#stage.portrait table{font-size:11.5px}
 /* 위 th.r2{top:48px}는 데스크탑 1번째 머리말 줄 높이(48px) 기준인데, 모바일은 글씨가
    작아져서 1번째 줄 실제 높이가 36px뿐이다. 그 차이(12px)만큼 2번째 줄이 아래로 붕 떠서
    고정되다 보니, 그 틈으로 스크롤되는 내용이 살짝 비쳐 보였다 — 모바일 실제 높이로 맞춘다. */
 #stage.portrait th.r2{top:36px}
 #stage.portrait th{font-size:11.5px}
 #stage.portrait td,#stage.portrait th{padding:10px 7px}
-#stage.portrait td.sale{font-size:14px}
+#stage.portrait td.sale{font-size:11.5px}
 #stage.portrait .mask{padding:16px}
 /* 모바일 막대그래프 — 가로 스크롤 대신 항목을 세로로 쌓고, 막대는 가로로 눕혀서
    한 화면 폭 안에서 값 전체가 겹침 없이 다 보이게 한다(그 대신 글씨는 조금 작게). */
@@ -1499,13 +1516,16 @@ function kbar(rs, e, ci){
     return `전${isM()?'월':'주'} 대비 <b style="color:${Math.abs(v)<.05?'#a8b0bb':(up?UP:DN)}">
       ${up?'▲':'▼'}${Math.abs(v).toFixed(1)}%</b>${note?'<span class="d-sep"> · </span><span class="d-note">'+note+'</span>':''}`;
   };
-  /* 금액 증감 표기 (매출액 전용) */
+  /* 금액 증감 표기 (매출액 전용).
+     2026-09-19(피드백 3차, F2): 퍼센트 증감(dp, 위)은 이미 화살표를 숫자 앞으로 빼고
+     +,- 부호를 뺐는데, 금액 증감은 그대로(부호 접두 + 화살표가 뒤) 남아있던 것을
+     같은 규칙(화살표 먼저, 부호 없이 절대값)으로 통일. */
   const damt=(c,p)=>{
     if(c==null||p==null||!isFinite(c)||!isFinite(p)) return '&nbsp;';
     const v = c-p;
     const up=v>=0;
     return `전${isM()?'월':'주'} 대비 <b style="color:${Math.abs(v)<.005?'#a8b0bb':(up?UP:DN)}">
-      ${up?'+':''}${n2(v)} ${up?'▲':'▼'}</b>`;
+      ${up?'▲':'▼'}${n2(Math.abs(v))}</b>`;
   };
   const cell=(l,v,dd)=>`<div class="card kc"><div class="l">${l}</div>
     <div class="v">${v}</div><div class="d">${dd}</div></div>`;
@@ -1647,26 +1667,28 @@ function costSalesSubText(row){
   const a = ach(row.t, row.s);
   return `매출액 ${n2(row.s)} · 달성율 ${a!=null?a.toFixed(1)+'%':'–'}`;
 }
-/* 2026-09-18(피드백 2차): "월/주가 따로 놀지 않게" — 원가율(+증감)과 매출액·달성율을
-   같은 상자(.kc-sum-box) 안에 같이 넣고, 그 상자를 월/주 두 개 나란히 배치한다(item5).
-   카드 위쪽 법인 브랜드색 테두리(border-top)와 "이름"만 쓰는 제목은 이전 그대로 유지. */
-function summaryCostBox(unit, cur, prev){
-  const cVal = cur && cur.c!=null ? cur.c.toFixed(1) : '–';
-  return `<div class="kc-sum-box">
-    <div class="kc-sum-item"><span class="u">${unit}</span><b>${cVal}<small>%</small></b>${costPctDeltaInline(cur&&cur.c, prev&&prev.c)}</div>
-    <div class="hp-delta">${costSalesSubText(cur)}</div>
-  </div>`;
-}
+/* 2026-09-18(피드백 3차): "두 개의 상자"(item5)는 테두리 있는 박스 UI가 아니라
+   "월 값끼리, 주 값끼리 묶어서 생각해달라"는 뜻이었다 — 사용자가 다시 보낸 참고
+   사진대로, 원가율+증감 줄과 매출액·달성율 줄을 각각 하나의 줄로 두고 월(좌)/주(우)로
+   나누는 원래 레이아웃으로 되돌렸다. 카드 위쪽 법인 브랜드색 테두리(border-top)와
+   "이름"만 쓰는 제목은 그대로 유지. */
 function summaryCostCard(id){
   const e = D[id];
   const mArr = e.month||[], wArr = e.week||[];
   const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
   const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
+  const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
+  const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
   return `<div class="card kc-sum" style="border-top:3px solid ${e.color}">
     <div class="l">${e.name}</div>
-    <div class="kc-sum-boxes">
-      ${summaryCostBox('월', mLast, mPrev)}
-      ${summaryCostBox('주', wLast, wPrev)}
+    <div class="kc-sum-row">
+      <div class="kc-sum-item"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
+      <div class="kc-sum-div"></div>
+      <div class="kc-sum-item"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
+    </div>
+    <div class="kc-sum-sub">
+      <div class="hp-delta">${costSalesSubText(mLast)}</div>
+      <div class="hp-delta">${costSalesSubText(wLast)}</div>
     </div>
   </div>`;
 }
@@ -1852,7 +1874,7 @@ function buildSummaryScreen(g, navHtml){
   <div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>
   ${summaryTitleRow()}
   </div>
-  <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
+  <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
     ${sections}
   </div></div></div>`;
 }
@@ -2153,7 +2175,7 @@ function buildSummaryPdfPage(group){
     ? `<div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>`
     : '';
   return `<div class="fixed-zone">${kpiRow}${summaryTitleRow(group.kpi)}</div>
-  <div class="card sumcard"><div class="sumscroll"><div class="sumwrap">
+  <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
     ${sections}
   </div></div></div>`;
 }
