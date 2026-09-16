@@ -178,9 +178,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtable td.dcell.dn{background:#fdecea;color:#c0392b;font-weight:700}
 /* 2026-09-16: 증가 배경/글자색을 파랑→초록 계열로 변경(모든 페이지 공통 요청) */
 .sumtable td.dcell.up{background:#e8f5ef;color:#1F8A5B;font-weight:700}
-/* 모든 섹션에서 막대그래프 세로 길이를 동일하게 고정(표 길이와 무관) —
-   채널 11개(MS팀 특정/MS팀)의 범례가 두 줄이 돼도 넉넉하도록 잡은 값 */
-.sumchart{flex:1;min-width:0;height:240px}
+/* 모든 섹션에서 막대그래프 세로 길이를 동일하게 고정(표 길이와 무관).
+   2026-09-16: 240px → 480px(2배)로 확대 요청 반영. */
+.sumchart{flex:1;min-width:0;height:480px}
 .sc{display:flex;flex-direction:column;height:100%}
 /* 2026-09-16: 좌(측 값 축)/막대 플롯/우(원가율% 축)를 한 줄에 배치하는 행 — 기존엔
    .sc-plot 하나만 있어서 왼쪽 축이 없었다(item2). */
