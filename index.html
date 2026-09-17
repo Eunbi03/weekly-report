@@ -259,9 +259,21 @@ button{font-family:inherit;border:none;cursor:pointer}
    PDF 2·3페이지에서는 그 칸이 아예 비어 있을 뿐이라 배치에 영향이 없다). */
 /* 2026-09-19(피드백): "9월"/"37주차" 텍스트 왼쪽 라인이 그 아래 내용섹션 표(.sumsec 안,
    좌우 padding 16px+border 1px만큼 더 안쪽)의 왼쪽 라인과 안 맞는다는 피드백 — .sumtitlerow에
-   같은 만큼(17px) 왼쪽 padding을 줘서 텍스트 시작점을 표 시작점과 맞춘다. */
-.sumtitlerow{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;column-gap:26px;padding-left:17px}
-.sumcol-h{min-width:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
+   같은 만큼(17px) 왼쪽 padding을 줘서 텍스트 시작점을 표 시작점과 맞춘다.
+   2026-09-20(피드백, PDF 전용 버그): grid+align-items:center 조합이 PDF 캡처(html2canvas
+   1.4.1)에서 셀마다 세로 위치를 다르게 잡는 버그가 있었다 — 화면(진짜 브라우저 렌더링)에선
+   "9월"/"37주차"/돈가가 다 같은 줄에 잘 맞아 보이지만, html2canvas로 캡처한 PDF에서만
+   "9월"만 위로 붕 떠 보였다(html2canvas의 CSS Grid 지원이 완전하지 않아서 생기는 문제로
+   추정 — flex는 html2canvas가 훨씬 안정적으로 지원한다). grid를 버리고 flex로 바꾸되,
+   전에 flex를 쓰다가 겪었던 문제(월/주 제목이 균등하게 안 퍼지고 왼쪽에 붙어 보이던 것)가
+   재발하지 않도록 flex-basis를 0으로 명시해서(flex:1 1 0%) grid의 1fr 1fr과 동일하게
+   두 칸이 항상 정확히 절반씩 차지하게 한다. */
+/* column-gap 대신 margin-left(다음 칸에만)을 쓴다 — flex의 gap 속성도 html2canvas 1.4.1에서
+   완전히 신뢰하기 어려워서, 가장 기본적인 margin으로 간격을 준다. */
+.sumtitlerow{display:flex;align-items:center;padding-left:17px}
+.sumcol-h{flex:1 1 0%;min-width:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
+.sumcol-h + .sumcol-h{margin-left:26px}
+.sumtitle-hp{flex:0 0 auto;margin-left:26px}
 /* 2026-09-18(item3·4, PDF 전용): 돈가는 "9월"/"37주차" 제목과 같은 줄의 3번째(맨 끝)
    칸에 놓인다 — 내부(돈가 박스+전주대비)는 왼쪽 정렬(기본 flex 정렬)이라 "돈가는
    왼쪽 정렬로" 요청과도 맞는다. */
@@ -281,7 +293,9 @@ button{font-family:inherit;border:none;cursor:pointer}
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
 .sumsec{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #e7eaef;
   border-radius:10px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,24,29,.04)}
-.sumsec-h{font-size:21px;font-weight:800;letter-spacing:-.3px}
+.sumsec-h{font-size:21px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+/* 2026-09-20(피드백): 법인/팀 이름 앞 동그라미(색은 JS에서 인라인, sumHeaderColor 재사용) */
+.sumsec-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
 /* 카드 안에서 월/주를 나란히 두 블록으로 배치 — 각 블록 안에 그 기간의 표+차트가
    그대로 들어간다(.sumsec-body는 기존과 동일하게 재사용). */
 .sumsec-periods{display:flex;gap:16px;align-items:flex-start}
@@ -296,7 +310,12 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
 .sumtable table{width:100%;border-collapse:collapse;font-size:15px}
 /* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경. 2026-09-17: 본문(td)과 같이 14px로. */
-.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:15px;text-align:center;position:static;border-bottom:none}
+/* 2026-09-20(피드백): 머리말 배경을 법인색으로 꽉 채우던 것을 지우고, 대신 머리말과
+   표 내용을 구분하는 아래쪽 테두리만 법인색으로 넣는다(색은 JS에서 th마다 인라인
+   border-bottom으로 지정, sumHeaderColor 재사용). 배경이 없어졌으니 흰 글씨 대신
+   표 안 "이마트"/"온라인" 같은 행 이름(.sumtable td, #3a4049)과 같은 색으로 바꿔서
+   잘 보이게 한다. */
+.sumtable th{padding:8px 8px;color:#3a4049;font-weight:700;font-size:15px;text-align:center;position:static;background:transparent;border-bottom:2px solid #e7eaef}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
@@ -307,10 +326,12 @@ button{font-family:inherit;border:none;cursor:pointer}
    가로 스크롤이 없으므로 원래대로 되돌린다. */
 .sumtable td:first-child{position:static;width:auto;min-width:0;background:transparent}
 .sumtable td.nm{text-align:left;font-weight:600}
-.sumtable tr.tot td{font-weight:800;background:#f2f5f9;border-top:1.5px solid #15181d}
-.sumtable td.dcell.dn{background:#fdecea;color:#c0392b;font-weight:700}
-/* 2026-09-16: 증가 배경/글자색을 파랑→초록 계열로 변경(모든 페이지 공통 요청) */
-.sumtable td.dcell.up{background:#e8f5ef;color:#1F8A5B;font-weight:700}
+/* 2026-09-20(피드백): 총액 행 위쪽 테두리를 다른 내부 테두리(td의 1px #f1f3f6)와 동일하게 —
+   회색 배경 칠(#f2f5f9)은 그대로 유지, 테두리만 눈에 띄던 진한 색(#15181d)에서 연하게. */
+.sumtable tr.tot td{font-weight:800;background:#f2f5f9;border-top:1px solid #f1f3f6}
+/* 2026-09-20(피드백): 증감 셀 배경 칠을 지우고 글자색만 남긴다(빨강/초록은 그대로 유지). */
+.sumtable td.dcell.dn{color:#c0392b;font-weight:700}
+.sumtable td.dcell.up{color:#1F8A5B;font-weight:700}
 /* 모든 섹션에서 막대그래프 세로 길이를 동일하게 고정(표 길이와 무관).
    2026-09-16: 240px → 480px(2배) → 360px → 320px로 재조정. */
 .sumchart{flex:1;min-width:0;height:320px}
@@ -367,6 +388,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* grid였던 .sumtitlerow를 모바일에서는 세로로 쌓는다(월/주/돈가 각각 한 줄씩). */
 #stage.portrait .sumtitlerow{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 #stage.portrait .sumcol-h{font-size:14px}
+/* 세로로 쌓을 땐 위 데스크탑용 margin-left(26px, 가로 배치 간격)이 필요 없다 — portrait의
+   flex gap(4px)이 대신 줄 간격을 준다. */
+#stage.portrait .sumcol-h + .sumcol-h,
+#stage.portrait .sumtitle-hp{margin-left:0}
 /* 2026-09-18(item6, 모바일): 카드 하나에 월/주를 나란히 두면 좁은 화면에서 다 안
    들어가므로, 모바일에서는 월 블록 위/주 블록 아래로 세로로 쌓는다. */
 #stage.portrait .sumsec-periods{flex-direction:column;gap:12px}
@@ -1842,9 +1867,8 @@ function sumTable(entity, prevRow, curRow, unitLabel){
   }).join('');
   const pT = prevRow?prevRow.s:null, cT = curRow?curRow.s:null;
   const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}</tr>`;
-  /* 기존 표(.tw table)용 전역 th{background:#fafbfc}가 특정도 더 높은 요소별 배경이라
-     <tr style="background">만으론 안 먹힌다(th 자체가 불투명) — th 각각에 직접 건다. */
-  const thStyle = `style="background:${sumHeaderColor(entity)}"`;
+  /* 2026-09-20(피드백): 배경 대신 아래쪽 테두리만 법인색으로 — th 각각에 직접 건다. */
+  const thStyle = `style="border-bottom:2px solid ${sumHeaderColor(entity)}"`;
   return `<table><thead><tr>
       <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th></tr></thead>
     <tbody>${rows}${totRow}</tbody></table>`;
@@ -1928,9 +1952,13 @@ function summaryPeriodBlock(entity, rs, unitLabel){
     </div>
   </div>`;
 }
+/* 2026-09-20(피드백): 카드 위쪽에 상단요약카드(summaryCostCard)와 똑같은 방식으로 법인색
+   테두리(border-top, sumHeaderColor 재사용 — item2·5·6이 전부 같은 색 기준을 쓰게 통일)를
+   두르고, 이름 앞에 같은 색 동그라미를 붙인다. */
 function summarySection(entity){
-  return `<div class="sumsec">
-    <div class="sumsec-h">${entity.name}</div>
+  const color = sumHeaderColor(entity);
+  return `<div class="sumsec" style="border-top:3px solid ${color}">
+    <div class="sumsec-h"><span class="sumsec-dot" style="background:${color}"></span>${entity.name}</div>
     <div class="sumsec-periods">
       ${summaryPeriodBlock(entity, entity.month, '월')}
       <div class="sumsec-pdivider"></div>
