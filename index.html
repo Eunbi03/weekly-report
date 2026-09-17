@@ -1600,7 +1600,10 @@ function kbar(rs, e, ci){
   /* 2026-09-16: 증가 표시색을 파랑→초록(GRN, #1F8A5B)으로 변경 — 모든 페이지 공통 요청.
      감소(DN)는 기존 그대로. */
   const UP='#1F8A5B', DN='#D64545';
-  const color = e.color || '#2A6FDB';
+  /* 2026-09-19(피드백): 케이프라이드 그룹(케이프라이드 자체 + MS팀 특정/MS팀/I팀)의 가로
+     게이지는 각자 다른 브랜드색 대신 전부 케이프라이드 주황(#F28C02)으로 통일 — KSUB
+     엔티티(ms_t/ms/it)는 buildKsubEntity가 e.id를 아예 안 주므로 !e.id로 같이 걸러진다. */
+  const color = (e.id==='kp' || !e.id) ? '#F28C02' : (e.color || '#2A6FDB');
   /* 2026-09-19(피드백): 카드 라벨에 몇월/몇주차인지 명시("월간 매출액"→"9월 매출액" 등) —
      rs[ci].id는 월별이면 "YYYY-MM", 주별이면 "W37" 형식(monthId/buildEntity 참고). */
   const periodLabel = isM() ? `${+cur.id.slice(5)}월` : `${cur.id.slice(1)}주차`;
@@ -1655,9 +1658,18 @@ function kbar(rs, e, ci){
   const cYear = cell('2026년 총 매출액', `${n2(y26s)}<small> 백만</small>`,
     {gauge: gauge(ach(y26t,y26s))});
 
-  /* MS팀 특정/MS팀/I팀(KSUB)은 매출액(+목표달성율 게이지)·연간누계 2개만 — 대익률/매출원가율/
-     누계매출 칸은 넣지 않는다(목표달성율 카드는 위에서 이미 없앴다). */
-  if(!e.id) return `<div class="kbar g2">${cYear}${c1}</div>`;
+  /* 2026-09-19(피드백 2차): MS팀 특정(hasLoan=true인 유일한 KSUB)만 *월 매출액 카드 오른쪽에
+     대익율 카드를 추가 — 다른 것들과 동일하게 값(%) 옆에 인라인 화살표 증감(전주/전월 대비).
+     MS팀/I팀은 대출 데이터가 케이MS 시트 직납/온라인 블록에 아예 없어(사용자 확인 완료) 기존처럼
+     매출액(+목표달성율 게이지)·연간누계 2개 카드만 유지한다. */
+  if(!e.id){
+    if(!e.hasLoan) return `<div class="kbar g2">${cYear}${c1}</div>`;
+    const m = cur.s>0 ? (cur.s-cur.loan)/cur.s*100 : null;
+    const pm = pr && pr.s>0 ? (pr.s-pr.loan)/pr.s*100 : null;
+    const dr = dp(m, pm);
+    const cLoan = cell(`${periodLabel} 대익율`, `${m!=null?m.toFixed(1):'–'}<small>%</small>`, {inline:dr.inline});
+    return `<div class="kbar g3">${cYear}${c1}${cLoan}</div>`;
+  }
 
   const c2 = e.hasLoan
     ? (()=>{ const m=cur.s>0?(cur.s-cur.loan)/cur.s*100:null,
@@ -1665,11 +1677,11 @@ function kbar(rs, e, ci){
         const dr = dp(m,pm,`대출 ${n2(cur.loan)}`);
         return cell(`${periodLabel} 대익률`, `${m!=null?m.toFixed(1):'–'}<small>%</small>`,
           {inline:dr.inline, note:dr.note}); })()
-    : (cur.c!=null
-        ? (()=>{ const dr = dp(cur.c, pr?pr.c:null);
-            return cell(`${periodLabel} 매출원가율`, `${cur.c.toFixed(1)}<small>%</small>`, {inline:dr.inline}); })()
-        : cell('누계 매출', `${n2(sum(rs.slice(0,ci+1).map(r=>r.s)))}<small> 백만</small>`,
-            {note:`목표 대비 <b>${pct(ach(sum(rs.slice(0,ci+1).map(r=>r.t)),sum(rs.slice(0,ci+1).map(r=>r.s))))}</b>`}));
+    /* 2026-09-19(피드백): 이번 주/달처럼 매출액이 아예 없어 매출원가율을 못 구하는 경우에도
+       "누계 매출" 카드로 바뀌지 않고 계속 "매출원가율" 카드 그대로, 값만 "–%"로 보여준다
+       (cur.c가 null이면 dp()도 자동으로 inline:null을 주므로 화살표 증감도 자연히 안 뜬다). */
+    : (()=>{ const dr = dp(cur.c, pr?pr.c:null);
+        return cell(`${periodLabel} 매출원가율`, `${cur.c!=null?cur.c.toFixed(1):'–'}<small>%</small>`, {inline:dr.inline}); })();
   return `<div class="kbar g3">${cYear}${c1}${c2}</div>`;
 }
 
@@ -1910,7 +1922,6 @@ function summaryPeriodBlock(entity, rs, unitLabel){
   const cur = rs && rs.length ? rs[rs.length-1] : null;
   const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
   return `<div class="sumsec-period">
-    <div class="sumsec-period-h">${unitLabel}</div>
     <div class="sumsec-body">
       <div class="sumtable">${sumTable(entity, prev, cur, unitLabel)}</div>
       <div class="sumchart">${sumChart(entity, win)}</div>
