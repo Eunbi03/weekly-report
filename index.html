@@ -352,6 +352,17 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc-sum .l{font-size:14px}
 #stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
 #stage.portrait .kc-sum-item .hp-delta{font-size:12px;white-space:normal}
+/* 2026-09-19(사이즈 체계 정리): size2/size5 모바일 값이 이 화면에도 적용되도록 —
+   법인/팀 타이틀(.sumsec-h, size2), 월/주 라벨과 값의 소단위(size5),
+   미니차트 범례·축·라벨(.sc-lgd/.sc-yax/.sc-lab/.sc-dotlab/.sc-xax, size5·7). */
+#stage.portrait .sumsec-h{font-size:14px}
+#stage.portrait .kc-sum-item .u{font-size:11.5px}
+#stage.portrait .kc-sum-item b small{font-size:11.5px}
+#stage.portrait .sc-lgd span{font-size:11.5px}
+#stage.portrait .sc-yax span{font-size:8px}
+#stage.portrait .sc-lab{font-size:8px}
+#stage.portrait .sc-dotlab{font-size:8px}
+#stage.portrait .sc-xax div{font-size:8px}
 /* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주가 한 줄에 다 안 들어가고
    카드 밖으로 흘러넘쳤다(회귀) — 월/주를 좌우가 아니라 위아래로 쌓아서 해결.
    2026-09-19(G2): .kc-sum-item이 이제 (값줄+매출액줄) 세로 컬럼이라 모바일에서 별도
@@ -505,7 +516,7 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 #stage.portrait .kp-drop{display:none}
 #stage.portrait .mob-ksub{display:flex;overflow-x:auto;overflow-y:hidden}
 #stage.portrait .mob-ksub .seg{height:36px}
-#stage.portrait .mob-ksub .seg button{flex:0 0 auto;font-size:13px;padding:0 11px}
+#stage.portrait .mob-ksub .seg button{flex:0 0 auto;font-size:14px;padding:0 11px}
 
 /* ══════════════════════ 진짜 모바일 전용 레이아웃 ══════════════════════
    예전엔 1920px 데스크탑 화면을 그대로 축소(transform:scale)해서 넣다 보니
@@ -556,7 +567,17 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait th{font-size:11.5px}
 #stage.portrait td,#stage.portrait th{padding:10px 7px}
 #stage.portrait td.sale{font-size:11.5px}
-#stage.portrait .mask{padding:16px}
+/* 2026-09-19(버그 수정): 팝업(#pop)은 #stage 바깥의 형제 요소라서 "#stage.portrait ..."
+   선택자가 전혀 닿지 않는다(위 .mask{padding:16px}도 실제로는 적용된 적 없는 죽은 규칙이었음) —
+   모바일 세로 여부는 body(및 html/#viewport)에도 동시에 .mob 클래스가 토글되므로
+   (recalcCardLayout 참고), 팝업 전용 모바일 규칙은 전부 "body.mob ..."으로 건다.
+   사이즈 체계 정리: 제목·도넛 중앙 값은 size2, 채널명·값·합계는 size4. */
+body.mob .mask{padding:16px}
+body.mob .mhd h3{font-size:14px}
+body.mob .mdonut-c b{font-size:14px}
+body.mob .mhd .tot{font-size:11.5px}
+body.mob .mrow .nm span{font-size:11.5px}
+body.mob .mval b{font-size:11.5px}
 /* 모바일 막대그래프 — 가로 스크롤 대신 항목을 세로로 쌓고, 막대는 가로로 눕혀서
    한 화면 폭 안에서 값 전체가 겹침 없이 다 보이게 한다(그 대신 글씨는 조금 작게). */
 .hbars{display:flex;flex-direction:column;gap:18px;margin-top:6px}
