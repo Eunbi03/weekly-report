@@ -43,7 +43,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .stepper button:hover:not(:disabled){background:#f0f2f6;color:#15181d}
 .stepper button:disabled{opacity:.28;cursor:default}
-.stepper .lbl{min-width:160px;text-align:center;font-size:23px;font-weight:700;letter-spacing:-.3px}
+.stepper .lbl{min-width:160px;text-align:center;font-size:21px;font-weight:700;letter-spacing:-.3px}
 /* 2026-09-14: 월별/주별 전환은 이제 이 자리(PDF 저장과 스테퍼 사이)로 옮겨졌다 — navrow는 없앴다. */
 .topright{display:flex;align-items:center;gap:10px}
 .pdfbtn{height:44px;padding:0 18px;border-radius:10px;background:#fff;border:1px solid #e7eaef;
@@ -71,7 +71,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
-.nav1 button{flex:1;border-radius:7px;font-size:23px;font-weight:700;background:transparent;color:#6c7684;
+.nav1 button{flex:1;border-radius:7px;font-size:21px;font-weight:700;background:transparent;color:#6c7684;
   letter-spacing:-.2px;display:flex;align-items:center;justify-content:center;gap:7px}
 .nav1 button:hover{color:#15181d}
 .nav1 button.on{background:#15181d;color:#fff}
@@ -84,7 +84,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   background:#fff;border:1px solid #e7eaef;border-radius:10px;padding:6px;box-shadow:0 10px 28px rgba(20,24,29,.16);
   opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .15s ease,transform .15s ease,visibility .15s;z-index:60}
 .nav1-kp-wrap:hover .kp-drop{opacity:1;visibility:visible;transform:translateY(0)}
-.kp-drop button{padding:11px 16px;border-radius:7px;background:transparent;color:#3a4049;font-size:23px;
+.kp-drop button{padding:11px 16px;border-radius:7px;background:transparent;color:#3a4049;font-size:21px;
   font-weight:700;text-align:left;white-space:nowrap;width:100%}
 .kp-drop button:hover{background:#f0f2f6}
 .kp-drop button.on{background:#15181d;color:#fff}
@@ -93,10 +93,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 .mob-ksub{display:none}
 .pip{width:7px;height:7px;border-radius:2px}
 .seg{display:flex;background:#e2e7ee;border-radius:8px;padding:3px;height:44px}
-.seg button{padding:0 18px;border-radius:6px;font-size:23px;font-weight:700;background:transparent;color:#7a828d;white-space:nowrap}
+.seg button{padding:0 18px;border-radius:6px;font-size:21px;font-weight:700;background:transparent;color:#7a828d;white-space:nowrap}
 .seg button.on{background:#2A6FDB;color:#fff}
 .seg.sm{background:#eceff4}
-.seg.sm button{padding:0 16px;font-size:23px}
+.seg.sm button{padding:0 16px;font-size:21px}
 .seg.sm button.on{background:#fff;color:#2A6FDB}
 .spacer{flex:1}
 
@@ -106,10 +106,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 .kbar{display:flex;gap:10px;flex:0 0 var(--kbar-h);overflow:hidden}
 #stage.portrait .kbar{height:auto;flex:none;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 #stage.portrait .kc{padding:14px 16px;height:auto;border:1px solid #eef1f5;border-radius:10px}
-#stage.portrait .kc .l{font-size:13px}
+#stage.portrait .kc .l{font-size:14px}
 #stage.portrait .kc .v{font-size:23px;margin-top:3px}
-#stage.portrait .kc .v small{font-size:13px}
-#stage.portrait .kc .d{font-size:11.5px;margin-top:3px}
+#stage.portrait .kc .v small{font-size:11.5px}
+#stage.portrait .kc .d{font-size:12px;margin-top:3px}
 /* 2026-09-17(item2): 조직별 화면 상단요약 카드(.kc)의 글씨 크기·스타일을 전체요약
    화면의 상단요약 카드(.kc-sum)와 동일하게 맞췄다 — 제목 23→21px, 값 45.6→34px
    (자간도 -.8→-.6px로 통일), 작은글씨(단위) 18→15px, 증감줄 23→19px(색도 .kc-sum .l/
@@ -153,8 +153,10 @@ button{font-family:inherit;border:none;cursor:pointer}
    쌓는 컬럼 — 각 블록(월/주)이 자기 폭만큼만 차지하고, 그 안에서는 항상 위아래로 정확히
    맞물린다. */
 .kc-sum-item{display:flex;flex-direction:column;gap:4px}
-.kc-sum-item .kc-sum-main{display:flex;align-items:baseline;gap:8px}
-.kc-sum-item .u{font-size:17px;color:#a8b0bb;font-weight:700}
+/* 2026-09-19(피드백 8차): "월"/"주" 라벨과 바로 뒤 수치(87.4% 등) 사이 간격을 2px 더
+   벌림(8px→10px) — 웹 상단요약과 PDF의 KPI 카드가 이 클래스를 공유하므로 둘 다 적용된다. */
+.kc-sum-item .kc-sum-main{display:flex;align-items:baseline;gap:10px}
+.kc-sum-item .u{font-size:15px;color:#a8b0bb;font-weight:700}
 .kc-sum-item b{font-size:34px;font-weight:800;color:#15181d;letter-spacing:-.6px}
 .kc-sum-item b small{font-size:15px;font-weight:700;margin-left:2px;color:#15181d}
 /* 2026-09-18: 월/주 값 바로 뒤에 붙는 인라인 증감(화살표+숫자, "p" 없이 "%"만) — 값(34px)과
@@ -180,7 +182,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .hp-delta{font-size:19px;font-weight:700;color:#8b93a0;white-space:nowrap}
 .hp-delta b{font-weight:800}
 /* 돈가 값 자체는 [Size no.2](23px, .chd h2와 동일)로 축소 */
-.hogprice .hp-box{font-size:23px;font-weight:800;letter-spacing:-.3px;color:#15181d;
+.hogprice .hp-box{font-size:21px;font-weight:800;letter-spacing:-.3px;color:#15181d;
   border:1px solid #e7eaef;border-radius:10px;padding:4px 22px;background:#fff;white-space:nowrap}
 .hogprice .hp-box b{font-weight:800}
 
@@ -233,7 +235,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    붙는다(margin:auto 같은 별도 트릭 없이 grid 트랙 자체로 해결 — 돈가가 없는 화면/
    PDF 2·3페이지에서는 그 칸이 아예 비어 있을 뿐이라 배치에 영향이 없다). */
 .sumtitlerow{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;column-gap:26px}
-.sumcol-h{min-width:0;font-size:30px;font-weight:800;letter-spacing:-.5px}
+.sumcol-h{min-width:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
 /* 2026-09-18(item3·4, PDF 전용): 돈가는 "9월"/"37주차" 제목과 같은 줄의 3번째(맨 끝)
    칸에 놓인다 — 내부(돈가 박스+전주대비)는 왼쪽 정렬(기본 flex 정렬)이라 "돈가는
    왼쪽 정렬로" 요청과도 맞는다. */
@@ -247,13 +249,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtitle-hp .hp-box b{font-weight:800;color:#15181d}
 /* "전주대비" 라벨은 굵기 없이, 내용 섹션 표 머리말(.sumtable th, 14px)과 같은 크기로 —
    화살표+숫자(<b>)는 위 범용 규칙(.hp-delta b{font-weight:800})이 그대로 적용돼 계속 굵다. */
-.sumtitle-hp .hp-delta{font-size:14px;font-weight:400}
+.sumtitle-hp .hp-delta{font-size:19px;font-weight:400}
 /* 2026-09-17(item1): 각 법인/팀 섹션을 흰 카드로 감싸서 서로 뚜렷하게 구분되게 한다.
    2026-09-18(피드백 2차, item6): 엔티티당 카드 1장 — "보담 월,주가 한 카드" 요청대로
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
 .sumsec{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #e7eaef;
   border-radius:10px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,24,29,.04)}
-.sumsec-h{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.sumsec-h{font-size:21px;font-weight:800;letter-spacing:-.3px}
 /* 카드 안에서 월/주를 나란히 두 블록으로 배치 — 각 블록 안에 그 기간의 표+차트가
    그대로 들어간다(.sumsec-body는 기존과 동일하게 재사용). */
 .sumsec-periods{display:flex;gap:16px;align-items:flex-start}
@@ -266,9 +268,9 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumsec-body{display:flex;gap:14px;align-items:flex-start}
 .sumtable{flex:0 0 44%;min-width:0}
 /* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
-.sumtable table{width:100%;border-collapse:collapse;font-size:14px}
+.sumtable table{width:100%;border-collapse:collapse;font-size:15px}
 /* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경. 2026-09-17: 본문(td)과 같이 14px로. */
-.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:14px;text-align:center;position:static;border-bottom:none}
+.sumtable th{padding:8px 8px;color:#fff;font-weight:700;font-size:15px;text-align:center;position:static;border-bottom:none}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
@@ -326,7 +328,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-xax div{flex:1;text-align:center;font-size:13px;color:#7a828d;font-weight:600}
 /* 2026-09-17(item5): 범례 글씨가 작다는 피드백으로 13px→14px */
 .sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
-.sc-lgd span{font-size:14px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd span{font-size:15px;color:#6c7684;display:flex;align-items:center;gap:4px}
 .sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
 .sc-lgd i.ln{width:12px;height:0;border-top:2px solid;border-radius:0}
 
@@ -334,11 +336,11 @@ button{font-family:inherit;border:none;cursor:pointer}
    좁은 화면에 다 안 들어가고 겹쳐 보여서, 세로 하나로 쌓는다. */
 #stage.portrait .top-summary{flex-wrap:wrap;row-gap:8px}
 #stage.portrait .hogprice{flex-wrap:wrap;gap:8px 14px}
-#stage.portrait .hogprice .hp-box{font-size:18px;padding:4px 14px}
-#stage.portrait .hogprice .hp-delta{font-size:13px}
+#stage.portrait .hogprice .hp-box{font-size:14px;padding:4px 14px}
+#stage.portrait .hogprice .hp-delta{font-size:12px}
 /* grid였던 .sumtitlerow를 모바일에서는 세로로 쌓는다(월/주/돈가 각각 한 줄씩). */
 #stage.portrait .sumtitlerow{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-#stage.portrait .sumcol-h{font-size:22px}
+#stage.portrait .sumcol-h{font-size:14px}
 /* 2026-09-18(item6, 모바일): 카드 하나에 월/주를 나란히 두면 좁은 화면에서 다 안
    들어가므로, 모바일에서는 월 블록 위/주 블록 아래로 세로로 쌓는다. */
 #stage.portrait .sumsec-periods{flex-direction:column;gap:12px}
@@ -346,8 +348,8 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .sumsec-body{flex-direction:column}
 #stage.portrait .sumtable{flex:none;width:100%}
 #stage.portrait .sumchart{flex:none;width:100%;height:150px}
-#stage.portrait .kc-sum b{font-size:26px}
-#stage.portrait .kc-sum .l{font-size:15px}
+#stage.portrait .kc-sum b{font-size:23px}
+#stage.portrait .kc-sum .l{font-size:14px}
 #stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
 #stage.portrait .kc-sum-item .hp-delta{font-size:12px;white-space:normal}
 /* 2026-09-18: 모바일 2열 그리드에서는 카드 폭이 좁아 월/주가 한 줄에 다 안 들어가고
@@ -367,7 +369,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 차트 */
 .chart{flex:0 0 var(--card-h);height:var(--card-h);padding:var(--chart-pad-t) 18px var(--chart-pad-b);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .chd{display:flex;justify-content:space-between;align-items:center;gap:16px;flex:0 0 var(--chd-h)}
-.chd h2{font-size:23px;font-weight:700;letter-spacing:-.3px}
+.chd h2{font-size:21px;font-weight:700;letter-spacing:-.3px}
 .plot{display:flex;align-items:stretch;margin-top:var(--plot-margin-t)}
 .yax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding-right:9px}
 .yax span{font-size:15px;color:#b3bac3}
@@ -390,16 +392,16 @@ button{font-family:inherit;border:none;cursor:pointer}
   border-radius:1.5px 1.5px 0 0;overflow:hidden}
 .stk.py{border:1.5px dashed #a8b0bb}
 .stk span{display:block;width:100%}
-.blab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:16px;font-weight:700;
+.blab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:700;
   color:#3a4049;white-space:nowrap;z-index:2}
 .blab.py{color:#a8b0bb;font-weight:600}
 .ovl{position:absolute;inset:0;pointer-events:none;z-index:3;padding:0 5px}
-.dotlab{position:absolute;font-size:15px;font-weight:700;color:#15181d;white-space:nowrap;
+.dotlab{position:absolute;font-size:18px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
 .xax{display:flex;gap:7px;padding:0 5px;margin-top:7px}
 .xax div{flex:1;text-align:center;min-width:0}
-.xax b{display:block;font-size:17px;font-weight:600;color:#7a828d}
-.xax u{display:block;font-size:14px;color:#b3bac3;text-decoration:none}
+.xax b{display:block;font-size:15px;font-weight:600;color:#7a828d}
+.xax u{display:block;font-size:15px;color:#b3bac3;text-decoration:none}
 .xax div.on b{color:#15181d;font-weight:800}
 .lgd{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:16px;padding-top:9px;border-top:1px solid #f1f3f6}
 /* 2026-09-19(피드백 3차, F3): 범례 글씨 크기를 표 머리말(th) 글씨 크기(18px)와 동일하게 —
@@ -458,15 +460,15 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .modal{background:#fff;border-radius:16px;width:min(880px,94vw);max-height:86vh;overflow:auto;
   box-shadow:0 18px 50px rgba(20,24,29,.26)}
 .mhd{padding:20px 24px 14px;border-bottom:1px solid #eef1f5;display:flex;justify-content:space-between;align-items:flex-start}
-.mhd h3{margin:0;font-size:19px;font-weight:800;letter-spacing:-.5px}
-.mhd .tot{margin-top:4px;font-size:13px;color:#7a828d}
+.mhd h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
+.mhd .tot{margin-top:4px;font-size:18px;color:#7a828d}
 .mhd .x{width:30px;height:30px;border-radius:8px;background:#f0f2f6;color:#6c7684;font-size:16px;font-weight:700}
 .mrow{display:grid;grid-template-columns:1fr 126px;align-items:center;gap:12px;padding:7px 24px}
 .mrow .nm{display:flex;align-items:center;gap:7px;min-width:0}
 .mrow .nm i{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
-.mrow .nm span{font-size:13px;font-weight:600;color:#3a4049;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .nm span{font-size:18px;font-weight:600;color:#3a4049;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mval{text-align:right}
-.mval b{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.mval b{font-size:18px;font-weight:800;letter-spacing:-.3px}
 .mval u{display:block;font-size:11px;color:#9aa3af;text-decoration:none}
 .mft{padding:10px 24px 18px}
 /* 2026-09-09: 거래처(채널)별 상세를 막대(가로 트랙) 대신 원그래프(도넛)로 보여준다 —
@@ -476,7 +478,7 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .mdonut svg{display:block}
 .mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;gap:4px;align-items:center;
   justify-content:center;text-align:center;pointer-events:none;padding:0 14px}
-.mdonut-c b{font-size:25px;font-weight:800;letter-spacing:-.3px;color:#15181d}
+.mdonut-c b{font-size:21px;font-weight:800;letter-spacing:-.3px;color:#15181d}
 .mdonut-c span{font-size:13px;color:#9aa3af;font-weight:600}
 /* 2026-09-10: 범례를 그래프 옆이 아니라 아래로 옮겼다 — 그만큼 확보된 가로 폭을
    원그래프 자체(W/R/SW, donutChart 참고)를 훨씬 크게 그리는 데 쓴다. 채널이 많아
@@ -496,7 +498,7 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 /* 세로(모바일 세로) 모드 전용 — 가로일 땐 원래 균등폭 그대로, 세로일 때만
    카테고리 줄(대분류·소분류)이 내용만큼만 차지하고 넘치면 가로로 스크롤되게 바꾼다. */
 #stage.portrait .nav1{overflow-x:auto;overflow-y:hidden}
-#stage.portrait .nav1 button{flex:0 0 auto;padding:0 20px;font-size:16.5px}
+#stage.portrait .nav1 button{flex:0 0 auto;padding:0 20px;font-size:14px}
 #stage.portrait .nav1-kp-wrap{flex:0 0 auto}
 /* 모바일(세로)엔 hover가 없으므로 케이프라이드 드롭다운은 숨기고, 대신 케이프라이드
    선택 시 항상 보이는 줄(.mob-ksub)로 전사/MS팀 특정/MS팀/I팀을 고른다. */
@@ -522,7 +524,7 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .pdfbtn{height:38px;font-size:14.5px;padding:0 16px}
 #stage.portrait .stepper .lbl{font-size:14px;min-width:92px}
 #stage.portrait .seg{height:36px}
-#stage.portrait .seg button{font-size:13px;padding:0 11px}
+#stage.portrait .seg button{font-size:14px;padding:0 11px}
 #stage.portrait .lgd span{font-size:11.5px}
 #stage.portrait .kc .d{white-space:normal;text-overflow:clip;overflow:visible;line-height:1.4}
 /* "전월 대비 ~" 와 "목표 ~"가 한 줄에 억지로 같이 있으면 "목표"가 중간에 잘려 다음 줄로
@@ -530,7 +532,7 @@ body.mob{height:auto;min-height:100%;overflow-y:auto;overflow-x:hidden}
 #stage.portrait .kc .d .d-sep{display:none}
 #stage.portrait .kc .d .d-note{display:block;margin-top:2px}
 #stage.portrait .chart,#stage.portrait .tcard{height:auto;flex:none;padding:12px 14px 16px}
-#stage.portrait .chd h2{font-size:16px}
+#stage.portrait .chd h2{font-size:14px}
 #stage.portrait .tw{max-height:65vh;scroll-snap-type:x mandatory;scroll-padding-left:71px}
 /* scroll-padding-left: 고정된 "구분" 칸 폭만큼 여유를 줘야, 스냅했을 때 다음 칸이
    그 고정 칸 뒤에 숨지 않고 바로 옆에 온전히 나타난다. */
