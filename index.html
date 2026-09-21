@@ -308,14 +308,17 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumsec-body{display:flex;gap:14px;align-items:flex-start}
 .sumtable{flex:0 0 44%;min-width:0}
 /* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
-.sumtable table{width:100%;border-collapse:collapse;font-size:15px}
+/* 2026-09-21(사이즈 체계, size5→size4): 표 본문 글씨 크기를 15px→18px로 키운다.
+   굵기(td 기본 400, td.nm 600, tr.tot td 800 등)는 기존 그대로 유지. */
+.sumtable table{width:100%;border-collapse:collapse;font-size:18px}
 /* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경. 2026-09-17: 본문(td)과 같이 14px로. */
 /* 2026-09-20(피드백): 머리말 배경을 법인색으로 꽉 채우던 것을 지우고, 대신 머리말과
    표 내용을 구분하는 아래쪽 테두리만 법인색으로 넣는다(색은 JS에서 th마다 인라인
    border-bottom으로 지정, sumHeaderColor 재사용). 배경이 없어졌으니 흰 글씨 대신
    표 안 "이마트"/"온라인" 같은 행 이름(.sumtable td, #3a4049)과 같은 색으로 바꿔서
    잘 보이게 한다. */
-.sumtable th{padding:8px 8px;color:#3a4049;font-weight:700;font-size:15px;text-align:center;position:static;background:transparent;border-bottom:2px solid #e7eaef}
+/* 2026-09-21(사이즈 체계, size5→size4): 머리말 글씨 크기 15px→18px, 굵기(700)는 유지. */
+.sumtable th{padding:8px 8px;color:#3a4049;font-weight:700;font-size:18px;text-align:center;position:static;background:transparent;border-bottom:2px solid #e7eaef}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
@@ -374,8 +377,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-xax{grid-column:2;grid-row:2;display:flex;gap:8px;margin-top:6px}
 .sc-xax div{flex:1;text-align:center;font-size:13px;color:#7a828d;font-weight:600}
 /* 2026-09-17(item5): 범례 글씨가 작다는 피드백으로 13px→14px */
+/* 2026-09-21(사이즈 체계, size5→size4): 데스크탑 범례 글씨 15px→18px. 모바일(#stage.portrait
+   .sc-lgd span, 11.5px)은 그대로 유지 — 요청받은 건 데스크탑(size5→size4) 쪽만. */
 .sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
-.sc-lgd span{font-size:15px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd span{font-size:18px;color:#6c7684;display:flex;align-items:center;gap:4px}
 .sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
 .sc-lgd i.ln{width:12px;height:0;border-top:2px solid;border-radius:0}
 
