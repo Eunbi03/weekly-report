@@ -296,6 +296,79 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumsec-h{font-size:21px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
 /* 2026-09-20(피드백): 법인/팀 이름 앞 동그라미(색은 JS에서 인라인, sumHeaderColor 재사용) */
 .sumsec-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+/* ===== MOCKUP v6 CSS: 법인당 1페이지 PDF 미리보기 전용 ===== */
+.sumsec-h-v2{font-size:21px;font-weight:800;letter-spacing:-.3px;padding:14px 16px 10px}
+.sumsec-titledivider-v2{height:1px;background:#e7eaef;margin:0}
+.sumsec-periods-v2{display:flex;gap:16px;align-items:flex-start;padding:14px 16px 16px}
+.sumsec-period-v2{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.sumsec-period-h-v2{display:flex;align-items:baseline;gap:10px}
+.sumsec-period-h-v2 .num{font-size:19px;font-weight:800;color:#15181d;letter-spacing:-.3px}
+.sumsec-period-h-v2 .rev{font-size:18px;font-weight:400;color:#8b93a0}
+.sumsec-body-v2{display:flex;flex-direction:column;gap:12px}
+.sumsec-body-v2 .sumtable{flex:none;width:100%}
+.sumsec-body-v2 .sumchart{flex:none;width:100%}
+.sumtable table td.ratecell{padding:6px 10px;text-align:center;vertical-align:middle;
+  border-left:1px solid #e7eaef;background:#f8f9fb}
+.ratecell-lab{font-size:13px;color:#8b93a0;font-weight:700;margin-bottom:4px}
+.ratecell-val{font-size:19px;color:#15181d;font-weight:800}
+
+/* ===== MOCKUP v9 CSS: 참고 PDF 반영 (헤더줄 + 월/주 독립 카드 + 게이지 + 박스 테두리) ===== */
+.pgv3-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;padding:0 2px}
+.pgv3-name{font-size:25px;font-weight:800;color:#15181d;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
+.pgv3-unit{font-size:14px;color:#8b93a0;font-weight:500;letter-spacing:0}
+.pgv3-hog{font-size:16px;color:#8b93a0;font-weight:600;display:flex;align-items:baseline;gap:7px;white-space:nowrap}
+.pgv3-hog b{color:#15181d;font-weight:800;font-size:18px}
+/* 2026-09-22(피드백): 상단요약카드와 내용섹션 사이 전체 간격(기존 14+10=24px)을
+   2/5만큼 줄임 — 목표 합계 약 14px(24*3/5). sumsec-wrap-v3 쪽 margin-top은 4px 미만으로
+   줄이면 overflow:hidden 클리핑 버그가 재발하므로(상단 색상 캡 offset -4px) 8px까지만 축소. */
+.kpiv3-row-wrap{display:flex;gap:16px;margin:0 0 6px}
+.kpiv3-card-wrap{flex:1;min-width:0;position:relative}
+.kpiv3-glow-band{position:absolute;z-index:0;pointer-events:none}
+.kpiv3-card{position:relative;z-index:1;width:100%;box-sizing:border-box;background:#fff;
+  border-radius:14px;padding:20px 26px;display:flex;flex-direction:column;gap:12px}
+/* 2026-09-22(피드백): 요약화면 내용섹션의 월/주 라벨(.sumsec-period-h-v2 .num, 19px)과
+   글자 크기를 동일하게 맞춤 — 기존 16px에서 확대. */
+.kpiv3-period{font-size:19px;color:#7a828d;font-weight:800}
+/* 2026-09-22(피드백): 매출액/원가율/게이지 세 요소를 폭 전체에 고르게 분산 —
+   기존 margin-left:auto로 게이지만 오른쪽 끝에 몰아붙이던 방식을 버림.
+   2026-09-22(피드백 추가): align-items를 center→flex-end로 바꿔, 게이지 원호의
+   실제 하단(半円의 flat edge, viewBox상 거의 컨테이너 바닥에 붙어있음)이
+   매출액/원가율 블록의 증감표시(.kpiv3-delta) 라인과 같은 높이에 오도록 정렬. */
+/* 2026-09-22(피드백): 하단 라인을 맞추고 나니 게이지 높이(97px)에 비해 매출액/원가율
+   블록(약 53px)이 짧아서, flex-end 정렬 시 블록 위쪽에 빈 공간이 커져 3요소 전체가
+   카드 하단으로 쏠려 보였다. row 자체를 margin-top 음수로 살짝 끌어올려 무게중심을 위로
+   이동 — block/gauge 간 하단 정렬 관계는 그대로 유지된다. */
+.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:14px;margin-top:-16px}
+.kpiv3-block{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+/* 라벨+값을 한 줄에, 증감은 다음 줄로 */
+.kpiv3-line1{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.kpiv3-lab{font-size:14px;color:#8b93a0;font-weight:700}
+.kpiv3-val{font-size:30px;font-weight:800;color:#15181d;letter-spacing:-.5px;white-space:nowrap}
+.kpiv3-val small{font-size:15px;font-weight:700;margin-left:1px;color:#15181d}
+.kpiv3-delta{font-size:16px;font-weight:800;white-space:nowrap}
+.kpiv3-div{width:1px;align-self:stretch;background:#d7dce3;flex:0 0 1px}
+.kpiv3-gauge{position:relative;width:180px;flex:0 0 180px}
+.kpiv3-gauge-svg{display:block;width:100%}
+.kpiv3-gauge-txt{position:absolute;left:0;right:0;top:54%;display:flex;flex-direction:column;
+  align-items:center;gap:2px}
+.kpiv3-gauge-txt b{font-size:21px;font-weight:800;color:#15181d;letter-spacing:-.3px}
+.kpiv3-gauge-txt b small{font-size:13px;font-weight:700;margin-left:1px}
+.kpiv3-gauge-txt span{font-size:13px;color:#9aa3af;font-weight:700}
+/* 2026-09-22(피드백): 내용섹션 — 법인색 박스가 흰 박스 뒤에서 살짝 위로 올라와
+   상단에만 색이 드러나는 형태(전체 테두리 X). */
+/* 2026-09-22(버그 수정): 이 박스는 .sumscroll(overflow:hidden, 상단 padding 0) 안에
+   있어서, 위로 -8px 튀어나온 상단 컬러 캡이 통째로 잘려 안 보이고 있었다(둥근 모서리
+   근처만 살짝 비쳤음). margin-top으로 여유 공간을 만들어 잘리지 않게 한다. */
+.sumsec-wrap-v3{position:relative;margin-top:8px}
+.sumsec-bgcap-v3{position:absolute;top:-4px;left:0;right:0;bottom:0;border-radius:16px;z-index:0}
+.sumsec.v3box{position:relative;z-index:1;background:#fff;border:none;border-radius:16px;
+  padding:16px 18px;box-shadow:0 2px 8px rgba(20,24,29,.08)}
+.sumsec.v3box .sumsec-periods-v2{padding:0}
+/* 2026-09-22(피드백): 범례를 컬럼별이 아니라 표+차트 두 컬럼 아래 전체 폭에 한 번만
+   — .sc-lgd 자체 상단 구분선을 그대로 전체 폭 구분선으로 사용. 가운데 정렬로 무게중심을 맞춘다. */
+.sc-lgd-v3{justify-content:flex-start;margin-top:12px;padding-top:12px}
+
+
 /* 카드 안에서 월/주를 나란히 두 블록으로 배치 — 각 블록 안에 그 기간의 표+차트가
    그대로 들어간다(.sumsec-body는 기존과 동일하게 재사용). */
 .sumsec-periods{display:flex;gap:16px;align-items:flex-start}
@@ -1886,7 +1959,8 @@ function sumTable(entity, prevRow, curRow, unitLabel){
    고정범위 0/50/100/150/200%)을 그대로 따른다. 다만 여기는 막대 폭이 전부 동일해서
    메인처럼 폭 가중치 계산은 필요 없고, 점의 가로 위치만 alignSummaryLines()가 실측으로
    보정한다(세로 위치는 .sc-bars/.sc-ovl의 padding을 맞춰뒀기 때문에 %계산만으로 정확하다). */
-function sumChart(entity, win){
+function sumChart(entity, win, showLegend){
+  if(showLegend===undefined) showLegend=true;
   const chans = entity.chans;
   const mx = Math.max(1, ...win.map(r=>r.s||0));
   const n = win.length || 1;
@@ -1935,9 +2009,9 @@ function sumChart(entity, win){
       ${rightAxis}
       <div class="sc-xax">${xax}</div>
     </div>
-    <div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
+    ${showLegend?`<div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
       ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
-    </div>
+    </div>`:''}
   </div>`;
 }
 
@@ -1970,6 +2044,277 @@ function summarySection(entity){
       ${summaryPeriodBlock(entity, entity.week, '주')}
     </div>
   </div>`;
+}
+
+/* ============== MOCKUP v6 (2026-09-21): PDF 전용, 법인당 1페이지 미리보기 ==============
+   요청: 보담/케이프라이드/MS팀 특정/MS팀/I팀 5페이지(백두 제외), 페이지당 KPI 카드는
+   그 법인/팀 것 하나만, 제목(동그라미 없이)+얇은 회색 구분선, 그 아래 월/주 2컬럼
+   각각 "9월 매출 1,561.35 백만" 헤더 + 표 + (표 아래) 막대+꺾은선 차트, 범례는
+   왼쪽(월) 차트 아래에 한 번만. 기존 함수/화면(summarySection 등)은 그대로 두고
+   이 블록만 새로 추가해서 미리보기용으로 쓴다 — 실제 반영 전 확인용. */
+function summaryCostCardV2(e){
+  const mArr = e.month||[], wArr = e.week||[];
+  const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
+  const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
+  const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
+  const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
+  /* 2026-09-21(피드백): 케이프라이드/MS팀 특정/MS팀/I팀은 전부 주황(sumHeaderColor)으로
+     통일 — 개별 고유색(e.color, 예: ms_t/ms는 파랑, it는 초록)을 쓰면 바로 아래
+     내용섹션 카드(주황)와 색이 어긋난다. */
+  const cardColor = sumHeaderColor(e);
+  return `<div class="card kc-sum" style="border-top:3px solid ${cardColor}">
+    <div class="l">${e.name}</div>
+    <div class="kc-sum-row">
+      <div class="kc-sum-item">
+        <div class="kc-sum-main"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
+        <div class="hp-delta">${costSalesSubText(mLast)}</div>
+      </div>
+      <div class="kc-sum-div"></div>
+      <div class="kc-sum-item">
+        <div class="kc-sum-main"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
+        <div class="hp-delta">${costSalesSubText(wLast)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+/* 2026-09-21(피드백): 표 맨 오른쪽에 열 하나 추가 — 채널별 행들을 rowspan으로 통합한
+   셀 하나에 그 기간의 매출원가율(대출액 조직은 대출액)을 표시한다. 채널별 값이 아니라
+   기간 전체 값 하나라서 세로로 합친 셀 하나로 표현. */
+function sumTableV2(entity, prevRow, curRow, unitLabel){
+  const chans = entity.chans;
+  const dcell = (pv,cv) => {
+    if(pv==null || cv==null) return `<td class="dcell">–</td>`;
+    const diff = cv-pv;
+    const cls = diff<0 ? 'dn' : (diff>0 ? 'up' : '');
+    return `<td class="dcell ${cls}">${diff>=0?'+':''}${n2(diff)}</td>`;
+  };
+  const rowCount = chans.length + 1; /* +총액 행 */
+  const lineKind = entity.hasLoan ? 'loan' : ((curRow&&curRow.c!=null)||(prevRow&&prevRow.c!=null) ? 'cost' : null);
+  const lineLabel = lineKind==='loan' ? '대출액' : '매출원가율';
+  let costVal = '–';
+  if(lineKind==='loan') costVal = (curRow && curRow.loan!=null) ? n2(curRow.loan) : '–';
+  else if(lineKind==='cost') costVal = (curRow && curRow.c!=null) ? curRow.c.toFixed(1)+'%' : '–';
+  const costCell = `<td class="ratecell" rowspan="${rowCount}">
+      <div class="ratecell-lab">${lineLabel}</div>
+      <div class="ratecell-val">${costVal}</div>
+    </td>`;
+  const rows = chans.map((c,j)=>{
+    const pv = prevRow && prevRow.ch ? prevRow.ch[j] : null;
+    const cv = curRow && curRow.ch ? curRow.ch[j] : null;
+    const extra = j===0 ? costCell : '';
+    return `<tr><td class="nm">${c.n}</td><td>${pv!=null?n2(pv):'–'}</td><td>${cv!=null?n2(cv):'–'}</td>${dcell(pv,cv)}${extra}</tr>`;
+  }).join('');
+  const pT = prevRow?prevRow.s:null, cT = curRow?curRow.s:null;
+  const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}</tr>`;
+  const thStyle = `style="border-bottom:2px solid ${sumHeaderColor(entity)}"`;
+  return `<table><thead><tr>
+      <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th><th ${thStyle}>${lineLabel}</th></tr></thead>
+    <tbody>${rows}${totRow}</tbody></table>`;
+}
+function summaryPeriodBlockV2(entity, rs, unitLabel, periodBig, showLegend){
+  const win = (rs||[]).slice(-6);
+  const cur = rs && rs.length ? rs[rs.length-1] : null;
+  const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
+  const revStr = cur && cur.s!=null ? n2(cur.s) : '–';
+  return `<div class="sumsec-period-v2">
+    <div class="sumsec-period-h-v2"><span class="num">${periodBig}</span><span class="rev">매출 ${revStr} 백만</span></div>
+    <div class="sumsec-body-v2">
+      <div class="sumtable">${sumTableV2(entity, prev, cur, unitLabel)}</div>
+      <div class="sumchart">${sumChart(entity, win, showLegend)}</div>
+    </div>
+  </div>`;
+}
+function summarySectionV2(entity){
+  const color = sumHeaderColor(entity);
+  const cutoff = window.__DASH_CUTOFF__;
+  const monthBig = cutoff ? `${cutoff.month}월` : '';
+  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  /* 2026-09-21(피드백): 페이지당 법인/팀이 하나뿐이라 위 KPI 카드에 이미 이름이 있으므로
+     내용섹션 타이틀줄의 법인명 텍스트는 삭제 — 구분선만 남긴다. */
+  return `<div class="sumsec" style="border-top:3px solid ${color}">
+    <div class="sumsec-titledivider-v2"></div>
+    <div class="sumsec-periods-v2">
+      ${summaryPeriodBlockV2(entity, entity.month, '월', monthBig, true)}
+      <div class="sumsec-pdivider"></div>
+      ${summaryPeriodBlockV2(entity, entity.week, '주', weekBig, false)}
+    </div>
+  </div>`;
+}
+function pdfEntityForV2(key){ return pdfEntityFor(key); }
+function buildSummaryPdfPageV2(group){
+  const e = pdfEntityForV2(group.keys[0]);
+  const kpiRow = `<div class="kbar kbar-sum">${summaryCostCardV2(e)}</div>`;
+  return `<div class="fixed-zone">${kpiRow}</div>
+  <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
+    ${summarySectionV2(e)}
+  </div></div></div>`;
+}
+
+/* ============== MOCKUP v9 (2026-09-22): 사용자 제공 참고 PDF(PDFKit)를 보고 재현 ==============
+   1) 법인명+단위 헤더줄(페이지 최상단, 카드 밖) — 보담 페이지에만 우측에 "주간돈가" 표시.
+   2) 월/주를 각각 독립된 연회색 카드로 분리 — 카드 안에 매출액(+증감)·원가율(+증감)·
+      반원 게이지(달성율)를 한 줄에 배치. 데이터(ach, hogPriceParts 등)는 기존 함수 재사용.
+   3) 표+차트 콘텐츠 영역(sumsec-periods-v2)을 법인색 굵은 테두리의 둥근 박스로 감싼다
+      (기존 V2의 border-top 3px 방식 대신 전체 테두리) — 참고 PDF의 파란 박스와 동일한
+      느낌을 모든 법인에 그 법인 헤더색(sumHeaderColor)으로 적용.
+   표 본문/차트(sumTableV2, sumChart, summaryPeriodBlockV2)는 V2 것을 그대로 재사용 — 이미
+   피드백 3라운드를 거쳐 검증된 부분이라 손대지 않는다. */
+/* 2026-09-22(참고 PNG 재확인): 게이지가 단색이 아니라 진(왼쪽,시작)→연(오른쪽,끝)
+   그라데이션이고, 안 채워진 트랙도 무채색 회색이 아니라 그 색의 아주 옅은 톤이었다
+   (픽셀 샘플링으로 확인: 트랙≈해당색+흰색 72% 혼합, 그라데이션 끝≈해당색+흰색 50% 혼합).
+   또 반원 자체도 기존보다 더 크고 굵게 그려져 있었다. */
+function mixWhiteV3(hex, f){
+  hex = hex.replace('#','');
+  const r = parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  const mr = Math.round(r*(1-f)+255*f), mg = Math.round(g*(1-f)+255*f), mb = Math.round(b*(1-f)+255*f);
+  return `rgb(${mr},${mg},${mb})`;
+}
+function hexAlphaV3(hex, a){
+  hex = hex.replace('#','');
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function gaugeArcV3(pctVal, color, gid){
+  const p = pctVal==null ? 0 : Math.max(0, Math.min(100, pctVal));
+  const r = 80, cx = 98, cy = 96, sw = 19;
+  const circ = Math.PI * r; // 반원 길이
+  const dash = circ * (p/100);
+  const track = `M ${cx-r} ${cy} A ${r} ${r} 0 1 1 ${cx+r} ${cy}`;
+  const trackColor = mixWhiteV3(color, 0.72);
+  const gradEnd = mixWhiteV3(color, 0.5);
+  return `<svg viewBox="0 0 196 106" class="kpiv3-gauge-svg">
+    <defs><linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${color}"/>
+      <stop offset="100%" stop-color="${gradEnd}"/>
+    </linearGradient></defs>
+    <path d="${track}" fill="none" stroke="${trackColor}" stroke-width="${sw}" stroke-linecap="round"/>
+    <path d="${track}" fill="none" stroke="url(#${gid})" stroke-width="${sw}" stroke-linecap="round"
+      stroke-dasharray="${dash.toFixed(1)} ${(circ*2).toFixed(1)}"/>
+  </svg>`;
+}
+function kpiCardV3(entity, rs, unitLabel, periodBig){
+  const cur = rs && rs.length ? rs[rs.length-1] : null;
+  const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
+  const color = sumHeaderColor(entity);
+  const sVal = cur && cur.s!=null ? n2(cur.s) : '–';
+  const sDiff = (cur&&cur.s!=null && prev&&prev.s!=null) ? cur.s-prev.s : null;
+  const sDiffHtml = sDiff==null ? '' : `<div class="kpiv3-delta" style="color:${sDiff<0?'#D64545':'#1F8A5B'}">${sDiff<0?'▼':'▲'}${n2(Math.abs(sDiff))}</div>`;
+  /* 2026-09-22(참고 PDF 반영): 표(sumTableV2)와 동일한 규칙 — hasLoan 조직(MS팀 특정)은
+     두 번째 통계가 원가율이 아니라 대출액이어야 한다. 라벨/값/증감 전부 분기. */
+  const secondLab = entity.hasLoan ? '대출액' : '원가율';
+  let secondValHtml = '–', secondDiffHtml = '';
+  if(entity.hasLoan){
+    if(cur && cur.loan!=null) secondValHtml = n2(cur.loan);
+    const lDiff = (cur&&cur.loan!=null && prev&&prev.loan!=null) ? cur.loan-prev.loan : null;
+    secondDiffHtml = lDiff==null ? '' : `<div class="kpiv3-delta" style="color:${lDiff<0?'#D64545':'#1F8A5B'}">${lDiff<0?'▼':'▲'}${n2(Math.abs(lDiff))}</div>`;
+  } else {
+    if(cur && cur.c!=null) secondValHtml = `${cur.c.toFixed(1)}<small>%</small>`;
+    const cDiff = (cur&&cur.c!=null && prev&&prev.c!=null) ? cur.c-prev.c : null;
+    secondDiffHtml = cDiff==null ? '' : `<div class="kpiv3-delta" style="color:${cDiff<0?'#D64545':'#1F8A5B'}">${cDiff<0?'▼':'▲'}${Math.abs(cDiff).toFixed(1)}%</div>`;
+  }
+  const ac = cur ? ach(cur.t, cur.s) : null;
+  const acHtml = ac!=null ? `${ac.toFixed(1)}<small>%</small>` : '–';
+  /* 2026-09-22(피드백): 흰 배경 + 그림자(거리 0, 흐림만) — 색은 법인색.
+     라벨·값을 같은 줄에, 증감은 다음 줄로. 매출액/원가율/게이지 세 요소를 카드 폭
+     전체에 고르게(justify-content:space-evenly, CSS) 배치 — margin-left:auto로
+     오른쪽에 몰아붙이던 방식을 버렸다. */
+  /* 2026-09-22(버그 수정, 재확인): box-shadow도 radial-gradient도 실제 내보내기 파이프라인
+     (html2canvas scale:1.8)에서는 캡처가 안 됐다 — 격리 테스트로 직접 확인: box-shadow는
+     scale:1에서만 그려지고 scale:1.8에서 사라짐, radial-gradient는 scale 무관하게 아예
+     안 그려짐. html2canvas가 확실히 그리는 건 "실제 배경색이 있는 요소"뿐이라, 그 원리만
+     쓰는 겹겹이 쌓은 반투명 단색 밴드(레이어)로 후광을 근사한다 — 같은 테스트 파이프라인
+     으로 재확인 완료(밴드는 scale:1.8에서도 정상 렌더링됨). */
+  /* 오프셋 최대값은 #pdfStage 자체 패딩(--pad-h:18px/--pad-v:14px)보다 작게 잡아야
+     페이지 가장자리 쪽 카드의 후광이 스테이지 overflow:hidden에 잘리지 않는다.
+     2026-09-22(재조정): 범위를 절반으로 줄이고(-12→-6) 옅게.
+     2026-09-22(재조정 2): "색상은 더 옅게 + 레이어드 불투명도가 더 빠르게 올라오도록" —
+     선형 증가 대신 제곱 곡선(t^2)으로 바꿔, 카드에서 먼 바깥쪽 레이어는 거의 안 보이다가
+     카드 테두리에 가까워질수록 불투명도가 빠르게 치고 올라오게 함. 최고 불투명도 자체도
+     .13→.09로 낮춰 전체적으로 더 창백하게. */
+  const glowSteps = [[-6,.003],[-5,.01],[-4,.02],[-3,.04],[-2,.06],[-1,.09]];
+  const glowBands = glowSteps.map(([off,a])=>
+    `<div class="kpiv3-glow-band" style="top:${off}px;left:${off}px;right:${off}px;bottom:${off}px;
+      border-radius:${14-off}px;background:${hexAlphaV3(color,a)}"></div>`).join('');
+  return `<div class="kpiv3-card-wrap">
+    ${glowBands}
+    <div class="kpiv3-card">
+      <div class="kpiv3-period">${periodBig}</div>
+      <div class="kpiv3-row">
+        <div class="kpiv3-block">
+          <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}</span></div>
+          ${sDiffHtml}
+        </div>
+        <div class="kpiv3-div"></div>
+        <div class="kpiv3-block">
+          <div class="kpiv3-line1"><span class="kpiv3-lab">${secondLab}</span><span class="kpiv3-val">${secondValHtml}</span></div>
+          ${secondDiffHtml}
+        </div>
+        <div class="kpiv3-div"></div>
+        <div class="kpiv3-gauge">
+          ${gaugeArcV3(ac, color, 'gaugeGradV3-'+unitLabel)}
+          <div class="kpiv3-gauge-txt"><b>${acHtml}</b><span>달성율</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function pageHeaderV3(entity, showHogPrice){
+  let hp = '';
+  if(showHogPrice){
+    const {priceStr, wowStr, wowColor} = hogPriceParts();
+    hp = `<div class="pgv3-hog"><span class="lab">주간돈가</span> <b>${priceStr}</b> <b style="color:${wowColor}">${wowStr}</b></div>`;
+  }
+  return `<div class="pgv3-header">
+    <div class="pgv3-name">${entity.name}<span class="pgv3-unit">단위 : 백만 원</span></div>
+    ${hp}
+  </div>`;
+}
+/* 2026-09-22(피드백): 표+차트 범례를 각 컬럼(월)에 붙이지 않고, 두 컬럼 아래에
+   전체 폭으로 한 번만 — .sc-lgd 자체에 이미 위쪽 구분선(border-top)이 있어서 그걸
+   그대로 전체 폭 구분선으로 재사용한다(별도 CSS 없이). */
+function chanLegendHtmlV3(entity){
+  const chans = entity.chans;
+  const rs = (entity.month && entity.month.length) ? entity.month : entity.week;
+  const lineKind = entity.hasLoan ? 'loan' : ((rs||[]).some(r=>r.c!=null) ? 'cost' : null);
+  const lineName = lineKind==='loan' ? '대출액' : '매출원가율';
+  return `<div class="sc-lgd sc-lgd-v3">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
+    ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
+  </div>`;
+}
+function summarySectionV3Body(entity){
+  const cutoff = window.__DASH_CUTOFF__;
+  const monthBig = cutoff ? `${cutoff.month}월` : '';
+  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  const color = sumHeaderColor(entity);
+  /* 2026-09-22(피드백): 박스 전체 테두리 대신 — 법인색 박스를 흰 박스 뒤에, 살짝 위로
+     오프셋해서 배치 → 흰 박스 상단 너머로 색이 삐져나온 것처럼 상단에만 보인다. */
+  return `<div class="sumsec-wrap-v3">
+    <div class="sumsec-bgcap-v3" style="background:${color}"></div>
+    <div class="sumsec v3box">
+      <div class="sumsec-periods-v2">
+        ${summaryPeriodBlockV2(entity, entity.month, '월', monthBig, false)}
+        <div class="sumsec-pdivider"></div>
+        ${summaryPeriodBlockV2(entity, entity.week, '주', weekBig, false)}
+      </div>
+      ${chanLegendHtmlV3(entity)}
+    </div>
+  </div>`;
+}
+function buildSummaryPdfPageV3(group){
+  const e = pdfEntityForV2(group.keys[0]);
+  const showHogPrice = group.keys[0]==='bo';
+  const cutoff = window.__DASH_CUTOFF__;
+  const monthBig = cutoff ? `${cutoff.month}월` : '';
+  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  const header = pageHeaderV3(e, showHogPrice);
+  const kpiRow = `<div class="kpiv3-row-wrap">
+    ${kpiCardV3(e, e.month, '월', monthBig)}
+    ${kpiCardV3(e, e.week, '주', weekBig)}
+  </div>`;
+  return `<div class="fixed-zone">${header}${kpiRow}</div>
+  <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
+    ${summarySectionV3Body(e)}
+  </div></div></div>`;
 }
 
 /* 2026-09-18(피드백): 돈가(가격/전주대비) 문자열 조립을 한 곳으로 모았다 — 웹 상단바
@@ -2034,7 +2379,7 @@ function buildSummaryScreen(g, navHtml){
     <div class="hogprice">
       <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
       <div class="hp-box">돈가 <b>${priceStr}</b></div>
-      <button class="pdfbtn" id="pdfBtn" onclick="exportSummaryPdf()" title="전체 요약을 인쇄용 3페이지 PDF로 저장">
+      <button class="pdfbtn" id="pdfBtn" onclick="exportSummaryPdf()" title="전체 요약을 인쇄용 5페이지 PDF로 저장">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
@@ -2306,51 +2651,46 @@ window.addEventListener('load', fit);
    2026-09-16: 예전엔 각 조직 화면(보담/백두/케이프라이드)마다 PDF 저장 버튼이 있어서
    화면 그대로(월별·주별×막대·표 24장)를 통째로 내보냈는데, 이제 그 버튼들은 없애고
    전체 요약 화면 하나에만 PDF 버튼을 둔다 — 대신 이 버튼이 만드는 PDF는 "화면 그대로"가
-   아니라 사용자가 준 참고 사진과 똑같은 별도의 인쇄용 3페이지 레이아웃이다:
-     1페이지 = 보담+백두 (상단에 매출원가율 3장 + 돈가 1장, 총 4장 KPI 카드 포함)
-     2페이지 = 케이프라이드(전사)+MS팀 특정 (KPI 카드 없음)
-     3페이지 = MS팀+I팀 (KPI 카드 없음)
-   이 페이지 그룹 순서(보담+백두 묶음)는 화면 전체요약의 표시 순서(보담→케이프라이드→
-   MS팀특정→MS팀→I팀→백두)와 다르다 — 사용자가 사진과 동일하게 이 순서가 맞다고
-   확인해줬다.
+   아니라 별도의 인쇄용 레이아웃이다.
+   2026-09-22(디자인 전면 교체): 사용자가 제공한 참고 PDF(PDFKit)를 그대로 재현한
+   V3 디자인으로 교체 — 예전 3페이지(엔티티 2개씩 묶음) 구성을 버리고, 법인/팀당
+   1페이지씩 총 5페이지(보담/케이프라이드/MS팀 특정/MS팀/I팀 — 백두는 요약 PDF에서
+   제외, 화면 전체요약에는 계속 표시됨)로 바뀌었다. 페이지마다: 상단에 법인명+단위
+   헤더줄(보담 페이지만 우측에 주간돈가 추가) → 월/주 KPI 카드 2장(매출액·원가율(또는
+   대출액)·반원 게이지) → 법인색 상단 캡이 있는 내용섹션(표+차트, 범례는 전체 폭 공유).
+   실제 렌더 함수는 buildSummaryPdfPageV3()이고, buildSummaryPdfPage()는 그 위임
+   지점일 뿐이다(마크업/CSS는 kpiv3-*, pgv3-*, sumsec-wrap-v3 등 새 클래스로 격리돼
+   있어 화면(summarySection 등) 쪽 스타일과 충돌하지 않는다).
    - 화면(#stage)은 건드리지 않는다 — 오프스크린 #pdfStage에 buildSummaryPdfPage()가
-     만드는, 화면용 마크업과는 다른 전용 레이아웃(브랜드바/내비 없이 "9월"/"37주차"
-     제목 + KPI행(1페이지만) + 표+차트 섹션 2개)만 넣고 그것만 캡처한다.
-   - 표/차트 자체는 summarySection()/sumTable()/sumChart()를 그대로 재사용한다 — 화면과
-     로직을 이원화하면 나중에 화면 디자인이 바뀔 때 서로 어긋난다.
-   - 페이지당 엔티티 2개(+1페이지는 KPI행까지)라 세로로 넘칠 수 있어, 기존 표
+     만드는 전용 레이아웃만 넣고 그것만 캡처한다.
+   - 표/차트 자체는 sumTableV2()/sumChart()를 재사용한다(화면의 summarySection이 쓰는
+     sumTable()과는 별개 함수이지만 같은 데이터 소스 D/KSUB을 그대로 읽는다) — 화면과
+     로직을 완전히 이원화하지 않기 위해 데이터 접근 경로(pdfEntityFor, D[key]/KSUB.*)는
+     화면과 100% 동일하게 유지했다.
+   - 페이지당 엔티티 1개뿐이라 세로로 넘칠 일이 거의 없지만, 혹시를 대비해 기존 표
      축소(transform:scale) 로직과 같은 원리로 .sumwrap 전체를 실측해서 필요하면 통째로
-     줄여 반드시 한 페이지(1920×1082) 안에 담는다 — "3페이지를 넘지 않는다"는 요구사항의
-     핵심 안전장치. */
+     줄여 반드시 한 페이지(1920×1082) 안에 담는 안전장치는 그대로 유지된다. */
 function pdfEntityFor(key){
   if(key==='ms_t') return KSUB.ms_t;
   if(key==='ms') return KSUB.ms;
   if(key==='it') return KSUB.it;
   return D[key];
 }
-/* 2026-09-16: 사용자가 첨부 사진으로 직접 확인해 준 페이지 그룹 순서. */
+/* 2026-09-22: 법인/팀당 1페이지, 5페이지 순서(보담→케이프라이드→MS팀 특정→MS팀→I팀).
+   화면 전체요약의 표시 순서(보담→케이프라이드→MS팀특정→MS팀→I팀→백두)와 달리 백두는
+   요약 PDF에는 포함하지 않는다 — 사용자가 참고 PDF와 동일하게 확인해 준 구성. */
 const PDF_SUMMARY_GROUPS = [
-  { keys:['bo','bd'], kpi:true },
-  { keys:['kp','ms_t'], kpi:false },
-  { keys:['ms','it'], kpi:false },
+  { keys:['bo'] },
+  { keys:['kp'] },
+  { keys:['ms_t'] },
+  { keys:['ms'] },
+  { keys:['it'] },
 ];
-/* PDF 전용 페이지 한 장. 화면의 buildSummaryScreen()과 달리 브랜드바/내비가 없고,
-   group.keys에 있는 엔티티 2개 분량의 섹션만 담는다. group.kpi가 true인 페이지(1페이지)
-   에만 3장짜리 KPI 카드 행을 붙인다.
-   2026-09-18(item3·4, 피드백): "상단요약(KPI 카드)을 가장 위로, 월/주차 제목은 그
-   아래"로 순서를 다시 바꿨다(2026-09-17 item2는 화면 기준 요청이었고, 이번 피드백은
-   PDF 한정 요청). 돈가는 더 이상 4번째 카드가 아니라 summaryTitleRow(true)를 통해
-   제목 줄 오른쪽에 인라인으로 붙는다. */
+/* 2026-09-22: buildSummaryPdfPage()는 exportSummaryPdf()의 기존 루프가 그대로
+   호출하는 진입점이라 이름/시그니처를 유지하고, 실제 렌더는 전부 V3 디자인
+   (buildSummaryPdfPageV3 — 위쪽 "PDF 저장" 섹션 헤더 주석 참고)에 위임한다. */
 function buildSummaryPdfPage(group){
-  const ents = group.keys.map(pdfEntityFor);
-  const sections = ents.map(e=>summarySection(e)).join('');
-  const kpiRow = group.kpi
-    ? `<div class="kbar kbar-sum">${['bo','kp','bd'].map(id=>summaryCostCard(id)).join('')}</div>`
-    : '';
-  return `<div class="fixed-zone">${kpiRow}${summaryTitleRow(group.kpi)}</div>
-  <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
-    ${sections}
-  </div></div></div>`;
+  return buildSummaryPdfPageV3(group);
 }
 function loadScriptOnce(src){
   return new Promise((resolve,reject)=>{
