@@ -856,23 +856,44 @@ function monthLabel(id){ return (+id.slice(5))+'월'; }
 const MLAB = new Proxy({}, { get:(_,id)=> typeof id==='string' ? monthLabel(id) : undefined });
 
 /* ---------- 파일 자동탐색 ---------- */
+/* 2026-09-28: macOS에서 파일명을 바꾸면(Finder 등) 파일시스템이 한글 자모를 분해형(NFD)으로
+   저장할 수 있다 — 그 상태로 git에 커밋되면 배포된 실제 파일 경로도 NFD가 된다. 반면 이 코드가
+   candidates에서 만드는 문자열은 항상 완성형(NFC)이라, 사람 눈엔 완전히 같은 이름인데 바이트가
+   달라 404가 날 수 있다(39주차에 실제로 이렇게 파일을 못 찾는 문제가 있었다) — 두 형태를 다
+   후보에 넣어 시도한다. 또한 3개년×53주 = 최대 159개(×2 = 318개) 요청을 한 번에 다 동시에
+   보내면 배포 환경에 따라 트래픽 폭주로 오인되어 전부 503으로 막히는 경우가 있어, 작은 묶음으로
+   나눠 순차 처리한다. */
 async function findWorkbookFile(){
   const years = [];
   const now = new Date();
   const baseYY = now.getFullYear()%100;
   for(const yy of [baseYY-1, baseYY, baseYY+1]) years.push(String(yy).padStart(2,'0'));
+  const baseNames = [];
+  for(const yy of years) for(let w=1; w<=53; w++) baseNames.push(`주간매출자료-${yy}${String(w).padStart(2,'0')}.xlsm`);
   const candidates = [];
-  for(const yy of years) for(let w=1; w<=53; w++) candidates.push(`주간매출자료-${yy}${String(w).padStart(2,'0')}.xlsm`);
-  const found = [];
-  await Promise.all(candidates.map(async name=>{
+  for(const name of baseNames){
+    candidates.push(name.normalize('NFC'));
+    candidates.push(name.normalize('NFD'));
+  }
+  async function headOk(name){
     try{
       const res = await fetch(name, {method:'HEAD', cache:'no-store'});
-      if(res.ok) found.push(name);
-    }catch(e){ /* 존재하지 않음 — 무시 */ }
-  }));
+      return res.ok ? name : null;
+    }catch(e){ return null; }
+  }
+  const found = [];
+  const CHUNK = 16;
+  for(let i=0;i<candidates.length;i+=CHUNK){
+    const chunk = candidates.slice(i, i+CHUNK);
+    const results = await Promise.all(chunk.map(headOk));
+    results.forEach(r=>{ if(r) found.push(r); });
+  }
   if(found.length===0) throw new Error('주간매출자료-26NN.xlsm 파일을 찾을 수 없습니다. (이 저장소 폴더에 xlsm 파일이 올라와 있는지 확인해주세요)');
-  if(found.length>1) console.warn('[대시보드] 후보 파일이 여러 개 발견됨(오래된 파일을 지워주세요):', found);
-  return found.sort().slice(-1)[0];
+  /* NFC/NFD 두 형태로 찾다 보니 같은 파일이 두 번(이름만 다르게) 잡힐 수 있어 정규화 기준으로 중복 제거,
+     정렬도 정규화된 값 기준으로 해야 인코딩이 섞여도 "가장 최신 주차"가 정확히 뽑힌다. */
+  const uniq = [...new Map(found.map(n=>[n.normalize('NFC'), n])).values()];
+  if(uniq.length>1) console.warn('[대시보드] 후보 파일이 여러 개 발견됨(오래된 파일을 지워주세요):', uniq);
+  return uniq.map(n=>({n, key:n.normalize('NFC')})).sort((a,b)=> a.key<b.key?-1:(a.key>b.key?1:0)).slice(-1)[0].n;
 }
 /* 2026-09-09: 화면 로딩 속도 개선.
    1) fetch cache:'no-cache' — 매번 서버에 최신 여부는 확인하지만(항상 최신 데이터 보장),
