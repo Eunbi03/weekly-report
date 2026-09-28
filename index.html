@@ -355,7 +355,11 @@ button{font-family:inherit;border:none;cursor:pointer}
   border-radius:14px;padding:20px 26px;display:flex;flex-direction:column;gap:12px}
 /* 2026-09-22(피드백): 요약화면 내용섹션의 월/주 라벨(.sumsec-period-h-v2 .num, 19px)과
    글자 크기를 동일하게 맞춤 — 기존 16px에서 확대. */
-.kpiv3-period{font-size:19px;color:#7a828d;font-weight:800}
+.kpiv3-period{font-size:19px;color:#7a828d;font-weight:800;display:flex;align-items:baseline;gap:10px}
+/* 2026-09-28: "9월"/"39주차" 옆 보담/백두 개별 매출액 — 제목(periodBig)보다는 작고,
+   법인색으로 구분(보담 파랑/백두 초록, summaryCostCardSy의 rawRow와 동일 색). */
+.kpiv3-raworg{display:inline-flex;gap:10px;font-size:14px;font-weight:700}
+.kpiv3-raworg-item{white-space:nowrap}
 /* 2026-09-22(피드백): 매출액/원가율/게이지 세 요소를 폭 전체에 고르게 분산 —
    기존 margin-left:auto로 게이지만 오른쪽 끝에 몰아붙이던 방식을 버림.
    2026-09-22(피드백 추가): align-items를 center→flex-end로 바꿔, 게이지 원호의
@@ -2309,23 +2313,47 @@ function hexAlphaV3(hex, a){
   const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
   return `rgba(${r},${g},${b},${a})`;
 }
+/* 2026-09-28(피드백): "달성율그래프 높이를 더 작게 + 굵기를 더 굵게" — 기존엔 진짜 원(circle)
+   호라서 반지름 r 하나가 세로 폭과 가로 폭을 동시에 결정했다(높이를 줄이려면 가로도 같이
+   줄어듦). 가로 반지름(rx)은 그대로 두고 세로 반지름(ry)만 줄인 타원(ellipse) 호로 바꿔서
+   "납작하게"(높이만 축소) 만들고, 그렇게 생긴 여유를 선 굵기(sw)를 키우는 데 썼다.
+   타원 호라 stroke-dasharray 계산에 쓰던 원의 둘레(π*r, 반원이라 정확히 π*r) 공식을
+   그대로 못 쓴다 — 타원 둘레는 초등함수로 정확히 못 구해서(타원적분) 라마누잔 근사식을
+   쓴다(진행률 표시용 근사라 육안으로는 차이가 없다). 이 타원은 두 대칭축(가로/세로)을
+   모두 가진 표준형이라, 가로축을 지나는 절반(위쪽 반원 부분)은 정확히 전체 둘레의 절반이다. */
 function gaugeArcV3(pctVal, color, gid){
   const p = pctVal==null ? 0 : Math.max(0, Math.min(100, pctVal));
-  const r = 80, cx = 98, cy = 96, sw = 19;
-  const circ = Math.PI * r; // 반원 길이
-  const dash = circ * (p/100);
-  const track = `M ${cx-r} ${cy} A ${r} ${r} 0 1 1 ${cx+r} ${cy}`;
+  const rx = 82, ry = 56, cx = 98, cy = 73, sw = 26;
+  const h = Math.pow(rx-ry,2)/Math.pow(rx+ry,2);
+  const fullPerim = Math.PI*(rx+ry)*(1+(3*h)/(10+Math.sqrt(4-3*h)));
+  const semi = fullPerim/2; // 위쪽 반타원 호 길이(근사)
+  const dash = semi * (p/100);
+  const track = `M ${cx-rx} ${cy} A ${rx} ${ry} 0 1 1 ${cx+rx} ${cy}`;
   const trackColor = mixWhiteV3(color, 0.72);
   const gradEnd = mixWhiteV3(color, 0.5);
-  return `<svg viewBox="0 0 196 106" class="kpiv3-gauge-svg">
+  return `<svg viewBox="0 0 196 90" class="kpiv3-gauge-svg">
     <defs><linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="${color}"/>
       <stop offset="100%" stop-color="${gradEnd}"/>
     </linearGradient></defs>
     <path d="${track}" fill="none" stroke="${trackColor}" stroke-width="${sw}" stroke-linecap="round"/>
     <path d="${track}" fill="none" stroke="url(#${gid})" stroke-width="${sw}" stroke-linecap="round"
-      stroke-dasharray="${dash.toFixed(1)} ${(circ*2).toFixed(1)}"/>
+      stroke-dasharray="${dash.toFixed(1)} ${(semi*2).toFixed(1)}"/>
   </svg>`;
+}
+/* 2026-09-28(피드백): "9월"/"39주차"(periodBig) 옆에 보담/백두 개별 매출액 표기 —
+   entity.rawOrg가 있는 조직(현재는 식육사업본부=sy 하나뿐, D.sy.rawOrg = readRawOrgSales()로
+   보담-B/백두-K 원본 시트에서 직접 읽은 값, summaryCostCardSy에서 쓰는 것과 동일 소스)만
+   해당. 이 카드가 월용인지 주용인지(unitLabel==='월'|'주')에 맞는 값만 골라 쓴다. */
+function raworgPeriodHtml(entity, unitLabel){
+  if(!entity.rawOrg) return '';
+  const bo = rawOrgLatest(entity.rawOrg.bo), bd = rawOrgLatest(entity.rawOrg.bd);
+  const boV = unitLabel==='월' ? bo.m : bo.w;
+  const bdV = unitLabel==='월' ? bd.m : bd.w;
+  return `<span class="kpiv3-raworg">
+    <span class="kpiv3-raworg-item" style="color:#1566B2">보담 ${boV!=null?n2(boV):'–'}</span>
+    <span class="kpiv3-raworg-item" style="color:#259638">백두 ${bdV!=null?n2(bdV):'–'}</span>
+  </span>`;
 }
 function kpiCardV3(entity, rs, unitLabel, periodBig){
   const cur = rs && rs.length ? rs[rs.length-1] : null;
@@ -2373,7 +2401,7 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
   return `<div class="kpiv3-card-wrap">
     ${glowBands}
     <div class="kpiv3-card">
-      <div class="kpiv3-period">${periodBig}</div>
+      <div class="kpiv3-period">${periodBig}${raworgPeriodHtml(entity, unitLabel)}</div>
       <div class="kpiv3-row">
         <div class="kpiv3-block">
           <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}</span></div>
