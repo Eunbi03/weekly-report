@@ -33,14 +33,14 @@ button{font-family:inherit;border:none;cursor:pointer}
 .top{display:flex;justify-content:space-between;align-items:center;gap:20px;height:var(--top-h);flex:0 0 var(--top-h)}
 .brand{display:flex;align-items:center;gap:10px}
 .brand .bar{width:8px;height:24px;border-radius:2px}
-.brand h1{font-size:45.6px;font-weight:800;letter-spacing:-.5px}
+.brand h1{font-size:45.6px;font-weight:800;letter-spacing:-.5px;color:#15182D}
 /* 2026-09-16: "(단위:백만 원)" 텍스트 — 모든 페이지 공통. 볼드 제거 + 사이즈를
    [Size no.3](=전체 요약 화면 내용 섹션의 법인/팀 타이틀 .sumsec-h와 동일한 19px)로 통일. */
 .brand .unit{font-size:19px;color:#9aa3af;font-weight:400;margin-left:2px}
 .stepper{display:flex;align-items:center;background:#fff;border:1px solid #e7eaef;border-radius:10px;
   padding:5px 6px;gap:2px}
 .stepper button{width:30px;height:34px;border-radius:7px;background:transparent;color:#7a828d;
-  font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .stepper button:hover:not(:disabled){background:#f0f2f6;color:#15181d}
 .stepper button:disabled{opacity:.28;cursor:default}
 .stepper .lbl{min-width:160px;text-align:center;font-size:21px;font-weight:700;letter-spacing:-.3px}
@@ -114,7 +114,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc .d{font-size:12px;margin-top:3px}
 #stage.portrait .kc-d-inline{font-size:12px}
 #stage.portrait .kc-gauge{height:20px;margin-top:8px}
-#stage.portrait .kc-gauge-fill{min-width:52px;padding-right:7px}
+#stage.portrait .kc-gauge-fill{min-width:98px;padding-right:7px}
 #stage.portrait .kc-gauge-val{font-size:11.5px}
 /* 2026-09-17(item2): 조직별 화면 상단요약 카드(.kc)의 글씨 크기·스타일을 전체요약
    화면의 상단요약 카드(.kc-sum)와 동일하게 맞췄다 — 제목 23→21px, 값 45.6→34px
@@ -122,7 +122,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    .hp-delta와 같은 회색 #8b93a0으로). */
 .kc{flex:1;min-width:0;padding:0 20px 0 44px;display:flex;flex-direction:column;height:100%;
   justify-content:center;align-items:flex-start;text-align:left;overflow:hidden}
-.kc .l{font-size:21px;color:#8b93a0;font-weight:700;white-space:nowrap}
+.kc .l{font-size:21px;color:#6C7684;font-weight:700;white-space:nowrap}
 .kc .v{font-size:34px;font-weight:800;letter-spacing:-.6px;white-space:nowrap;color:#15181d!important;margin-top:6px}
 .kc .v small{font-size:15px;font-weight:700;margin-left:3px;color:#15181d}
 .kc .d{font-size:19px;color:#8b93a0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -142,7 +142,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    색 위에 흰 글씨가 놓이도록 막대에 최소 너비(min-width)를 준다. */
 .kc-gauge{position:relative;width:100%;height:24px;border-radius:6px;background:#eef1f5;
   overflow:hidden;margin-top:10px;flex:0 0 auto}
-.kc-gauge-fill{position:absolute;left:0;top:0;height:100%;min-width:66px;box-sizing:border-box;
+.kc-gauge-fill{position:absolute;left:0;top:0;height:100%;min-width:148px;box-sizing:border-box;
   border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px}
 .kc-gauge-val{font-size:18px;font-weight:400;color:#fff;white-space:nowrap}
 
@@ -164,7 +164,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    너비가 얼마든 그 블록 자신의 아래에 자기 매출액·달성율이 그대로 붙어서 항상 맞는다. */
 .kbar-sum{flex:0 0 168px}
 .kc-sum{flex:1;min-width:0;padding:14px 26px;display:flex;flex-direction:column;justify-content:center;gap:8px}
-.kc-sum .l{font-size:21px;color:#15181d;font-weight:800;white-space:nowrap}
+.kc-sum .l{font-size:21px;color:#15181d;font-weight:700;white-space:nowrap}
 /* 2026-09-18(피드백 3차): item5(두 개의 "상자") 요청을 실제 테두리 있는 박스 UI로
    구현했었는데, 사용자가 다시 보낸 참고 사진에는 그런 박스 테두리가 없었다 — "두 개의
    상자"는 UI 요소가 아니라 "월 값끼리, 주 값끼리 묶어서 생각해달라"는 뜻이었던 것으로
@@ -195,7 +195,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-27 피드백: "월"/"주" 라벨과 바로 뒤 매출액 값 사이 간격을 매출원가율 쪽
    (.kc-sum-main, gap:10px)과 같은 간격으로 좁힌다 — 월 블록/주 블록 사이(바깥) 간격은
    그대로 16px 유지, 각 블록 "안쪽"(라벨-값)만 kc-sum-raw-pair로 묶어 10px로 좁힌다. */
-.kc-sum-raw-v{font-size:19px;font-weight:800;color:#15181d;display:flex;gap:16px;align-items:baseline}
+.kc-sum-raw-v{font-size:21px;font-weight:800;color:#15181d;display:flex;gap:16px;align-items:baseline}
 .kc-sum-raw-pair{display:flex;gap:10px;align-items:baseline}
 /* "월"/"주" 라벨 = 매출원가율의 "월"/"주" 텍스트(.kc-sum-item .u, 15px/700/#a8b0bb)와 동일 크기 */
 .kc-sum-raw-v .u{font-size:15px;color:#a8b0bb;font-weight:700}
@@ -211,7 +211,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .kc-sum-item b small{font-size:15px;font-weight:700;margin-left:2px;color:#15181d}
 /* 2026-09-18: 월/주 값 바로 뒤에 붙는 인라인 증감(화살표+숫자, "p" 없이 "%"만) — 값(34px)과
    달리 기존 전월대비/전주대비 줄과 같았던 19px을 그대로 유지한다(item1: 기존 텍스트 크기 유지). */
-.kc-sum-item .kc-sum-delta{font-size:19px;font-weight:800;margin-left:2px;white-space:nowrap}
+.kc-sum-item .kc-sum-delta{font-size:19px;font-weight:700;margin-left:2px;white-space:nowrap}
 /* 매출액·달성율 줄 — 돈가 위젯의 .hp-delta와 완전히 같은 스타일(19px)을 그대로 재사용,
    이제 각 .kc-sum-item 안에 직접 들어있어 그 블록의 값 바로 아래에 자연스럽게 붙는다.
    2026-09-19(피드백 7차): "매출액·달성율 볼드처리한거 빼줘" — 기본 .hp-delta가
@@ -300,21 +300,6 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtitlerow{display:flex;align-items:center;padding-left:17px}
 .sumcol-h{flex:1 1 0%;min-width:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
 .sumcol-h + .sumcol-h{margin-left:26px}
-.sumtitle-hp{flex:0 0 auto;margin-left:26px}
-/* 2026-09-18(item3·4, PDF 전용): 돈가는 "9월"/"37주차" 제목과 같은 줄의 3번째(맨 끝)
-   칸에 놓인다 — 내부(돈가 박스+전주대비)는 왼쪽 정렬(기본 flex 정렬)이라 "돈가는
-   왼쪽 정렬로" 요청과도 맞는다. */
-.sumtitle-hp{display:flex;align-items:center;gap:14px}
-/* 2026-09-19(피드백 7차): PDF 전용 돈가(.sumtitle-hp) 텍스트 크기·굵기·색 재조정 —
-   웹 상단바(.hogprice)의 .hp-box/.hp-delta는 건드리지 않고 이 안에서만 덮어쓴다.
-   "돈가"와 숫자 둘 다 상단요약 카드 타이틀(.kc-sum .l, 21px)과 같은 크기로 줄이고,
-   "돈가" 글자만 굵게 + 매출액·달성율 색(#8b93a0)으로, 숫자(<b>)는 기존처럼 굵은 검정 유지. */
-.sumtitle-hp .hp-box{font-size:21px;font-weight:400;color:#15181d;letter-spacing:-.3px;white-space:nowrap}
-.sumtitle-hp .hp-box .hp-label{font-weight:800;color:#8b93a0}
-.sumtitle-hp .hp-box b{font-weight:800;color:#15181d}
-/* "전주대비" 라벨은 굵기 없이, 내용 섹션 표 머리말(.sumtable th, 14px)과 같은 크기로 —
-   화살표+숫자(<b>)는 위 범용 규칙(.hp-delta b{font-weight:800})이 그대로 적용돼 계속 굵다. */
-.sumtitle-hp .hp-delta{font-size:19px;font-weight:400}
 /* 2026-09-17(item1): 각 법인/팀 섹션을 흰 카드로 감싸서 서로 뚜렷하게 구분되게 한다.
    2026-09-18(피드백 2차, item6): 엔티티당 카드 1장 — "보담 월,주가 한 카드" 요청대로
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
@@ -341,10 +326,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 /* ===== MOCKUP v9 CSS: 참고 PDF 반영 (헤더줄 + 월/주 독립 카드 + 게이지 + 박스 테두리) ===== */
 .pgv3-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;padding:0 2px}
-.pgv3-name{font-size:25px;font-weight:800;color:#15181d;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
-.pgv3-unit{font-size:14px;color:#8b93a0;font-weight:500;letter-spacing:0}
-.pgv3-hog{font-size:16px;color:#8b93a0;font-weight:600;display:flex;align-items:baseline;gap:7px;white-space:nowrap}
-.pgv3-hog b{color:#15181d;font-weight:800;font-size:18px}
+.pgv3-name{font-size:28px;font-weight:800;color:#15181d;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
+.pgv3-unit{font-size:16px;color:#8b93a0;font-weight:500;letter-spacing:0}
+.pgv3-hog{font-size:18px;color:#8b93a0;font-weight:600;display:flex;align-items:baseline;gap:7px;white-space:nowrap}
+.pgv3-hog b{color:#15181d;font-weight:800;font-size:21px}
 /* 2026-09-22(피드백): 상단요약카드와 내용섹션 사이 전체 간격(기존 14+10=24px)을
    2/5만큼 줄임 — 목표 합계 약 14px(24*3/5). sumsec-wrap-v3 쪽 margin-top은 4px 미만으로
    줄이면 overflow:hidden 클리핑 버그가 재발하므로(상단 색상 캡 offset -4px) 8px까지만 축소. */
@@ -355,36 +340,38 @@ button{font-family:inherit;border:none;cursor:pointer}
   border-radius:14px;padding:20px 26px;display:flex;flex-direction:column;gap:12px}
 /* 2026-09-22(피드백): 요약화면 내용섹션의 월/주 라벨(.sumsec-period-h-v2 .num, 19px)과
    글자 크기를 동일하게 맞춤 — 기존 16px에서 확대. */
-.kpiv3-period{font-size:19px;color:#7a828d;font-weight:800;display:flex;align-items:baseline;gap:10px}
-/* 2026-09-28: "9월"/"39주차" 옆 보담/백두 개별 매출액 — 제목(periodBig)보다는 작고,
-   법인색으로 구분(보담 파랑/백두 초록, summaryCostCardSy의 rawRow와 동일 색). */
-.kpiv3-raworg{display:inline-flex;gap:10px;font-size:14px;font-weight:700}
-.kpiv3-raworg-item{white-space:nowrap}
-/* 2026-09-22(피드백): 매출액/원가율/게이지 세 요소를 폭 전체에 고르게 분산 —
-   기존 margin-left:auto로 게이지만 오른쪽 끝에 몰아붙이던 방식을 버림.
-   2026-09-22(피드백 추가): align-items를 center→flex-end로 바꿔, 게이지 원호의
-   실제 하단(半円의 flat edge, viewBox상 거의 컨테이너 바닥에 붙어있음)이
-   매출액/원가율 블록의 증감표시(.kpiv3-delta) 라인과 같은 높이에 오도록 정렬. */
-/* 2026-09-22(피드백): 하단 라인을 맞추고 나니 게이지 높이(97px)에 비해 매출액/원가율
-   블록(약 53px)이 짧아서, flex-end 정렬 시 블록 위쪽에 빈 공간이 커져 3요소 전체가
-   카드 하단으로 쏠려 보였다. row 자체를 margin-top 음수로 살짝 끌어올려 무게중심을 위로
-   이동 — block/gauge 간 하단 정렬 관계는 그대로 유지된다. */
-.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:14px;margin-top:-16px}
+.kpiv3-period{font-size:21px;color:#7a828d;font-weight:800;display:flex;align-items:center;gap:12px}
+/* 2026-09-29(피드백): "9월"/"39주차" 옆에 있던 달성율 반원 게이지를 여기로 옮겨온 작은
+   가로 막대 게이지 — 웹 화면의 .kc-gauge와 같은 발상(채워지는 색=법인색, 값은 막대 "안"에
+   흰 글씨)이지만, 카드 제목줄 옆 좁은 공간에 맞춰 PDF만의 더 작은 사이즈로 새로 만들었다
+   (데스크탑 화면 컴포넌트를 그대로 재사용하지 않음 — 데스크탑/PDF는 크기·굵기가 다른 게
+   맞다는 피드백). */
+.kpiv3-achieve{position:relative;flex:1 1 auto;min-width:0;height:26px;border-radius:6px;
+  background:#eef1f5;overflow:hidden}
+.kpiv3-achieve-fill{position:absolute;left:0;top:0;height:100%;min-width:132px;box-sizing:border-box;
+  border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.kpiv3-achieve-val{font-size:16px;font-weight:400;color:#fff;white-space:nowrap}
+/* 2026-09-22(피드백): 매출액/원가율/(식육사업본부만)보담·백두 세 요소를 폭 전체에 고르게
+   분산 — margin-left:auto로 오른쪽 끝에 몰아붙이던 방식을 버림.
+   2026-09-29: 반원 게이지가 빠지면서(위 .kpiv3-achieve로 이동) 이 줄엔 이제 비슷한
+   높이의 블록들만 남아 margin-top 보정이 더 필요 없어졌다. */
+.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:14px}
 .kpiv3-block{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
 /* 라벨+값을 한 줄에, 증감은 다음 줄로 */
 .kpiv3-line1{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
-.kpiv3-lab{font-size:14px;color:#8b93a0;font-weight:700}
+.kpiv3-lab{font-size:18px;color:#8b93a0;font-weight:600}
 .kpiv3-val{font-size:30px;font-weight:800;color:#15181d;letter-spacing:-.5px;white-space:nowrap}
-.kpiv3-val small{font-size:15px;font-weight:700;margin-left:1px;color:#15181d}
+.kpiv3-val small{font-size:15px;font-weight:600;margin-left:1px;color:#15181d}
 .kpiv3-delta{font-size:16px;font-weight:800;white-space:nowrap}
 .kpiv3-div{width:1px;align-self:stretch;background:#d7dce3;flex:0 0 1px}
-.kpiv3-gauge{position:relative;width:180px;flex:0 0 180px}
-.kpiv3-gauge-svg{display:block;width:100%}
-.kpiv3-gauge-txt{position:absolute;left:0;right:0;top:54%;display:flex;flex-direction:column;
-  align-items:center;gap:2px}
-.kpiv3-gauge-txt b{font-size:21px;font-weight:800;color:#15181d;letter-spacing:-.3px}
-.kpiv3-gauge-txt b small{font-size:13px;font-weight:700;margin-left:1px}
-.kpiv3-gauge-txt span{font-size:13px;color:#9aa3af;font-weight:700}
+/* 2026-09-29(피드백): 옛 반원 게이지 자리 — 식육사업본부(entity.rawOrg가 있는 조직)만
+   보담/백두 개별 매출액 블록이 이 자리를 대신 차지한다. 다른 법인/팀 페이지는 이 칸
+   자체가 렌더링되지 않는다(kpiCardV3의 raworgHtml 참고). */
+.kpiv3-raworg-col{width:180px;flex:0 0 180px}
+.kpiv3-raworg-block{display:flex;flex-direction:column;gap:8px}
+.kpiv3-raworg-row{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.kpiv3-raworg-nm{font-size:14px;font-weight:700}
+.kpiv3-raworg-v{font-size:21px;font-weight:800;color:#15181d}
 /* 2026-09-22(피드백): 내용섹션 — 법인색 박스가 흰 박스 뒤에서 살짝 위로 올라와
    상단에만 색이 드러나는 형태(전체 테두리 X). */
 /* 2026-09-22(버그 수정): 이 박스는 .sumscroll(overflow:hidden, 상단 padding 0) 안에
@@ -404,7 +391,6 @@ button{font-family:inherit;border:none;cursor:pointer}
    그대로 들어간다(.sumsec-body는 기존과 동일하게 재사용). */
 .sumsec-periods{display:flex;gap:16px;align-items:flex-start}
 .sumsec-period{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-.sumsec-period-h{font-size:14px;font-weight:800;color:#7a828d;letter-spacing:-.2px}
 .sumsec-pdivider{width:1px;align-self:stretch;background:#e7eaef;flex:0 0 1px}
 /* 2026-09-16: 표(행 개수에 따라 세로 길이가 제각각)와 차트가 stretch로 서로 높이를
    맞추던 걸 풀었다 — 차트는 항상 고정 높이(아래 .sumchart)로 통일하고, 표는 자기
@@ -456,7 +442,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    막대 위 라벨 자리)을 줘서 눈금 간격이 막대 높이 비율과 정확히 일치하게 한다. */
 .sc-yax{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
   padding:18px 5px 0 0}
-.sc-yax span{font-size:13px;color:#b3bac3}
+.sc-yax span{font-size:15px;color:#b3bac3}
 .sc-yax-r{grid-column:3;align-items:flex-start;padding:18px 0 0 5px}
 .sc-plot{grid-column:2;grid-row:1;position:relative;min-width:0}
 /* 2026-09-16 버그 수정: 막대가 위쪽 기준으로 붙어 보이던 문제(item1) — .sc-col에
@@ -465,7 +451,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:8px;padding:18px 4px 0}
 .sc-col{flex:1;min-width:0;display:flex;justify-content:center;align-items:flex-end;height:100%}
 .sc-bar{position:relative;width:56%;min-width:14px;display:flex;align-items:flex-end}
-.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;color:#3a4049;white-space:nowrap}
+.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:15px;font-weight:700;color:#3a4049;white-space:nowrap}
 .sc-stk{width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:2px 2px 0 0;overflow:hidden}
 .sc-stk span{display:block;width:100%}
 /* 2026-09-16(item3): 매출원가율(또는 대출액) 꺾은선 오버레이 — .sc-bars와 정확히 같은
@@ -474,12 +460,12 @@ button{font-family:inherit;border:none;cursor:pointer}
    이 요소의 padding-box(=자기 자신의 padding 포함 전체 상자) 기준으로 계산되기 때문에,
    여기서 padding을 또 주면 오히려 좌표계가 어긋난다. */
 .sc-ovl{position:absolute;top:18px;left:4px;right:4px;bottom:0;pointer-events:none;z-index:3}
-.sc-dotlab{position:absolute;font-size:13px;font-weight:700;color:#15181d;white-space:nowrap;
+.sc-dotlab{position:absolute;font-size:15px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
 /* item6 수정으로 .sc-plot과 같은 grid 열(2번째)에 놓인다 — .sc-bars와 같은 gap(8px)만
    유지하면 칸 경계가 자동으로 막대와 일치한다. */
 .sc-xax{grid-column:2;grid-row:2;display:flex;gap:8px;margin-top:6px}
-.sc-xax div{flex:1;text-align:center;font-size:13px;color:#7a828d;font-weight:600}
+.sc-xax div{flex:1;text-align:center;font-size:15px;color:#7a828d;font-weight:600}
 /* 2026-09-17(item5): 범례 글씨가 작다는 피드백으로 13px→14px */
 /* 2026-09-21(사이즈 체계, size5→size4): 데스크탑 범례 글씨 15px→18px. 모바일(#stage.portrait
    .sc-lgd span, 11.5px)은 그대로 유지 — 요청받은 건 데스크탑(size5→size4) 쪽만. */
@@ -499,8 +485,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .sumcol-h{font-size:14px}
 /* 세로로 쌓을 땐 위 데스크탑용 margin-left(26px, 가로 배치 간격)이 필요 없다 — portrait의
    flex gap(4px)이 대신 줄 간격을 준다. */
-#stage.portrait .sumcol-h + .sumcol-h,
-#stage.portrait .sumtitle-hp{margin-left:0}
+#stage.portrait .sumcol-h + .sumcol-h{margin-left:0}
 /* 2026-09-18(item6, 모바일): 카드 하나에 월/주를 나란히 두면 좁은 화면에서 다 안
    들어가므로, 모바일에서는 월 블록 위/주 블록 아래로 세로로 쌓는다. */
 #stage.portrait .sumsec-periods{flex-direction:column;gap:12px}
@@ -1821,7 +1806,7 @@ function kbar(rs, e, ci){
   const gauge=(pctVal)=>{
     const w = (pctVal!=null && isFinite(pctVal)) ? Math.max(0, Math.min(100, pctVal)) : 0;
     return `<div class="kc-gauge"><div class="kc-gauge-fill" style="width:${w}%;background:${color}">
-      <span class="kc-gauge-val">${pct(pctVal)}</span></div></div>`;
+      <span class="kc-gauge-val">달성율 ${pct(pctVal)}</span></div></div>`;
   };
   /* cell()이 이제 셋 다 처리: 값과 같은 줄의 인라인 증감(opts.inline), 인라인으로 못 옮기는
      비교불가/부가정보 텍스트(opts.note, 기존 .d 자리 그대로), 목표대비 게이지(opts.gauge). */
@@ -2302,58 +2287,35 @@ function buildSummaryPdfPageV2(group){
    그라데이션이고, 안 채워진 트랙도 무채색 회색이 아니라 그 색의 아주 옅은 톤이었다
    (픽셀 샘플링으로 확인: 트랙≈해당색+흰색 72% 혼합, 그라데이션 끝≈해당색+흰색 50% 혼합).
    또 반원 자체도 기존보다 더 크고 굵게 그려져 있었다. */
-function mixWhiteV3(hex, f){
-  hex = hex.replace('#','');
-  const r = parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
-  const mr = Math.round(r*(1-f)+255*f), mg = Math.round(g*(1-f)+255*f), mb = Math.round(b*(1-f)+255*f);
-  return `rgb(${mr},${mg},${mb})`;
-}
 function hexAlphaV3(hex, a){
   hex = hex.replace('#','');
   const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
   return `rgba(${r},${g},${b},${a})`;
 }
-/* 2026-09-28(피드백): "달성율그래프 높이를 더 작게 + 굵기를 더 굵게" — 기존엔 진짜 원(circle)
-   호라서 반지름 r 하나가 세로 폭과 가로 폭을 동시에 결정했다(높이를 줄이려면 가로도 같이
-   줄어듦). 가로 반지름(rx)은 그대로 두고 세로 반지름(ry)만 줄인 타원(ellipse) 호로 바꿔서
-   "납작하게"(높이만 축소) 만들고, 그렇게 생긴 여유를 선 굵기(sw)를 키우는 데 썼다.
-   타원 호라 stroke-dasharray 계산에 쓰던 원의 둘레(π*r, 반원이라 정확히 π*r) 공식을
-   그대로 못 쓴다 — 타원 둘레는 초등함수로 정확히 못 구해서(타원적분) 라마누잔 근사식을
-   쓴다(진행률 표시용 근사라 육안으로는 차이가 없다). 이 타원은 두 대칭축(가로/세로)을
-   모두 가진 표준형이라, 가로축을 지나는 절반(위쪽 반원 부분)은 정확히 전체 둘레의 절반이다. */
-function gaugeArcV3(pctVal, color, gid){
-  const p = pctVal==null ? 0 : Math.max(0, Math.min(100, pctVal));
-  const rx = 82, ry = 56, cx = 98, cy = 73, sw = 26;
-  const h = Math.pow(rx-ry,2)/Math.pow(rx+ry,2);
-  const fullPerim = Math.PI*(rx+ry)*(1+(3*h)/(10+Math.sqrt(4-3*h)));
-  const semi = fullPerim/2; // 위쪽 반타원 호 길이(근사)
-  const dash = semi * (p/100);
-  const track = `M ${cx-rx} ${cy} A ${rx} ${ry} 0 1 1 ${cx+rx} ${cy}`;
-  const trackColor = mixWhiteV3(color, 0.72);
-  const gradEnd = mixWhiteV3(color, 0.5);
-  return `<svg viewBox="0 0 196 90" class="kpiv3-gauge-svg">
-    <defs><linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="${color}"/>
-      <stop offset="100%" stop-color="${gradEnd}"/>
-    </linearGradient></defs>
-    <path d="${track}" fill="none" stroke="${trackColor}" stroke-width="${sw}" stroke-linecap="round"/>
-    <path d="${track}" fill="none" stroke="url(#${gid})" stroke-width="${sw}" stroke-linecap="round"
-      stroke-dasharray="${dash.toFixed(1)} ${(semi*2).toFixed(1)}"/>
-  </svg>`;
+/* 2026-09-29(피드백): 반원 게이지(gaugeArcV3, mixWhiteV3)를 완전히 걷어내고 — "9월"/"39주차"
+   라벨 옆(.kpiv3-period)에 붙는 작은 가로 막대 게이지로 교체. 큰 반원이 차지하던 카드
+   본문의 3번째 칸은 이제 비었으므로(식육사업본부만) 보담/백두 매출액 블록이 그 자리로
+   옮겨간다(아래 raworgBlockV3 참고) — 즉 "달성율 그래프"와 "보담/백두 매출액"이 서로
+   자리를 바꿨다. 막대 안 텍스트는 "달성율 **.*%" 한 줄(예전처럼 값/라벨 두 줄 아님). */
+function achieveBarV3(pctVal, color){
+  const w = (pctVal!=null && isFinite(pctVal)) ? Math.max(0, Math.min(100, pctVal)) : 0;
+  return `<div class="kpiv3-achieve"><div class="kpiv3-achieve-fill" style="width:${w}%;background:${color}">
+    <span class="kpiv3-achieve-val">달성율 ${pct(pctVal)}</span></div></div>`;
 }
-/* 2026-09-28(피드백): "9월"/"39주차"(periodBig) 옆에 보담/백두 개별 매출액 표기 —
-   entity.rawOrg가 있는 조직(현재는 식육사업본부=sy 하나뿐, D.sy.rawOrg = readRawOrgSales()로
-   보담-B/백두-K 원본 시트에서 직접 읽은 값, summaryCostCardSy에서 쓰는 것과 동일 소스)만
-   해당. 이 카드가 월용인지 주용인지(unitLabel==='월'|'주')에 맞는 값만 골라 쓴다. */
-function raworgPeriodHtml(entity, unitLabel){
+/* 2026-09-28~29(피드백): 보담/백두 개별 매출액 — entity.rawOrg가 있는 조직(현재는
+   식육사업본부=sy 하나뿐, D.sy.rawOrg = readRawOrgSales()로 보담-B/백두-K 원본 시트에서
+   직접 읽은 값, summaryCostCardSy에서 쓰는 것과 동일 소스)만 해당. 이 카드가 월용인지
+   주용인지(unitLabel==='월'|'주')에 맞는 값만 골라 쓴다.
+   [2026-09-29] 처음엔 periodBig 옆(.kpiv3-period)에 작게 넣었었는데, 그 자리는 달성율
+   막대 게이지가 대신 차지하게 되면서 이 블록은 옛 반원 게이지 자리(카드 본문 3번째 칸)로
+   옮겨졌다 — 자리가 넉넉해진 만큼 값 글자도 21px로 키웠다. */
+function raworgBlockV3(entity, unitLabel){
   if(!entity.rawOrg) return '';
   const bo = rawOrgLatest(entity.rawOrg.bo), bd = rawOrgLatest(entity.rawOrg.bd);
   const boV = unitLabel==='월' ? bo.m : bo.w;
   const bdV = unitLabel==='월' ? bd.m : bd.w;
-  return `<span class="kpiv3-raworg">
-    <span class="kpiv3-raworg-item" style="color:#1566B2">보담 ${boV!=null?n2(boV):'–'}</span>
-    <span class="kpiv3-raworg-item" style="color:#259638">백두 ${bdV!=null?n2(bdV):'–'}</span>
-  </span>`;
+  const row = (label,color,v) => `<div class="kpiv3-raworg-row"><span class="kpiv3-raworg-nm" style="color:${color}">${label}</span><span class="kpiv3-raworg-v">${v!=null?n2(v):'–'}</span></div>`;
+  return `<div class="kpiv3-raworg-block">${row('보담','#1566B2',boV)}${row('백두','#259638',bdV)}</div>`;
 }
 function kpiCardV3(entity, rs, unitLabel, periodBig){
   const cur = rs && rs.length ? rs[rs.length-1] : null;
@@ -2376,7 +2338,6 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
     secondDiffHtml = cDiff==null ? '' : `<div class="kpiv3-delta" style="color:${cDiff<0?'#D64545':'#1F8A5B'}">${cDiff<0?'▼':'▲'}${Math.abs(cDiff).toFixed(1)}%</div>`;
   }
   const ac = cur ? ach(cur.t, cur.s) : null;
-  const acHtml = ac!=null ? `${ac.toFixed(1)}<small>%</small>` : '–';
   /* 2026-09-22(피드백): 흰 배경 + 그림자(거리 0, 흐림만) — 색은 법인색.
      라벨·값을 같은 줄에, 증감은 다음 줄로. 매출액/원가율/게이지 세 요소를 카드 폭
      전체에 고르게(justify-content:space-evenly, CSS) 배치 — margin-left:auto로
@@ -2398,13 +2359,14 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
   const glowBands = glowSteps.map(([off,a])=>
     `<div class="kpiv3-glow-band" style="top:${off}px;left:${off}px;right:${off}px;bottom:${off}px;
       border-radius:${14-off}px;background:${hexAlphaV3(color,a)}"></div>`).join('');
+  const raworgHtml = raworgBlockV3(entity, unitLabel);
   return `<div class="kpiv3-card-wrap">
     ${glowBands}
     <div class="kpiv3-card">
-      <div class="kpiv3-period">${periodBig}${raworgPeriodHtml(entity, unitLabel)}</div>
+      <div class="kpiv3-period">${periodBig}${achieveBarV3(ac, color)}</div>
       <div class="kpiv3-row">
         <div class="kpiv3-block">
-          <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}</span></div>
+          <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}<small>백만</small></span></div>
           ${sDiffHtml}
         </div>
         <div class="kpiv3-div"></div>
@@ -2412,11 +2374,7 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
           <div class="kpiv3-line1"><span class="kpiv3-lab">${secondLab}</span><span class="kpiv3-val">${secondValHtml}</span></div>
           ${secondDiffHtml}
         </div>
-        <div class="kpiv3-div"></div>
-        <div class="kpiv3-gauge">
-          ${gaugeArcV3(ac, color, 'gaugeGradV3-'+unitLabel)}
-          <div class="kpiv3-gauge-txt"><b>${acHtml}</b><span>달성율</span></div>
-        </div>
+        ${raworgHtml ? `<div class="kpiv3-div"></div><div class="kpiv3-raworg-col">${raworgHtml}</div>` : ''}
       </div>
     </div>
   </div>`;
@@ -2501,25 +2459,17 @@ function hogPriceParts(){
    2026-09-18(item3·4, PDF 전용): withHogPrice가 true면(=PDF 1페이지) 돈가를 KPI
    카드에서 빼서 이 줄의 3번째(맨 끝) 칸(.sumtitle-hp)에 붙인다 — 웹 화면은 기존처럼
    상단바에 돈가가 그대로 있으므로 호출부에서 인자를 넘기지 않는다. */
-function summaryTitleRow(withHogPrice){
+/* 2026-09-29(정리): withHogPrice 인자와 그걸로 그리던 .sumtitle-hp(PDF 전용 돈가 표기)는
+   실제로는 한 번도 true로 호출된 적이 없던 죽은 코드였다(PDF는 진작에 buildSummaryPdfPageV3
+   로 완전히 갈아엎어져서 이 함수 자체를 안 쓴 지 오래) — 확인 후 제거. 이 함수는 이제
+   웹 "전체요약" 화면에서만 쓰이고, 월/주차 제목(.sumcol-h)만 그린다. */
+function summaryTitleRow(){
   const cutoff = window.__DASH_CUTOFF__;
   const monthBig = cutoff ? `${cutoff.month}월` : '';
   const weekBig = cutoff ? `${cutoff.week}주차` : '';
-  let hpHtml = '';
-  if(withHogPrice){
-    const {priceStr, wowStr, wowColor} = hogPriceParts();
-    /* 2026-09-19(피드백 7차): PDF 전용 이 줄만(웹 상단바 .hogprice는 그대로) "돈가" 라벨을
-       따로 스타일링할 수 있게 <span class="hp-label">로 감쌌다 — 아래 .sumtitle-hp
-       CSS 참고(사이즈는 라벨/숫자 동일, 굵기·색은 라벨만 따로). */
-    hpHtml = `<div class="sumtitle-hp">
-      <div class="hp-box"><span class="hp-label">돈가</span> <b>${priceStr}</b></div>
-      <div class="hp-delta">전주대비 <b style="color:${wowColor}">${wowStr}</b></div>
-    </div>`;
-  }
   return `<div class="sumtitlerow">
     <div class="sumcol-h">${monthBig}</div>
     <div class="sumcol-h">${weekBig}</div>
-    ${hpHtml}
   </div>`;
 }
 
@@ -2899,6 +2849,27 @@ async function exportSummaryPdf(){
     const PAGE_W_MM = 320, PAGE_H_MM = PAGE_W_MM * (LAYOUT.STAGE_H / LAYOUT.STAGE_W);
     const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:[PAGE_W_MM, PAGE_H_MM] });
 
+    /* 2026-09-29(피드백): "MS팀처럼 내용이 많은 페이지만 임의로 작아진다" — 예전엔 페이지마다
+       따로 실측해서 그 페이지에 필요한 만큼만 줄였는데(표 채널이 많은 케이MS 계열 페이지만
+       세로가 넘쳐 축소됨), 그러면 페이지마다 표/차트 글자 크기가 서로 달라 보인다. 그래서
+       실제 캡처 전에 5페이지를 전부 미리(오프스크린으로) 한 번씩 그려서 필요한 축소비율만
+       재고, 그중 "가장 많이 줄여야 하는" 값(최소 scale) 하나를 구해서 모든 페이지에 똑같이
+       적용한다 — 내용이 적은 페이지도 일부러 같이 줄어들지만, 그 대신 5페이지 전체가 항상
+       같은 크기로 보인다(원래의 "한 페이지 안에 반드시 담는다" 안전장치는 그대로 유지). */
+    let uniformScale = 1;
+    for(const group of PDF_SUMMARY_GROUPS){
+      pdfStage.innerHTML = buildSummaryPdfPage(group);
+      const scrollEl0 = pdfStage.querySelector('.sumscroll');
+      const wrapEl0 = pdfStage.querySelector('.sumwrap');
+      if(scrollEl0 && wrapEl0){
+        const naturalW0 = wrapEl0.scrollWidth, naturalH0 = wrapEl0.scrollHeight;
+        const widthRatio0 = scrollEl0.clientWidth / naturalW0;
+        const heightRatio0 = scrollEl0.clientHeight / naturalH0;
+        const scale0 = Math.min(widthRatio0, heightRatio0, 1);
+        if(scale0 < uniformScale) uniformScale = scale0;
+      }
+    }
+
     for(let pageIdx=0; pageIdx<PDF_SUMMARY_GROUPS.length; pageIdx++){
       const group = PDF_SUMMARY_GROUPS[pageIdx];
       setProgress(`PDF 생성 중… (${pageIdx+1}/${PDF_SUMMARY_GROUPS.length})`);
@@ -2918,19 +2889,16 @@ async function exportSummaryPdf(){
          유지해야 하므로, transform으로 줄어들 비율만큼 style.width를 미리 반비례해서
          넓혀둔다 — scale 적용 후 실제 렌더 너비 = (clientWidth/scale)×scale = clientWidth로
          항상 원래 폭 그대로 유지되고, 세로만 의도한 대로 줄어든다(표/차트는 세로 높이가
-         가로폭과 무관하게 고정·자연 높이라 폭을 넓혀도 실측했던 naturalH가 바뀌지 않는다). */
+         가로폭과 무관하게 고정·자연 높이라 폭을 넓혀도 실측했던 naturalH가 바뀌지 않는다).
+         2026-09-29: scale은 더 이상 이 페이지 자신의 실측값이 아니라 위에서 미리 구해둔
+         uniformScale(5페이지 중 최소값)을 그대로 쓴다 — 그래야 모든 페이지가 같은 비율로
+         줄어들어 크기가 일정해진다. */
       const scrollEl = pdfStage.querySelector('.sumscroll');
       const wrapEl = pdfStage.querySelector('.sumwrap');
-      if(scrollEl && wrapEl){
-        const naturalW = wrapEl.scrollWidth, naturalH = wrapEl.scrollHeight;
-        const widthRatio = scrollEl.clientWidth / naturalW;
-        const heightRatio = scrollEl.clientHeight / naturalH;
-        const scale = Math.min(widthRatio, heightRatio, 1);
-        if(scale < 1){
-          wrapEl.style.width = (scrollEl.clientWidth / scale) + 'px';
-          wrapEl.style.transformOrigin = 'top left';
-          wrapEl.style.transform = `scale(${scale})`;
-        }
+      if(scrollEl && wrapEl && uniformScale < 1){
+        wrapEl.style.width = (scrollEl.clientWidth / uniformScale) + 'px';
+        wrapEl.style.transformOrigin = 'top left';
+        wrapEl.style.transform = `scale(${uniformScale})`;
       }
 
       /* render()가 화면에 대해 매번 하는 후처리(요약 차트 선/점을 실측 위치로 재정렬)를
