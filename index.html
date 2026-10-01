@@ -70,6 +70,16 @@ button{font-family:inherit;border:none;cursor:pointer}
    축소(transform:scale)만으로 맞춘다 — overflow:auto인 채로 두면 레이아웃상 넘치는
    높이 때문에 실제로는 다 줄어들어 안 보여야 할 스크롤바가 캡처에 찍힐 수 있다. */
 #pdfStage .sumscroll{overflow:hidden}
+/* 2026-10-01(피드백): 요약 막대그래프(sumChart) 텍스트(.sc-lab/.sc-dotlab/.sc-xax/.sc-yax/.sc-lgd)는
+   웹 요약화면과 공유하는 선택자라 그대로 바꾸면 웹 화면도 같이 커진다(item23: 선택자명은
+   유지, 새 선택자/override 추가는 허용). 이번 라운드에서 표·KPI·타이틀 등 주변 텍스트는
+   다 커졌는데 이 차트 텍스트(15px)만 그대로 남아 PDF에서 유독 작아 보였던 것 — PDF에서만
+   #pdfStage 범위로 좁혀 다른 항목들과 비슷한 비율로(+2px) 키운다. */
+#pdfStage .sc-lab{font-size:17px;font-weight:800}
+#pdfStage .sc-dotlab{font-size:17px;font-weight:800}
+#pdfStage .sc-xax div{font-size:17px;font-weight:700}
+#pdfStage .sc-yax span{font-size:17px}
+#pdfStage .sc-lgd span{font-size:17px}
 
 /* 내비 */
 .nav1{display:flex;gap:4px;background:#e2e7ee;border-radius:10px;padding:4px;flex:0 0 var(--nav1-h)}
@@ -316,31 +326,34 @@ button{font-family:inherit;border:none;cursor:pointer}
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
 .sumsec{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #e7eaef;
   border-radius:10px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,24,29,.04)}
-.sumsec-h{font-size:21px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+.sumsec-h{font-size:24px;font-weight:900;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
 /* 2026-09-20(피드백): 법인/팀 이름 앞 동그라미(색은 JS에서 인라인, sumHeaderColor 재사용) */
 .sumsec-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
 /* ===== MOCKUP v6 CSS: 법인당 1페이지 PDF 미리보기 전용 ===== */
-.sumsec-h-v2{font-size:21px;font-weight:800;letter-spacing:-.3px;padding:14px 16px 10px}
 .sumsec-titledivider-v2{height:1px;background:#e7eaef;margin:0}
 .sumsec-periods-v2{display:flex;gap:16px;align-items:flex-start;padding:14px 16px 16px}
 .sumsec-period-v2{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
 .sumsec-period-h-v2{display:flex;align-items:baseline;gap:10px}
-.sumsec-period-h-v2 .num{font-size:19px;font-weight:800;color:#15181d;letter-spacing:-.3px}
-.sumsec-period-h-v2 .rev{font-size:18px;font-weight:400;color:#8b93a0}
+.sumsec-period-h-v2 .num{font-size:24px;font-weight:900;color:#15181d;letter-spacing:-.3px}
+.sumsec-period-h-v2 .rev{font-size:21px;font-weight:500;color:#8b93a0}
 .sumsec-body-v2{display:flex;flex-direction:column;gap:12px}
 .sumsec-body-v2 .sumtable{flex:none;width:100%}
 .sumsec-body-v2 .sumchart{flex:none;width:100%}
 .sumtable table td.ratecell{padding:6px 10px;text-align:center;vertical-align:middle;
   border-left:1px solid #e7eaef;background:#f8f9fb}
-.ratecell-lab{font-size:15px;color:#8b93a0;font-weight:700;margin-bottom:4px}
-.ratecell-val{font-size:21px;color:#15181d;font-weight:800}
+.ratecell-lab{font-size:18px;color:#8b93a0;font-weight:600;margin-bottom:4px}
+.ratecell-val{font-size:24px;color:#15181d;font-weight:900}
 
 /* ===== MOCKUP v9 CSS: 참고 PDF 반영 (헤더줄 + 월/주 독립 카드 + 게이지 + 박스 테두리) ===== */
 .pgv3-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;padding:0 2px}
-.pgv3-name{font-size:28px;font-weight:800;color:#15181d;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
-.pgv3-unit{font-size:16px;color:#8b93a0;font-weight:500;letter-spacing:0}
-.pgv3-hog{font-size:18px;color:#8b93a0;font-weight:600;display:flex;align-items:baseline;gap:7px;white-space:nowrap}
-.pgv3-hog b{color:#15181d;font-weight:800;font-size:21px}
+.pgv3-name{font-size:28px;font-weight:900;color:#15181d;letter-spacing:-.4px;display:flex;align-items:baseline;gap:10px}
+.pgv3-unit{font-size:18px;color:#8b93a0;font-weight:500;letter-spacing:0}
+.pgv3-hog{font-size:20px;color:#8b93a0;font-weight:600;display:flex;align-items:baseline;gap:7px;white-space:nowrap}
+.pgv3-hog b{color:#15181d;font-weight:900;font-size:24px}
+/* 2026-10-01(피드백): 주간돈가 "값"(.pgv3-hog b)과 그 옆 전주대비 증감 표시는 원래
+   같은 .pgv3-hog b 선택자를 공유했다(색만 인라인으로 다름) — KPI 카드 증감(.kpiv3-delta,
+   20px/900)과 크기를 맞추기 위해 증감 쪽만 별도 선택자로 분리했다. */
+.pgv3-hog-delta{font-size:20px;font-weight:900}
 /* 2026-09-22(피드백): 상단요약카드와 내용섹션 사이 전체 간격(기존 14+10=24px)을
    2/5만큼 줄임 — 목표 합계 약 14px(24*3/5). sumsec-wrap-v3 쪽 margin-top은 4px 미만으로
    줄이면 overflow:hidden 클리핑 버그가 재발하므로(상단 색상 캡 offset -4px) 8px까지만 축소. */
@@ -348,41 +361,41 @@ button{font-family:inherit;border:none;cursor:pointer}
 .kpiv3-card-wrap{flex:1;min-width:0;position:relative}
 .kpiv3-glow-band{position:absolute;z-index:0;pointer-events:none}
 .kpiv3-card{position:relative;z-index:1;width:100%;box-sizing:border-box;background:#fff;
-  border-radius:14px;padding:20px 26px;display:flex;flex-direction:column;gap:12px}
-/* 2026-09-22(피드백): 요약화면 내용섹션의 월/주 라벨(.sumsec-period-h-v2 .num, 19px)과
-   글자 크기를 동일하게 맞춤 — 기존 16px에서 확대. */
-.kpiv3-period{font-size:21px;color:#7a828d;font-weight:800;display:flex;align-items:center;gap:12px}
-/* 2026-09-29(피드백): "9월"/"39주차" 옆에 있던 달성율 반원 게이지를 여기로 옮겨온 작은
-   가로 막대 게이지 — 웹 화면의 .kc-gauge와 같은 발상(채워지는 색=법인색, 값은 막대 "안"에
-   흰 글씨)이지만, 카드 제목줄 옆 좁은 공간에 맞춰 PDF만의 더 작은 사이즈로 새로 만들었다
-   (데스크탑 화면 컴포넌트를 그대로 재사용하지 않음 — 데스크탑/PDF는 크기·굵기가 다른 게
-   맞다는 피드백). */
-.kpiv3-achieve{position:relative;flex:1 1 auto;min-width:0;height:26px;border-radius:6px;
-  background:#eef1f5;overflow:hidden}
-.kpiv3-achieve-fill{position:absolute;left:0;top:0;height:100%;min-width:132px;box-sizing:border-box;
-  border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
-.kpiv3-achieve-val{font-size:16px;font-weight:400;color:#fff;white-space:nowrap}
+  border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;gap:14px}
+/* 2026-10-01(피드백): "9월"/"39주차" 기간 라벨(.kpiv3-period)과 달성율 막대 게이지
+   (.kpiv3-achieve 등)를 카드에서 완전히 제거 — 기간 라벨은 바로 아래 표/차트 섹션
+   헤더(.sumsec-period-h-v2 .num)에 이미 같은 값이 나오는 중복이었고, 달성율은 그
+   옆 .rev 자리(기존엔 매출액 텍스트)에 숫자만으로 옮겼다(summaryPeriodBlockV2 참고).
+   죽은 선택자(.kpiv3-period/.kpiv3-achieve/.kpiv3-achieve-fill/.kpiv3-achieve-val)와
+   achieveBarV3() 함수를 함께 삭제했다. */
 /* 2026-09-22(피드백): 매출액/원가율/(식육사업본부만)보담·백두 세 요소를 폭 전체에 고르게
    분산 — margin-left:auto로 오른쪽 끝에 몰아붙이던 방식을 버림.
    2026-09-29: 반원 게이지가 빠지면서(위 .kpiv3-achieve로 이동) 이 줄엔 이제 비슷한
-   높이의 블록들만 남아 margin-top 보정이 더 필요 없어졌다. */
-.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:14px}
-.kpiv3-block{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
-/* 라벨+값을 한 줄에, 증감은 다음 줄로 */
+   높이의 블록들만 남아 margin-top 보정이 더 필요 없어졌다.
+   2026-10-01: .kpiv3-achieve 자체가 삭제되면서 위 주석의 "이동" 맥락은 무효화됐지만
+   기록 차원에서 남겨둔다. */
+.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:12px}
+.kpiv3-block{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+/* 2026-10-01(피드백, item1 적용 후 되돌림): 라벨+값+증감을 한 줄에 몰아넣었더니
+   "답답해 보인다"는 피드백으로 다시 라벨+값(1줄) / 증감(다음 줄, .kpiv3-delta)로 분리.
+   증감이 더 이상 한 줄에 끼어들지 않으므로, 한 줄 레이아웃 때 좁혀뒀던 카드 패딩/행간격도
+   답답함 해소를 위해 여유있게 다시 늘림(overflow 없음은 measure_kpi.py로 재확인). */
 .kpiv3-line1{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
 .kpiv3-lab{font-size:18px;color:#8b93a0;font-weight:600}
-.kpiv3-val{font-size:30px;font-weight:800;color:#15181d;letter-spacing:-.5px;white-space:nowrap}
+.kpiv3-val{font-size:30px;font-weight:900;color:#15181d;letter-spacing:-.5px;white-space:nowrap}
 .kpiv3-val small{font-size:15px;font-weight:600;margin-left:1px;color:#15181d}
-.kpiv3-delta{font-size:16px;font-weight:800;white-space:nowrap}
+.kpiv3-delta{font-size:20px;font-weight:900;white-space:nowrap}
 .kpiv3-div{width:1px;align-self:stretch;background:#d7dce3;flex:0 0 1px}
 /* 2026-09-29(피드백): 옛 반원 게이지 자리 — 식육사업본부(entity.rawOrg가 있는 조직)만
    보담/백두 개별 매출액 블록이 이 자리를 대신 차지한다. 다른 법인/팀 페이지는 이 칸
    자체가 렌더링되지 않는다(kpiCardV3의 raworgHtml 참고). */
-.kpiv3-raworg-col{width:180px;flex:0 0 180px}
-.kpiv3-raworg-block{display:flex;flex-direction:column;gap:8px}
-.kpiv3-raworg-row{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
-.kpiv3-raworg-nm{font-size:14px;font-weight:700}
-.kpiv3-raworg-v{font-size:21px;font-weight:800;color:#15181d}
+/* 2026-10-01(피드백): 보담/백두를 한 줄로 합쳤던 걸 다시 위아래 2줄로(보담 다음 줄에
+   백두) 되돌림 — 칸 너비는 내용에 맞춰 자동(width:auto) 유지. */
+.kpiv3-raworg-col{width:auto;flex:0 0 auto}
+.kpiv3-raworg-block{display:flex;flex-direction:column;gap:4px}
+.kpiv3-raworg-row{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.kpiv3-raworg-nm{font-size:18px;font-weight:600}
+.kpiv3-raworg-v{font-size:24px;font-weight:900;color:#15181d}
 /* 2026-09-22(피드백): 내용섹션 — 법인색 박스가 흰 박스 뒤에서 살짝 위로 올라와
    상단에만 색이 드러나는 형태(전체 테두리 X). */
 /* 2026-09-22(버그 수정): 이 박스는 .sumscroll(overflow:hidden, 상단 padding 0) 안에
@@ -411,7 +424,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
 /* 2026-09-21(사이즈 체계, size5→size4): 표 본문 글씨 크기를 15px→18px로 키운다.
    굵기(td 기본 400, td.nm 600, tr.tot td 800 등)는 기존 그대로 유지. */
-.sumtable table{width:100%;border-collapse:collapse;font-size:18px}
+.sumtable table{width:100%;border-collapse:collapse;font-size:20px;font-weight:500}
 /* 2026-09-16: 머리말 텍스트 가운데 정렬로 변경. 2026-09-17: 본문(td)과 같이 14px로. */
 /* 2026-09-20(피드백): 머리말 배경을 법인색으로 꽉 채우던 것을 지우고, 대신 머리말과
    표 내용을 구분하는 아래쪽 테두리만 법인색으로 넣는다(색은 JS에서 th마다 인라인
@@ -419,7 +432,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    표 안 "이마트"/"온라인" 같은 행 이름(.sumtable td, #3a4049)과 같은 색으로 바꿔서
    잘 보이게 한다. */
 /* 2026-09-21(사이즈 체계, size5→size4): 머리말 글씨 크기 15px→18px, 굵기(700)는 유지. */
-.sumtable th{padding:8px 8px;color:#3a4049;font-weight:700;font-size:18px;text-align:center;position:static;background:transparent;border-bottom:2px solid #e7eaef}
+.sumtable th{padding:8px 8px;color:#3a4049;font-weight:800;font-size:20px;text-align:center;position:static;background:transparent;border-bottom:2px solid #e7eaef}
 /* 기존 표의 "구분"칸(헤더 1행 1열)에 걸리는 sticky-left+고정폭 규칙(위 tbody td:first-child
    근처 참고)이 이 표의 헤더 첫 칸에도 걸려서, 이 화면 전체가 세로로 스크롤될 때 그 칸만
    화면 위에 붙박이로 남는 버그가 있었다 — 이 표는 자체 스크롤이 없으므로 정적으로 되돌린다. */
@@ -2449,9 +2462,12 @@ function summaryPeriodBlockV2(entity, rs, unitLabel, periodBig, showLegend){
   const win = (rs||[]).slice(-6);
   const cur = rs && rs.length ? rs[rs.length-1] : null;
   const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
-  const revStr = cur && cur.s!=null ? n2(cur.s) : '–';
+  /* 2026-10-01(피드백): 이 자리(.rev)에 있던 "매출 X백만" 텍스트를 걷어내고, KPI 카드에서
+     없앤 달성율(.kpiv3-period/.kpiv3-achieve 삭제분, kpiCardV3 참고)을 숫자만으로 옮겼다.
+     라벨 없이 숫자(%)만 — 선택자(.rev)는 그대로, 안에 들어가는 내용만 바뀐 것. */
+  const ac = cur ? ach(cur.t, cur.s) : null;
   return `<div class="sumsec-period-v2">
-    <div class="sumsec-period-h-v2"><span class="num">${periodBig}</span><span class="rev">매출 ${revStr} 백만</span></div>
+    <div class="sumsec-period-h-v2"><span class="num">${periodBig}</span><span class="rev">${pct(ac)}</span></div>
     <div class="sumsec-body-v2">
       <div class="sumtable">${sumTableV2(entity, prev, cur, unitLabel)}</div>
       <div class="sumchart">${sumChart(entity, win, showLegend)}</div>
@@ -2502,23 +2518,13 @@ function hexAlphaV3(hex, a){
   const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
   return `rgba(${r},${g},${b},${a})`;
 }
-/* 2026-09-29(피드백): 반원 게이지(gaugeArcV3, mixWhiteV3)를 완전히 걷어내고 — "9월"/"39주차"
-   라벨 옆(.kpiv3-period)에 붙는 작은 가로 막대 게이지로 교체. 큰 반원이 차지하던 카드
-   본문의 3번째 칸은 이제 비었으므로(식육사업본부만) 보담/백두 매출액 블록이 그 자리로
-   옮겨간다(아래 raworgBlockV3 참고) — 즉 "달성율 그래프"와 "보담/백두 매출액"이 서로
-   자리를 바꿨다. 막대 안 텍스트는 "달성율 **.*%" 한 줄(예전처럼 값/라벨 두 줄 아님). */
-function achieveBarV3(pctVal, color){
-  const w = (pctVal!=null && isFinite(pctVal)) ? Math.max(0, Math.min(100, pctVal)) : 0;
-  return `<div class="kpiv3-achieve"><div class="kpiv3-achieve-fill" style="width:${w}%;background:${color}">
-    <span class="kpiv3-achieve-val">달성율 ${pct(pctVal)}</span></div></div>`;
-}
+/* 2026-10-01(피드백): achieveBarV3() 삭제 — 달성율 막대 게이지 자체를 카드에서 들어냈다
+   (summaryPeriodBlockV2의 .rev 자리로 숫자만 이동). 아래 raworgBlockV3는 그대로 유지. */
 /* 2026-09-28~29(피드백): 보담/백두 개별 매출액 — entity.rawOrg가 있는 조직(현재는
    식육사업본부=sy 하나뿐, D.sy.rawOrg = readRawOrgSales()로 보담-B/백두-K 원본 시트에서
    직접 읽은 값, summaryCostCardSy에서 쓰는 것과 동일 소스)만 해당. 이 카드가 월용인지
    주용인지(unitLabel==='월'|'주')에 맞는 값만 골라 쓴다.
-   [2026-09-29] 처음엔 periodBig 옆(.kpiv3-period)에 작게 넣었었는데, 그 자리는 달성율
-   막대 게이지가 대신 차지하게 되면서 이 블록은 옛 반원 게이지 자리(카드 본문 3번째 칸)로
-   옮겨졌다 — 자리가 넉넉해진 만큼 값 글자도 21px로 키웠다. */
+   2026-10-01(피드백): 한 줄로 합쳤던 걸 다시 보담 다음 줄에 백두(2줄)로 되돌림. */
 function raworgBlockV3(entity, unitLabel){
   if(!entity.rawOrg) return '';
   const bo = rawOrgLatest(entity.rawOrg.bo), bd = rawOrgLatest(entity.rawOrg.bd);
@@ -2550,7 +2556,6 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
     const cDiff = (cur&&cur.c!=null && prev&&prev.c!=null) ? cur.c-prev.c : null;
     secondDiffHtml = cDiff==null ? '' : `<div class="kpiv3-delta" style="color:${cDiff<0?'#D64545':'#1F8A5B'}">${cDiff<0?'▼':'▲'}${Math.abs(cDiff).toFixed(1)}%</div>`;
   }
-  const ac = cur ? ach(cur.t, cur.s) : null;
   /* 2026-09-22(피드백): 흰 배경 + 그림자(거리 0, 흐림만) — 색은 법인색.
      라벨·값을 같은 줄에, 증감은 다음 줄로. 매출액/원가율/게이지 세 요소를 카드 폭
      전체에 고르게(justify-content:space-evenly, CSS) 배치 — margin-left:auto로
@@ -2576,7 +2581,6 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
   return `<div class="kpiv3-card-wrap">
     ${glowBands}
     <div class="kpiv3-card">
-      <div class="kpiv3-period">${periodBig}${achieveBarV3(ac, color)}</div>
       <div class="kpiv3-row">
         <div class="kpiv3-block">
           <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}<small>백만</small></span></div>
@@ -2596,7 +2600,7 @@ function pageHeaderV3(entity, showHogPrice){
   let hp = '';
   if(showHogPrice){
     const {priceStr, wowStr, wowColor} = hogPriceParts();
-    hp = `<div class="pgv3-hog"><span class="lab">주간돈가</span> <b>${priceStr}</b> <b style="color:${wowColor}">${wowStr}</b></div>`;
+    hp = `<div class="pgv3-hog"><span class="lab">주간돈가</span> <b>${priceStr}</b> <b class="pgv3-hog-delta" style="color:${wowColor}">${wowStr}</b></div>`;
   }
   return `<div class="pgv3-header">
     <div class="pgv3-name">${entity.name}<span class="pgv3-unit">단위 : 백만 원</span></div>
@@ -3129,9 +3133,12 @@ async function exportSummaryPdf(){
       await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
 
       /* PNG 대신 JPEG(용량 절감, jsPDF의 "Invalid string length" 방지 — exportAllPdf 시절
-         24장에서 실측된 문제라 3장뿐인 지금은 여유가 있지만 그대로 유지한다). */
-      const canvas = await html2canvas(pdfStage, { scale:1.8, backgroundColor:'#f3f5f8', useCORS:true });
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+         24장에서 실측된 문제라 3장뿐인 지금은 여유가 있지만 그대로 유지한다).
+         2026-10-01(피드백, item22): "PDF가 조금만 작아져도 글씨가 흐려 보인다" — 캡처
+         해상도(scale)를 1.8→3으로 올려 같은 축소 배율에서도 글자 선이 또렷하게 남도록
+         하고, JPEG 압축률도 0.9→0.96으로 낮춰(용량보다 화질 우선) 압축 아티팩트를 줄인다. */
+      const canvas = await html2canvas(pdfStage, { scale:3, backgroundColor:'#f3f5f8', useCORS:true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.96);
 
       if(pageIdx > 0) doc.addPage([PAGE_W_MM, PAGE_H_MM], 'landscape');
       doc.addImage(imgData, 'JPEG', 0, 0, PAGE_W_MM, PAGE_H_MM, undefined, 'FAST');
