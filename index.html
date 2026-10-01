@@ -572,24 +572,6 @@ button{font-family:inherit;border:none;cursor:pointer}
 .blab{position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:700;
   color:#3a4049;white-space:nowrap;z-index:2}
 .blab.py{color:#a8b0bb;font-weight:600}
-/* 2026-09-29(피드백): 막대그래프 보담/백두 비율 토글 — 각 색 구간 라벨.
-   2026-10-01(피드백 4차): 막대 위에 흰 카드로 두 값을 띄우던 방식(피드백 3차) 대신, 구간 자체가
-   충분히 두꺼우면 그 구간 "안"에 흰 글씨로 값을 바로 꽂아 넣는다(팝업 도넛차트 안쪽 라벨과 같은
-   관례) — 색과 값이 분리되지 않고 한 덩어리로 보여서 더 깔끔하다. 구간이 라벨 하나 넣기에도
-   얇으면(.org-in-lab 대신) 그 값만 막대 위로 따로 떠서(.org-seg-lab, 범례처럼 색 점+값, 박스
-   없이) 보여준다 — 두 구간이 동시에 얇은 경우에만 둘 다 위로 올라와 한 줄에 나란히 선다. */
-.org-in-lab{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(21,24,29,.28);
-  pointer-events:none;z-index:4}
-/* py(전년비교) 구간은 배경이 옅은 파스텔 톤이라 흰 글씨 대비가 약하다 — 짙은 회색으로 바꾼다. */
-.org-in-lab.py{color:#3a4049;text-shadow:none}
-.org-seg-lab{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;
-  display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap;pointer-events:none;z-index:4}
-.org-seg-lab b{display:inline-flex;align-items:center;gap:5px;font-size:18px;font-weight:700;color:#15181d;line-height:1.3}
-.org-seg-lab b i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
-/* 전년비교 막대(orgBar의 py=true)용 — .blab.py와 같은 톤으로 "올해" 라벨과 한눈에 구분되게
-   값 글씨만 회색으로 낮춘다(점 색은 그대로 둬서 보담/백두 구분은 유지). */
-.org-seg-lab.py b{color:#a8b0bb}
 /* 2026-10-01(피드백 6차): 올해 값은 배경 알약(pill)을 없애고 숫자만 — 막대 자체의 색(보담/
    백두)이 이미 구분을 담당하므로 텍스트는 흰색+그림자로 가독성만 확보한다. 전년비교(py)는
    막대가 옅은 파스텔이라 숫자만으론 대비가 약해 회색 알약 배경을 그대로 유지한다. */
@@ -685,8 +667,13 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 /* 2026-10-01(피드백): 팝업 도넛(안쪽/바깥쪽) 라벨의 "매출액 값 아래 차지비율(%)" 줄 전용 선택자 —
    기존엔 donutChart()가 font-size/fill을 tspan에 인라인으로 직접 찍어 넣고 있어서 별도 선택자가
    없었다. 이 클래스를 추가해 크기/색을 한 곳에서 관리한다(인라인 fs/fill은 그대로 남아있어도
-   SVG에서는 스타일시트 규칙이 프리젠테이션 속성보다 항상 우선이라 이 규칙이 이긴다). */
-.mdonut-pct{font-size:15px;fill:#a8b0bb}
+   SVG에서는 스타일시트 규칙이 프리젠테이션 속성보다 항상 우선이라 이 규칙이 이긴다).
+   2026-10-01(피드백 2차): 안쪽(원 그래프 조각 위에 바로 찍히는) 라벨과 바깥(안내선 바깥,
+   흰 배경) 라벨은 깔리는 배경이 서로 달라 같은 회색 하나로는 둘 다 만족스러운 대비가 안
+   나온다 — 조각 색 위(안쪽)는 더 밝게, 흰 배경 위(바깥)는 기존 톤 그대로 구분한다. */
+.mdonut-pct{font-size:15px}
+.mdonut-pct-in{fill:#eff1f3}
+.mdonut-pct-out{fill:#7a828d}
 /* 2026-09-10: 범례를 그래프 옆이 아니라 아래로 옮겼다 — 그만큼 확보된 가로 폭을
    원그래프 자체(W/R/SW, donutChart 참고)를 훨씬 크게 그리는 데 쓴다. 채널이 많아
    범례가 길어지면 자연스럽게 줄바꿈되고, 넘치면 .modal(overflow:auto)이 스크롤된다. */
@@ -1801,7 +1788,7 @@ function donutChart(vals, chans, total){
        오히려 헷갈린다는 피드백으로 되돌림). */
     const nmRow = { t: s.c.n, fs:15, fw:700, fill:'#ffffff' };
     const valRow = { t: n2(s.v), fs:17, fw:800, fill:'#ffffff' };
-    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:GREY, cls:'mdonut-pct' };
+    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:GREY, cls:'mdonut-pct mdonut-pct-in' };
     const rows = [nmRow, valRow, pctRow];
     const ys = [p.y-19, p.y+3, p.y+25];
     const tspans = rows.map((r,idx)=>
@@ -1823,7 +1810,7 @@ function donutChart(vals, chans, total){
       <text x="${tx.toFixed(1)}" y="${(s.labelY-10).toFixed(1)}" text-anchor="${ta}" fill="#3a4049">
         <tspan x="${tx.toFixed(1)}" font-weight="700" font-size="14">${s.c.n}</tspan>
         <tspan x="${tx.toFixed(1)}" dy="18" font-weight="800" font-size="16">${n2(s.v)}</tspan>
-        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="400" font-size="12" fill="${GREY}" class="mdonut-pct">${pct(s.frac*100)}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="400" font-size="12" fill="${GREY}" class="mdonut-pct mdonut-pct-out">${pct(s.frac*100)}</tspan>
       </text>`;
   }).join('');
 
@@ -2891,10 +2878,9 @@ function adjustDotLabels(root){
     const canvas = lab.closest('.canvas');
     const bar = canvas && canvas.querySelector(`.bwrap[data-cur="${i}"]`);
     if(!bar) return;
-    /* orgSplit ON인 막대는 .blab 대신 .org-seg-lab이 최대 2개(보담 위/백두 아래) 그 자리를
-       대신 차지하므로 둘 다 충돌 검사 대상에 넣는다 — 하나만(예: 위쪽 보담만) 검사하면, 백두
-       비중이 커서 그 라벨이 막대 중간쯤까지 올라온 달에는 그 쪽과의 충돌을 놓친다. */
-    const obstacles = Array.from(bar.querySelectorAll('.blab, .org-seg-lab'));
+    /* orgSplit ON일 땐 매출원가율 선(.dotlab 포함)이 아예 숨겨지므로, 이 충돌 검사는 항상
+       orgSplit OFF(일반 채널색 막대, .blab) 상황에서만 실행된다. */
+    const obstacles = Array.from(bar.querySelectorAll('.blab'));
     if(!obstacles.length) return;
     const hitsAny = r => obstacles.some(ob=>hit(r, ob.getBoundingClientRect()));
     if(!hitsAny(lab.getBoundingClientRect())) return;
