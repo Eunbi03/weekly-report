@@ -357,43 +357,73 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-22(피드백): 상단요약카드와 내용섹션 사이 전체 간격(기존 14+10=24px)을
    2/5만큼 줄임 — 목표 합계 약 14px(24*3/5). sumsec-wrap-v3 쪽 margin-top은 4px 미만으로
    줄이면 overflow:hidden 클리핑 버그가 재발하므로(상단 색상 캡 offset -4px) 8px까지만 축소. */
-.kpiv3-row-wrap{display:flex;gap:16px;margin:0 0 6px}
-.kpiv3-card-wrap{flex:1;min-width:0;position:relative}
-.kpiv3-glow-band{position:absolute;z-index:0;pointer-events:none}
-.kpiv3-card{position:relative;z-index:1;width:100%;box-sizing:border-box;background:#fff;
-  border-radius:14px;padding:22px 18px;display:flex;flex-direction:column;gap:14px}
+/* 2026-10-01: KPI 카드를 항목별 개별 박스(.kpiv3-cards-row/.kpiv3-card-single)로
+   분리하면서, 한 카드 안에 매출액/원가율/보담·백두를 구분선(.kpiv3-div)으로 나누던
+   이전 단일 카드 구조(.kpiv3-row-wrap/.kpiv3-card-wrap/.kpiv3-glow-band/.kpiv3-card/
+   .kpiv3-row/.kpiv3-block/.kpiv3-div/.kpiv3-raworg-col 선택자와 hexAlphaV3() 후광
+   함수)는 완전히 대체되어 죽은 코드가 됐다 — 전부 제거. 항목이 2개면 카드 2개, 3개면
+   카드 3개로 나뉘고, 카드마다 법인색 상단 액센트 바로 정체성을 유지한다. */
+.kpiv3-cards-row{display:flex;gap:12px;margin-bottom:14px}
+.kpiv3-card-single{flex:1;min-width:0;box-sizing:border-box;background:#fff;border-radius:12px;
+  border-top:4px solid var(--kc,#ccc);box-shadow:0 1px 3px rgba(20,24,29,.07);
+  padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+/* 2026-10-01(피드백 3차): "매출액 영역을 기준으로 원가율 카드 가로길이 동일하게" —
+   원가율 폭을 다시 매출액과 같은 flex:1로 되돌림(.kpiv3-card-narrow를 사실상 무효화).
+   결과적으로 식육사업본부 3카드는 매출액:원가율:보담·백두 = 1:1:1로 균등. */
+.kpiv3-card-narrow{flex:1}
+.kpiv3-card-raworg{flex:1.0;min-width:200px}
+.kpiv3-sc-lab{font-size:18px;color:#8b93a0;font-weight:600}
+.kpiv3-divider-a{height:1px;background:#e7eaef;margin:2px 0 2px}
+/* [MOCKUP C] 카드를 법인색으로 진하게 채운 버전 — MOCKUP B의 분리카드 구조 위에
+   배경만 흰색→법인색(--kc)으로 바꾼다. 흰 테두리 액센트 바는 배경 자체가 이미 법인색
+   이라 의미가 없어져서 제거. 글자색은 하드코딩하지 않고 카드마다 JS에서 배경색의
+   상대휘도(WCAG relative luminance)를 계산해 밝은 배경(예: 케이 주황 #F28C02)이면
+   어두운 글자(.kc-dark), 어두운 배경(예: 식육사업본부 네이비 #3B4A63)이면 흰 글자
+   (.kc-light)를 선택 — 실측 대비비: 흰 글자/주황 배경 ≈2.5:1(가독성 불량), 흰 글자/
+   네이비 배경 ≈9:1(양호), 어두운 글자/주황 배경 ≈8.5:1(양호) — 그래서 두 브랜드색에
+   같은 흰색 글자를 쓸 수 없다. 증감(▲▼) 수치는 카드 배경색과 무관하게 항상 또렷하도록
+   자체 흰 배경의 "칩(chip)"에 담아, 배경이 바뀌어도 대비가 보장되게 한다. */
+.kpiv3-card-single.kc-fill{background:var(--kc,#ccc);border-top:none;box-shadow:0 1px 4px rgba(20,24,29,.16)}
+.kpiv3-card-single.kc-fill.kc-light{color:#fff}
+.kpiv3-card-single.kc-fill.kc-dark{color:#1a1a1a}
+.kpiv3-card-single.kc-fill .kpiv3-lab{color:inherit;opacity:.82}
+.kpiv3-card-single.kc-fill .kpiv3-val,
+.kpiv3-card-single.kc-fill .kpiv3-val small{color:inherit}
+.kpiv3-card-single.kc-fill .kpiv3-raworg-v{color:inherit}
+/* 2026-10-01(피드백): 보담/백두 법인명이 (옅은 반투명 흰/검 글자로는) 잘 안 보인다는
+   피드백 — 이름 글자를 더 이상 흐리게(opacity) 하지 않고 카드 글자색과 동일한 진하기로
+   올리고, 이름 앞에 브랜드색 그대로의 작은 점(.kpiv3-raworg-dot)을 둬서 "이게 보담/백두
+   구분"이라는 브랜드 정체성은 점 하나로만 전달 — 점은 글자 대비 문제에서 자유롭다
+   (텍스트처럼 배경과 글자 대비를 맞출 필요 없이 그 자체로 작은 색상 스와치). */
+.kpiv3-card-single.kc-fill.kc-light .kpiv3-raworg-nm{color:#fff;font-weight:700}
+.kpiv3-card-single.kc-fill.kc-dark .kpiv3-raworg-nm{color:#1a1a1a;font-weight:700}
+.kpiv3-raworg-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 auto;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.9)}
+/* 2026-10-01(피드백): 증감 칩이 부모(.kpiv3-card-single, flex-direction:column)의
+   기본 align-items:stretch 때문에 텍스트 길이와 무관하게 카드 폭 전체로 늘어나 있었다
+   — align-self:flex-start로 내용 폭만큼만 차지하도록 수정.
+   2026-10-01(피드백 2): 칩 배경을 단색 흰색이 아니라 증감 방향에 맞는 옅은 색(상승=
+   연두/연한 초록, 하강=연한 빨강)으로, 그 안의 글자는 더 진한 동색 계열로 — 색 자체가
+   방향을 말해주도록(배경+글자 모두 같은 색상 계열, 명도만 다르게). */
+.kpiv3-delta-chip{display:inline-flex;align-self:flex-start;align-items:center;gap:3px;
+  border-radius:20px;padding:2px 10px;font-size:17px;font-weight:900;white-space:nowrap}
+.kpiv3-delta-chip.up{background:#E1F5C4;color:#3C6B0E}
+.kpiv3-delta-chip.down{background:#FBDFDB;color:#A52E22}
 /* 2026-10-01(피드백): "9월"/"39주차" 기간 라벨(.kpiv3-period)과 달성율 막대 게이지
    (.kpiv3-achieve 등)를 카드에서 완전히 제거 — 기간 라벨은 바로 아래 표/차트 섹션
    헤더(.sumsec-period-h-v2 .num)에 이미 같은 값이 나오는 중복이었고, 달성율은 그
    옆 .rev 자리(기존엔 매출액 텍스트)에 숫자만으로 옮겼다(summaryPeriodBlockV2 참고).
    죽은 선택자(.kpiv3-period/.kpiv3-achieve/.kpiv3-achieve-fill/.kpiv3-achieve-val)와
    achieveBarV3() 함수를 함께 삭제했다. */
-/* 2026-09-22(피드백): 매출액/원가율/(식육사업본부만)보담·백두 세 요소를 폭 전체에 고르게
-   분산 — margin-left:auto로 오른쪽 끝에 몰아붙이던 방식을 버림.
-   2026-09-29: 반원 게이지가 빠지면서(위 .kpiv3-achieve로 이동) 이 줄엔 이제 비슷한
-   높이의 블록들만 남아 margin-top 보정이 더 필요 없어졌다.
-   2026-10-01: .kpiv3-achieve 자체가 삭제되면서 위 주석의 "이동" 맥락은 무효화됐지만
-   기록 차원에서 남겨둔다. */
-.kpiv3-row{display:flex;align-items:flex-end;justify-content:space-evenly;gap:12px}
-.kpiv3-block{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
-/* 2026-10-01(피드백, item1 적용 후 되돌림): 라벨+값+증감을 한 줄에 몰아넣었더니
-   "답답해 보인다"는 피드백으로 다시 라벨+값(1줄) / 증감(다음 줄, .kpiv3-delta)로 분리.
-   증감이 더 이상 한 줄에 끼어들지 않으므로, 한 줄 레이아웃 때 좁혀뒀던 카드 패딩/행간격도
-   답답함 해소를 위해 여유있게 다시 늘림(overflow 없음은 measure_kpi.py로 재확인). */
 .kpiv3-line1{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
 .kpiv3-lab{font-size:18px;color:#8b93a0;font-weight:600}
 .kpiv3-val{font-size:30px;font-weight:900;color:#15181d;letter-spacing:-.5px;white-space:nowrap}
 .kpiv3-val small{font-size:15px;font-weight:600;margin-left:1px;color:#15181d}
-.kpiv3-delta{font-size:20px;font-weight:900;white-space:nowrap}
-.kpiv3-div{width:1px;align-self:stretch;background:#d7dce3;flex:0 0 1px}
 /* 2026-09-29(피드백): 옛 반원 게이지 자리 — 식육사업본부(entity.rawOrg가 있는 조직)만
    보담/백두 개별 매출액 블록이 이 자리를 대신 차지한다. 다른 법인/팀 페이지는 이 칸
    자체가 렌더링되지 않는다(kpiCardV3의 raworgHtml 참고). */
-/* 2026-10-01(피드백): 보담/백두를 한 줄로 합쳤던 걸 다시 위아래 2줄로(보담 다음 줄에
-   백두) 되돌림 — 칸 너비는 내용에 맞춰 자동(width:auto) 유지. */
-.kpiv3-raworg-col{width:auto;flex:0 0 auto}
 .kpiv3-raworg-block{display:flex;flex-direction:column;gap:4px}
-.kpiv3-raworg-row{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
+.kpiv3-raworg-row{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .kpiv3-raworg-nm{font-size:18px;font-weight:600}
 .kpiv3-raworg-v{font-size:24px;font-weight:900;color:#15181d}
 /* 2026-09-22(피드백): 내용섹션 — 법인색 박스가 흰 박스 뒤에서 살짝 위로 올라와
@@ -2458,16 +2488,14 @@ function sumTableV2(entity, prevRow, curRow, unitLabel){
       <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th><th ${thStyle}>${lineLabel}</th></tr></thead>
     <tbody>${rows}${totRow}</tbody></table>`;
 }
-function summaryPeriodBlockV2(entity, rs, unitLabel, periodBig, showLegend){
+function summaryPeriodBlockV2(entity, rs, unitLabel, periodBig, showLegend, kpiCardHtml){
   const win = (rs||[]).slice(-6);
   const cur = rs && rs.length ? rs[rs.length-1] : null;
   const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
-  /* 2026-10-01(피드백): 이 자리(.rev)에 있던 "매출 X백만" 텍스트를 걷어내고, KPI 카드에서
-     없앤 달성율(.kpiv3-period/.kpiv3-achieve 삭제분, kpiCardV3 참고)을 숫자만으로 옮겼다.
-     라벨 없이 숫자(%)만 — 선택자(.rev)는 그대로, 안에 들어가는 내용만 바뀐 것. */
   const ac = cur ? ach(cur.t, cur.s) : null;
   return `<div class="sumsec-period-v2">
-    <div class="sumsec-period-h-v2"><span class="num">${periodBig}</span><span class="rev">${pct(ac)}</span></div>
+    <div class="sumsec-period-h-v2"><span class="num">${periodBig}</span><span class="rev">달성율 ${pct(ac)}</span></div>
+    ${kpiCardHtml ? `${kpiCardHtml}<div class="kpiv3-divider-a"></div>` : ''}
     <div class="sumsec-body-v2">
       <div class="sumtable">${sumTableV2(entity, prev, cur, unitLabel)}</div>
       <div class="sumchart">${sumChart(entity, win, showLegend)}</div>
@@ -2513,13 +2541,10 @@ function buildSummaryPdfPageV2(group){
    그라데이션이고, 안 채워진 트랙도 무채색 회색이 아니라 그 색의 아주 옅은 톤이었다
    (픽셀 샘플링으로 확인: 트랙≈해당색+흰색 72% 혼합, 그라데이션 끝≈해당색+흰색 50% 혼합).
    또 반원 자체도 기존보다 더 크고 굵게 그려져 있었다. */
-function hexAlphaV3(hex, a){
-  hex = hex.replace('#','');
-  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
 /* 2026-10-01(피드백): achieveBarV3() 삭제 — 달성율 막대 게이지 자체를 카드에서 들어냈다
-   (summaryPeriodBlockV2의 .rev 자리로 숫자만 이동). 아래 raworgBlockV3는 그대로 유지. */
+   (summaryPeriodBlockV2의 .rev 자리로 숫자만 이동). hexAlphaV3()도 함께 삭제 — KPI 카드
+   후광(glow-band) 레이어를 만드는 데만 쓰였는데, 카드가 법인색으로 진하게 채워지는
+   구조로 바뀌며 후광 자체가 없어져 죽은 코드가 됐다. 아래 raworgBlockV3는 그대로 유지. */
 /* 2026-09-28~29(피드백): 보담/백두 개별 매출액 — entity.rawOrg가 있는 조직(현재는
    식육사업본부=sy 하나뿐, D.sy.rawOrg = readRawOrgSales()로 보담-B/백두-K 원본 시트에서
    직접 읽은 값, summaryCostCardSy에서 쓰는 것과 동일 소스)만 해당. 이 카드가 월용인지
@@ -2530,16 +2555,32 @@ function raworgBlockV3(entity, unitLabel){
   const bo = rawOrgLatest(entity.rawOrg.bo), bd = rawOrgLatest(entity.rawOrg.bd);
   const boV = unitLabel==='월' ? bo.m : bo.w;
   const bdV = unitLabel==='월' ? bd.m : bd.w;
-  const row = (label,color,v) => `<div class="kpiv3-raworg-row"><span class="kpiv3-raworg-nm" style="color:${color}">${label}</span><span class="kpiv3-raworg-v">${v!=null?n2(v):'–'}</span></div>`;
+  /* [MOCKUP C] 이름 글자 자체엔 더 이상 브랜드색을 넣지 않는다(채워진 카드 배경 위에서
+     글자색까지 브랜드색이면 대비가 보장 안 됨) — 브랜드색은 이름 앞 작은 점(dot)으로만
+     전달하고, 이름 글자는 카드의 공통 글자색(흰/검, CSS에서 처리)을 그대로 쓴다. */
+  const row = (label,color,v) => `<div class="kpiv3-raworg-row"><i class="kpiv3-raworg-dot" style="background:${color}"></i><span class="kpiv3-raworg-nm">${label}</span><span class="kpiv3-raworg-v">${v!=null?n2(v):'–'}</span></div>`;
   return `<div class="kpiv3-raworg-block">${row('보담','#1566B2',boV)}${row('백두','#259638',bdV)}</div>`;
+}
+/* [MOCKUP C] 배경색(법인색)의 WCAG 상대휘도를 계산해 그 위에 흰 글자(.kc-light)를
+   쓸지 어두운 글자(.kc-dark)를 쓸지 고른다 — 네이비(#3B4A63)처럼 어두운 배경엔 흰 글자,
+   케이 주황(#F28C02)처럼 밝은 배경엔 어두운 글자. 임계값은 WCAG 대비비 ~3:1 지점에서
+   흰/검 중 더 나은 쪽이 갈리는 실측 기준(아래 relLum 0.42 부근)으로 잡았다. */
+function relLumV3(hex){
+  const h = hex.replace('#','');
+  const [r,g,b] = [0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));
+  return 0.2126*r+0.7152*g+0.0722*b;
 }
 function kpiCardV3(entity, rs, unitLabel, periodBig){
   const cur = rs && rs.length ? rs[rs.length-1] : null;
   const prev = rs && rs.length>1 ? rs[rs.length-2] : null;
   const color = sumHeaderColor(entity);
+  const textCls = relLumV3(color) > 0.42 ? 'kc-dark' : 'kc-light';
   const sVal = cur && cur.s!=null ? n2(cur.s) : '–';
   const sDiff = (cur&&cur.s!=null && prev&&prev.s!=null) ? cur.s-prev.s : null;
-  const sDiffHtml = sDiff==null ? '' : `<div class="kpiv3-delta" style="color:${sDiff<0?'#D64545':'#1F8A5B'}">${sDiff<0?'▼':'▲'}${n2(Math.abs(sDiff))}</div>`;
+  /* 증감 칩(.kpiv3-delta-chip)은 항상 자체 흰 배경을 가지므로, 카드가 네이비든 주황이든
+     대비가 보장된다 — 카드 배경색에 맞춰 글자색을 바꿔야 했던 레이블/값과 달리, 칩은
+     하나의 색 규칙(상승=초록/하강=빨강)만으로 양쪽 배경 모두에서 또렷하게 읽힌다. */
+  const sDiffHtml = sDiff==null ? '' : `<div class="kpiv3-delta-chip ${sDiff<0?'down':'up'}">${sDiff<0?'▼':'▲'}${n2(Math.abs(sDiff))}</div>`;
   /* 2026-09-22(참고 PDF 반영): 표(sumTableV2)와 동일한 규칙 — hasLoan 조직(MS팀 특정)은
      두 번째 통계가 원가율이 아니라 대익율이어야 한다. 라벨/값/증감 전부 분기.
      2026-09-29(피드백): 대출액(금액) 대신 대익율(%, (매출-대출)/매출)로 표시하도록 변경. */
@@ -2550,51 +2591,27 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
     const pmg = prev && prev.s>0 && prev.loan!=null ? (prev.s-prev.loan)/prev.s*100 : null;
     if(mg!=null) secondValHtml = `${mg.toFixed(1)}<small>%</small>`;
     const lDiff = (mg!=null && pmg!=null) ? mg-pmg : null;
-    secondDiffHtml = lDiff==null ? '' : `<div class="kpiv3-delta" style="color:${lDiff<0?'#D64545':'#1F8A5B'}">${lDiff<0?'▼':'▲'}${Math.abs(lDiff).toFixed(1)}%</div>`;
+    secondDiffHtml = lDiff==null ? '' : `<div class="kpiv3-delta-chip ${lDiff<0?'down':'up'}">${lDiff<0?'▼':'▲'}${Math.abs(lDiff).toFixed(1)}%</div>`;
   } else {
     if(cur && cur.c!=null) secondValHtml = `${cur.c.toFixed(1)}<small>%</small>`;
     const cDiff = (cur&&cur.c!=null && prev&&prev.c!=null) ? cur.c-prev.c : null;
-    secondDiffHtml = cDiff==null ? '' : `<div class="kpiv3-delta" style="color:${cDiff<0?'#D64545':'#1F8A5B'}">${cDiff<0?'▼':'▲'}${Math.abs(cDiff).toFixed(1)}%</div>`;
+    secondDiffHtml = cDiff==null ? '' : `<div class="kpiv3-delta-chip ${cDiff<0?'down':'up'}">${cDiff<0?'▼':'▲'}${Math.abs(cDiff).toFixed(1)}%</div>`;
   }
-  /* 2026-09-22(피드백): 흰 배경 + 그림자(거리 0, 흐림만) — 색은 법인색.
-     라벨·값을 같은 줄에, 증감은 다음 줄로. 매출액/원가율/게이지 세 요소를 카드 폭
-     전체에 고르게(justify-content:space-evenly, CSS) 배치 — margin-left:auto로
-     오른쪽에 몰아붙이던 방식을 버렸다. */
-  /* 2026-09-22(버그 수정, 재확인): box-shadow도 radial-gradient도 실제 내보내기 파이프라인
-     (html2canvas scale:1.8)에서는 캡처가 안 됐다 — 격리 테스트로 직접 확인: box-shadow는
-     scale:1에서만 그려지고 scale:1.8에서 사라짐, radial-gradient는 scale 무관하게 아예
-     안 그려짐. html2canvas가 확실히 그리는 건 "실제 배경색이 있는 요소"뿐이라, 그 원리만
-     쓰는 겹겹이 쌓은 반투명 단색 밴드(레이어)로 후광을 근사한다 — 같은 테스트 파이프라인
-     으로 재확인 완료(밴드는 scale:1.8에서도 정상 렌더링됨). */
-  /* 오프셋 최대값은 #pdfStage 자체 패딩(--pad-h:18px/--pad-v:14px)보다 작게 잡아야
-     페이지 가장자리 쪽 카드의 후광이 스테이지 overflow:hidden에 잘리지 않는다.
-     2026-09-22(재조정): 범위를 절반으로 줄이고(-12→-6) 옅게.
-     2026-09-22(재조정 2): "색상은 더 옅게 + 레이어드 불투명도가 더 빠르게 올라오도록" —
-     선형 증가 대신 제곱 곡선(t^2)으로 바꿔, 카드에서 먼 바깥쪽 레이어는 거의 안 보이다가
-     카드 테두리에 가까워질수록 불투명도가 빠르게 치고 올라오게 함. 최고 불투명도 자체도
-     .13→.09로 낮춰 전체적으로 더 창백하게. */
-  const glowSteps = [[-6,.003],[-5,.01],[-4,.02],[-3,.04],[-2,.06],[-1,.09]];
-  const glowBands = glowSteps.map(([off,a])=>
-    `<div class="kpiv3-glow-band" style="top:${off}px;left:${off}px;right:${off}px;bottom:${off}px;
-      border-radius:${14-off}px;background:${hexAlphaV3(color,a)}"></div>`).join('');
+  /* [MOCKUP C] MOCKUP B의 분리카드 구조는 그대로 두고, 배경만 흰색→법인색(--kc)
+     채움으로 바꾼다(.kc-fill). 2개(대부분 법인) / 3개(식육사업본부만, entity.rawOrg)
+     카드 분기는 MOCKUP B와 동일 — raworgBlockV3 자체가 entity.rawOrg 없으면 빈 문자열을
+     반환하므로 여기서 다시 판단하지 않는다. */
   const raworgHtml = raworgBlockV3(entity, unitLabel);
-  return `<div class="kpiv3-card-wrap">
-    ${glowBands}
-    <div class="kpiv3-card">
-      <div class="kpiv3-row">
-        <div class="kpiv3-block">
-          <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}<small>백만</small></span></div>
-          ${sDiffHtml}
-        </div>
-        <div class="kpiv3-div"></div>
-        <div class="kpiv3-block">
-          <div class="kpiv3-line1"><span class="kpiv3-lab">${secondLab}</span><span class="kpiv3-val">${secondValHtml}</span></div>
-          ${secondDiffHtml}
-        </div>
-        ${raworgHtml ? `<div class="kpiv3-div"></div><div class="kpiv3-raworg-col">${raworgHtml}</div>` : ''}
-      </div>
-    </div>
-  </div>`;
+  const card1 = `<div class="kpiv3-card-single kc-fill ${textCls}" style="--kc:${color}">
+      <div class="kpiv3-line1"><span class="kpiv3-lab">매출액</span><span class="kpiv3-val">${sVal}<small>백만</small></span></div>
+      ${sDiffHtml}
+    </div>`;
+  const card2 = `<div class="kpiv3-card-single kc-fill ${textCls}${raworgHtml ? ' kpiv3-card-narrow' : ''}" style="--kc:${color}">
+      <div class="kpiv3-line1"><span class="kpiv3-lab">${secondLab}</span><span class="kpiv3-val">${secondValHtml}</span></div>
+      ${secondDiffHtml}
+    </div>`;
+  const card3 = raworgHtml ? `<div class="kpiv3-card-single kpiv3-card-raworg kc-fill ${textCls}" style="--kc:${color}">${raworgHtml}</div>` : '';
+  return `<div class="kpiv3-cards-row">${card1}${card2}${card3}</div>`;
 }
 function pageHeaderV3(entity, showHogPrice){
   let hp = '';
@@ -2624,15 +2641,17 @@ function summarySectionV3Body(entity){
   const monthBig = cutoff ? `${cutoff.month}월` : '';
   const weekBig = cutoff ? `${cutoff.week}주차` : '';
   const color = sumHeaderColor(entity);
+  const monthKpi = kpiCardV3(entity, entity.month, '월', monthBig);
+  const weekKpi = kpiCardV3(entity, entity.week, '주', weekBig);
   /* 2026-09-22(피드백): 박스 전체 테두리 대신 — 법인색 박스를 흰 박스 뒤에, 살짝 위로
      오프셋해서 배치 → 흰 박스 상단 너머로 색이 삐져나온 것처럼 상단에만 보인다. */
   return `<div class="sumsec-wrap-v3">
     <div class="sumsec-bgcap-v3" style="background:${color}"></div>
     <div class="sumsec v3box">
       <div class="sumsec-periods-v2">
-        ${summaryPeriodBlockV2(entity, entity.month, '월', monthBig, false)}
+        ${summaryPeriodBlockV2(entity, entity.month, '월', monthBig, false, monthKpi)}
         <div class="sumsec-pdivider"></div>
-        ${summaryPeriodBlockV2(entity, entity.week, '주', weekBig, false)}
+        ${summaryPeriodBlockV2(entity, entity.week, '주', weekBig, false, weekKpi)}
       </div>
       ${chanLegendHtmlV3(entity)}
     </div>
@@ -2641,15 +2660,8 @@ function summarySectionV3Body(entity){
 function buildSummaryPdfPageV3(group){
   const e = pdfEntityForV2(group.keys[0]);
   const showHogPrice = group.keys[0]==='sy';
-  const cutoff = window.__DASH_CUTOFF__;
-  const monthBig = cutoff ? `${cutoff.month}월` : '';
-  const weekBig = cutoff ? `${cutoff.week}주차` : '';
   const header = pageHeaderV3(e, showHogPrice);
-  const kpiRow = `<div class="kpiv3-row-wrap">
-    ${kpiCardV3(e, e.month, '월', monthBig)}
-    ${kpiCardV3(e, e.week, '주', weekBig)}
-  </div>`;
-  return `<div class="fixed-zone">${header}${kpiRow}</div>
+  return `<div class="fixed-zone">${header}</div>
   <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
     ${summarySectionV3Body(e)}
   </div></div></div>`;
