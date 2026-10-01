@@ -453,7 +453,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    막대 위 라벨 자리)을 줘서 눈금 간격이 막대 높이 비율과 정확히 일치하게 한다. */
 .sc-yax{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
   padding:18px 5px 0 0}
-.sc-yax span{font-size:15px;color:#b3bac3}
+.sc-yax span{font-size:15px;color:#a8b0bb}
 .sc-yax-r{grid-column:3;align-items:flex-start;padding:18px 0 0 5px}
 .sc-plot{grid-column:2;grid-row:1;position:relative;min-width:0}
 /* 2026-09-16 버그 수정: 막대가 위쪽 기준으로 붙어 보이던 문제(item1) — .sc-col에
@@ -462,7 +462,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:8px;padding:18px 4px 0}
 .sc-col{flex:1;min-width:0;display:flex;justify-content:center;align-items:flex-end;height:100%}
 .sc-bar{position:relative;width:56%;min-width:14px;display:flex;align-items:flex-end}
-.sc-lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:700;color:#3a4049;white-space:nowrap}
+.sc-lab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:15px;font-weight:700;color:#3a4049;white-space:nowrap}
 .sc-stk{width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:2px 2px 0 0;overflow:hidden}
 .sc-stk span{display:block;width:100%}
 /* 2026-09-16(item3): 매출원가율(또는 대출액) 꺾은선 오버레이 — .sc-bars와 정확히 같은
@@ -471,7 +471,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    이 요소의 padding-box(=자기 자신의 padding 포함 전체 상자) 기준으로 계산되기 때문에,
    여기서 padding을 또 주면 오히려 좌표계가 어긋난다. */
 .sc-ovl{position:absolute;top:18px;left:4px;right:4px;bottom:0;pointer-events:none;z-index:3}
-.sc-dotlab{position:absolute;font-size:18px;font-weight:700;color:#15181d;white-space:nowrap;
+.sc-dotlab{position:absolute;font-size:15px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
 /* item6 수정으로 .sc-plot과 같은 grid 열(2번째)에 놓인다 — .sc-bars와 같은 gap(8px)만
    유지하면 칸 경계가 자동으로 막대와 일치한다. */
@@ -481,7 +481,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* 2026-09-21(사이즈 체계, size5→size4): 데스크탑 범례 글씨 15px→18px. 모바일(#stage.portrait
    .sc-lgd span, 11.5px)은 그대로 유지 — 요청받은 건 데스크탑(size5→size4) 쪽만. */
 .sc-lgd{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:8px;padding-top:6px;border-top:1px solid #f1f3f6}
-.sc-lgd span{font-size:18px;color:#6c7684;display:flex;align-items:center;gap:4px}
+.sc-lgd span{font-size:15px;color:#6c7684;display:flex;align-items:center;gap:4px}
 .sc-lgd i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
 .sc-lgd i.ln{width:12px;height:0;border-top:2px solid;border-radius:0}
 
@@ -549,7 +549,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .chd h2{font-size:21px;font-weight:700;letter-spacing:-.3px}
 .plot{display:flex;align-items:stretch;margin-top:var(--plot-margin-t)}
 .yax{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding-right:9px}
-.yax span{font-size:15px;color:#b3bac3}
+.yax span{font-size:15px;color:#a8b0bb}
 /* 2026-09-14: 매출원가율 선그래프를 금액(막대) 축이 아니라 별도의 퍼센트 축 기준으로
    그리면서, 그 퍼센트 범위를 표의 오른쪽에 따로 표시한다 — 왼쪽 축(.yax)과 대칭 구조. */
 .yax-r{align-items:flex-start;padding-right:0;padding-left:9px}
@@ -569,27 +569,41 @@ button{font-family:inherit;border:none;cursor:pointer}
   border-radius:1.5px 1.5px 0 0;overflow:hidden}
 .stk.py{border:1.5px dashed #a8b0bb}
 .stk span{display:block;width:100%}
-.blab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:700;
+.blab{position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:700;
   color:#3a4049;white-space:nowrap;z-index:2}
 .blab.py{color:#a8b0bb;font-weight:600}
-/* 2026-09-29(피드백): 막대그래프 보담/백두 비율 토글 — 각 색 구간이 끝나는 위치(경계선)
-   바로 아래에 매출액(굵게)+비율(얇게) 라벨. .stk엔 overflow:hidden이 있지만 이 라벨은
-   .stk의 형제(.bwrap 자식)라서 짧은 구간이라도 안 잘리고 살짝 넘쳐도 그대로 보인다. */
-.org-seg-lab{position:absolute;left:50%;transform:translateX(-50%);text-align:center;
-  white-space:nowrap;background:rgba(255,255,255,.92);border-radius:4px;padding:1px 5px;
+/* 2026-09-29(피드백): 막대그래프 보담/백두 비율 토글 — 각 색 구간 라벨.
+   2026-10-01(피드백 4차): 막대 위에 흰 카드로 두 값을 띄우던 방식(피드백 3차) 대신, 구간 자체가
+   충분히 두꺼우면 그 구간 "안"에 흰 글씨로 값을 바로 꽂아 넣는다(팝업 도넛차트 안쪽 라벨과 같은
+   관례) — 색과 값이 분리되지 않고 한 덩어리로 보여서 더 깔끔하다. 구간이 라벨 하나 넣기에도
+   얇으면(.org-in-lab 대신) 그 값만 막대 위로 따로 떠서(.org-seg-lab, 범례처럼 색 점+값, 박스
+   없이) 보여준다 — 두 구간이 동시에 얇은 경우에만 둘 다 위로 올라와 한 줄에 나란히 선다. */
+.org-in-lab{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(21,24,29,.28);
   pointer-events:none;z-index:4}
-.org-seg-lab b{display:block;font-size:14px;font-weight:700;color:#15181d;line-height:1.3}
-.org-seg-lab span{display:block;font-size:11px;font-weight:400;color:#8b93a0;line-height:1.15}
-/* 2026-09-29(피드백 2차): 전년비교 막대(orgBar의 py=true)용 — .blab.py와 같은 톤으로
-   "올해" 라벨과 한눈에 구분되게 값 글씨를 회색으로 낮춘다. */
+/* py(전년비교) 구간은 배경이 옅은 파스텔 톤이라 흰 글씨 대비가 약하다 — 짙은 회색으로 바꾼다. */
+.org-in-lab.py{color:#3a4049;text-shadow:none}
+.org-seg-lab{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap;pointer-events:none;z-index:4}
+.org-seg-lab b{display:inline-flex;align-items:center;gap:5px;font-size:18px;font-weight:700;color:#15181d;line-height:1.3}
+.org-seg-lab b i{width:8px;height:8px;border-radius:2px;flex:0 0 8px}
+/* 전년비교 막대(orgBar의 py=true)용 — .blab.py와 같은 톤으로 "올해" 라벨과 한눈에 구분되게
+   값 글씨만 회색으로 낮춘다(점 색은 그대로 둬서 보담/백두 구분은 유지). */
 .org-seg-lab.py b{color:#a8b0bb}
+/* 2026-10-01(피드백 6차): 올해 값은 배경 알약(pill)을 없애고 숫자만 — 막대 자체의 색(보담/
+   백두)이 이미 구분을 담당하므로 텍스트는 흰색+그림자로 가독성만 확보한다. 전년비교(py)는
+   막대가 옅은 파스텔이라 숫자만으론 대비가 약해 회색 알약 배경을 그대로 유지한다. */
+.org-pin{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(21,24,29,.35);
+  pointer-events:none;z-index:4}
+.org-pin.py{background:#a8b0bb;opacity:.85;border-radius:5px;padding:3px 8px;text-shadow:none}
 .ovl{position:absolute;inset:0;pointer-events:none;z-index:3;padding:0 5px}
 .dotlab{position:absolute;font-size:18px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
 .xax{display:flex;gap:7px;padding:0 5px;margin-top:7px}
 .xax div{flex:1;text-align:center;min-width:0}
 .xax b{display:block;font-size:15px;font-weight:600;color:#7a828d}
-.xax u{display:block;font-size:15px;color:#b3bac3;text-decoration:none}
+.xax u{display:block;font-size:15px;color:#a8b0bb;text-decoration:none}
 .xax div.on b{color:#15181d;font-weight:800}
 .lgd{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:16px;padding-top:9px;border-top:1px solid #f1f3f6}
 /* 2026-09-19(피드백 3차, F3): 범례 글씨 크기를 표 머리말(th) 글씨 크기(18px)와 동일하게 —
@@ -667,7 +681,12 @@ tr.spacer td{padding:6px 0;border:none;background:transparent}
 .mdonut-c{position:absolute;inset:0;display:flex;flex-direction:column;gap:4px;align-items:center;
   justify-content:center;text-align:center;pointer-events:none;padding:0 14px}
 .mdonut-c b{font-size:21px;font-weight:800;letter-spacing:-.3px;color:#15181d}
-.mdonut-c span{font-size:13px;color:#9aa3af;font-weight:600}
+.mdonut-c span{font-size:18px;color:#9aa3af;font-weight:700}
+/* 2026-10-01(피드백): 팝업 도넛(안쪽/바깥쪽) 라벨의 "매출액 값 아래 차지비율(%)" 줄 전용 선택자 —
+   기존엔 donutChart()가 font-size/fill을 tspan에 인라인으로 직접 찍어 넣고 있어서 별도 선택자가
+   없었다. 이 클래스를 추가해 크기/색을 한 곳에서 관리한다(인라인 fs/fill은 그대로 남아있어도
+   SVG에서는 스타일시트 규칙이 프리젠테이션 속성보다 항상 우선이라 이 규칙이 이긴다). */
+.mdonut-pct{font-size:15px;fill:#a8b0bb}
 /* 2026-09-10: 범례를 그래프 옆이 아니라 아래로 옮겼다 — 그만큼 확보된 가로 폭을
    원그래프 자체(W/R/SW, donutChart 참고)를 훨씬 크게 그리는 데 쓴다. 채널이 많아
    범례가 길어지면 자연스럽게 줄바꿈되고, 넘치면 .modal(overflow:auto)이 스크롤된다. */
@@ -1364,25 +1383,33 @@ function niceCap(v){ return Math.ceil((v+500)/100)*100; }
 function orgBar(v, org, mx, H, wpx, extra, idx, py){
   const bdPct = v>0 ? Math.max(0,Math.min(100, org.bd/v*100)) : 0;
   const boPct = 100-bdPct;
-  const boShare = v>0 ? org.bo/v*100 : 0, bdShare = v>0 ? org.bd/v*100 : 0;
-  /* 2026-09-29(피드백 수정): 백두 구간이 아주 얇을 때(예: 4~8%) "경계선+4px"로 그대로
-     내려찍으면 라벨(2줄, 약 32px)이 막대 바닥 아래 x축 월 라벨과 겹친다 — 실제 막대 높이(px,
-     barH = v/mx*H)를 알고 있으므로, 라벨 top을 "막대 바닥-라벨높이" 이상 못 내려가게 clamp해서
-     항상 막대 안쪽(바닥에 붙더라도)에 머물게 한다. */
-  const barH = mx>0 ? (v/mx)*H : 0;
-  const LABEL_H = 32;
-  const bdTopPx = Math.min((boPct/100)*barH + 4, Math.max(4, barH-LABEL_H));
   /* 2026-09-29(피드백 2차): 전년비교 막대(py=true)는 채널색 bar()가 그렇듯(colsL=light(x.c))
      색을 옅게, 라벨을 회색으로 낮춰서 "올해" 막대와 한눈에 구분되게 한다. */
   const boC = py ? light(CO.bo) : CO.bo, bdC = py ? light(CO.bd) : CO.bd;
   const labCls = py ? ' py' : '';
+  /* 2026-10-01(피드백 6차): 보담은 그대로 막대 "맨 위"에서 일정 거리(PIN_GAP)에 고정 — 기존
+     위치가 좋다는 피드백 반영, 그대로 둔다. 백두는 더 이상 막대 맨 아래 고정이 아니라, 보담/
+     백두 색 경계선(= 백두 구간이 시작/끝나는 지점) 바로 아래로 옮긴다 — 경계선의 막대 상단
+     기준 픽셀 위치는 barH*boPct/100(보담이 차지하는 비율만큼 위에서부터 내려온 지점). 다만
+     막대 바닥을 넘어가거나(백두 구간이 아주 얇음) 보담 라벨과 겹치면(백두가 거의 전부라
+     경계선이 맨 위 근처) 각각 안쪽으로 보정한다. */
+  const barH = mx>0 ? (v/mx)*H : 0;
+  const PIN_H = 24, PIN_GAP = 8;
+  const boTop = PIN_GAP;
+  const boundaryPx = barH * (boPct/100);
+  let bdTop = boundaryPx + PIN_GAP;
+  bdTop = Math.min(bdTop, barH - PIN_GAP - PIN_H);
+  bdTop = Math.max(bdTop, boTop + PIN_H + 4, PIN_GAP);
+  /* 2026-10-01(피드백 5차): 보담/백두 라벨만 소수점 둘째자리(n2)가 아니라 정수로 반올림(n0)해서
+     — 다른 모든 값(KPI/표/팝업 등)은 그대로 n2를 유지 — 글자 수가 줄어든 만큼 막대 폭 안에
+     더 여유 있게 들어간다. */
   return `<div class="bwrap" data-cur="${idx!=null?idx:''}" style="height:${(v/mx*100).toFixed(2)}%;width:${wpx}px;${extra}">
     <div class="stk orgsplit${py?' py':''}">
       <span style="height:${boPct.toFixed(3)}%;background:${boC}"></span>
       <span style="height:${bdPct.toFixed(3)}%;background:${bdC}"></span>
     </div>
-    <div class="org-seg-lab${labCls}" style="top:4px"><b>${n2(org.bo)}</b><span>${boShare.toFixed(1)}%</span></div>
-    <div class="org-seg-lab${labCls}" style="top:${bdTopPx.toFixed(1)}px"><b>${n2(org.bd)}</b><span>${bdShare.toFixed(1)}%</span></div>
+    <div class="org-pin${labCls}" style="top:${boTop.toFixed(1)}px">${n0(org.bo)}</div>
+    <div class="org-pin${labCls}" style="top:${bdTop.toFixed(1)}px">${n0(org.bd)}</div>
   </div>`;
 }
 function barChart(rs, chans, prev, e, curIdx, orgSplit){
@@ -1467,7 +1494,7 @@ function barChart(rs, chans, prev, e, curIdx, orgSplit){
     <div class="area"><div class="area-inner" style="width:${widthPct}%"><div class="canvas" style="height:${H}px">
       ${ticks.map(i=>`<div class="gl" style="top:${i/4*100}%"></div>`).join('')}
       <div class="bars">${bars}</div>
-      ${lineKind?`<div class="ovl"><svg class="lnsvg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
+      ${(lineKind && !orgSplit)?`<div class="ovl"><svg class="lnsvg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
         viewBox="0 0 100 100" preserveAspectRatio="none">
         <polyline points="${pts}" fill="none" stroke="#FF6A00" stroke-width="2.4"
           vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>${dots}</div>`:''}
@@ -1774,11 +1801,11 @@ function donutChart(vals, chans, total){
        오히려 헷갈린다는 피드백으로 되돌림). */
     const nmRow = { t: s.c.n, fs:15, fw:700, fill:'#ffffff' };
     const valRow = { t: n2(s.v), fs:17, fw:800, fill:'#ffffff' };
-    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:GREY };
+    const pctRow = { t: pct(s.frac*100), fs:12.5, fw:400, fill:GREY, cls:'mdonut-pct' };
     const rows = [nmRow, valRow, pctRow];
     const ys = [p.y-19, p.y+3, p.y+25];
     const tspans = rows.map((r,idx)=>
-      `<tspan x="${p.x.toFixed(1)}" y="${ys[idx].toFixed(1)}" font-weight="${r.fw}" font-size="${r.fs}" fill="${r.fill}">${r.t}</tspan>`
+      `<tspan x="${p.x.toFixed(1)}" y="${ys[idx].toFixed(1)}" font-weight="${r.fw}" font-size="${r.fs}" fill="${r.fill}"${r.cls?` class="${r.cls}"`:''}>${r.t}</tspan>`
     ).join('');
     return `<text text-anchor="middle">${tspans}</text>`;
   }).join('');
@@ -1796,7 +1823,7 @@ function donutChart(vals, chans, total){
       <text x="${tx.toFixed(1)}" y="${(s.labelY-10).toFixed(1)}" text-anchor="${ta}" fill="#3a4049">
         <tspan x="${tx.toFixed(1)}" font-weight="700" font-size="14">${s.c.n}</tspan>
         <tspan x="${tx.toFixed(1)}" dy="18" font-weight="800" font-size="16">${n2(s.v)}</tspan>
-        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="400" font-size="12" fill="${GREY}">${pct(s.frac*100)}</tspan>
+        <tspan x="${tx.toFixed(1)}" dy="16" font-weight="400" font-size="12" fill="${GREY}" class="mdonut-pct">${pct(s.frac*100)}</tspan>
       </text>`;
   }).join('');
 
