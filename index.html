@@ -321,6 +321,13 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sumtitlerow{display:flex;align-items:center;padding-left:17px}
 .sumcol-h{flex:1 1 0%;min-width:0;font-size:21px;font-weight:800;letter-spacing:-.5px}
 .sumcol-h + .sumcol-h{margin-left:26px}
+/* [2026-10-06] 월/주차 옆 ▲▼ 스테퍼 — 작은 위/아래 화살표 버튼 */
+.sumcol-h{display:flex;align-items:center;gap:10px}
+.sumstep{display:inline-flex;flex-direction:column;gap:2px}
+.sumstep-b{width:26px;height:15px;padding:0;border:1px solid #cfd5de;background:#fff;color:#4a5568;border-radius:4px;
+  font-size:9px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sumstep-b:hover:not(:disabled){background:#eef1f6;border-color:#9aa5b5}
+.sumstep-b:disabled{opacity:.3;cursor:default}
 /* 2026-09-17(item1): 각 법인/팀 섹션을 흰 카드로 감싸서 서로 뚜렷하게 구분되게 한다.
    2026-09-18(피드백 2차, item6): 엔티티당 카드 1장 — "보담 월,주가 한 카드" 요청대로
    월 전용 컬럼/주 전용 컬럼으로 나눠서 같은 이름이 카드 2장으로 쪼개지던 것을 합쳤다. */
@@ -1021,6 +1028,21 @@ function readHogPrice(wb, cutoff){
   }
   return { price:null, wow:null };
 }
+/* [2026-10-06] 전체요약 화면에서 주차를 ▲▼로 바꿔볼 수 있게 되면서, 선택한 주차의 돈가도
+   보여줘야 한다 — 집계 시트 F열(주차) 기준으로 모든 주차의 돈가(I)/전주대비(J)를 맵으로 읽어둔다.
+   기준 주차(readCutoff) 이후 행은 readHogPrice와 같은 이유(수식 찌꺼기)로 아예 담지 않는다. */
+function readHogPriceAll(wb, cutoff){
+  const rows = aoa(wb, '집계');
+  const fCol = colNum('F'), iCol = colNum('I'), jCol = colNum('J');
+  const out = {};
+  for(let r=4; r<=rows.length; r++){
+    const wk = numAt(cellAt(rows, r, fCol));
+    if(wk==null || wk<1 || wk>cutoff.week) continue;
+    if(out[wk]) continue;
+    out[wk] = { price: numAt(cellAt(rows, r, iCol)), wow: numAt(cellAt(rows, r, jCol)) };
+  }
+  return out;
+}
 
 /* chan spec: [name,color,tgtLetter] → 매출 = 목표+1칸  |  [name,color,null,salesLetter] → 목표 없음, 매출은 salesLetter 그대로 */
 function readRow(rows, r, chans, opt){
@@ -1317,6 +1339,7 @@ async function bootstrapData(){
   window.__DASH_LEGACY__ = { sy:syL, kp:kpL };
   window.__DASH_CUTOFF__ = cutoff;
   window.__DASH_HOGPRICE__ = readHogPrice(wb, cutoff);
+  window.__DASH_HOGPRICE_BY_WEEK__ = readHogPriceAll(wb, cutoff);
 }
 
 /* ---------- 1년 선그래프용 — 전년(주별 실측 없음) 구간은 월별 값을 주 단위로 배분한 파생값 ---------- */
@@ -1365,7 +1388,7 @@ const KP_SUBS = [['all','전사'],['ms_t','MS팀 특정'],['ms','MS팀'],['it','
 /* 2026-09-16: 처음 접속했을 때 기본으로 보이는 화면을 보담이 아닌 전체 요약으로 변경 */
 /* orgSplit: 식육사업본부(sy) 막대그래프 전용 토글 — 켜면 채널색 대신 보담/백두 2색
    스택으로 바꿔 보여준다(2026-09-29 피드백). 다른 조직 탭엔 영향 없음. */
-const S = { nav1:'sales', nav2:'summary', mode:'month', ksub:'all', view:'bar', mi:11, wi:33, orgSplit:false };
+const S = { nav1:'sales', nav2:'summary', mode:'month', ksub:'all', view:'bar', mi:11, wi:33, orgSplit:false, sumM:null, sumW:null };
 /* 월별 배열은 이제 항상 "전년 1~12월 + 올해 1월~기준월" 형태라, 인덱스 12가 곧 "올해 1월"이다.
    그 앞은 트레일링 계산용 전년 데이터일 뿐 직접 선택(현재 시점)할 수 없게 막는다. */
 const MONTH_FLOOR = 12;
@@ -2150,10 +2173,46 @@ function pageSales(){
    없고, 대신 돈가 박스를 둔다. 조직별 스테퍼 상태(S.mi/S.wi)와 무관하게 항상 각
    엔티티의 month/week 배열 "마지막" 항목(=readCutoff 기준 최신)만 본다. */
 const SUMMARY_ENTITIES = () => [D.sy, D.kp, KSUB.ms_t, KSUB.ms, KSUB.it];
+/* ═══ [2026-10-06] 전체요약 월/주차 ▲▼ 선택 ═══
+   월과 주차를 서로 독립적으로 고른다(월만 바꾸면 주차 데이터는 그대로, 반대도 마찬가지).
+   S.sumM/S.sumW가 null이면 "최신(readCutoff 기준)" — 아무것도 안 건드렸을 땐 기존과 100% 동일.
+   선택이 최신이 아닐 땐 viewEnt()가 엔티티의 month/week 배열을 "선택한 시점까지"만 잘라낸 복제본을
+   돌려준다. 이 프로젝트의 모든 요약 렌더 함수가 "배열의 마지막=현재, 그 앞=직전"으로 읽으므로,
+   배열 끝만 잘라주면 KPI 카드·표·차트·PDF가 전부 자동으로 같은 선택을 따른다.
+   PDF(exportSummaryPdf)는 pdfEntityFor()를 거치므로 화면에서 고른 월/주차 그대로 저장된다. */
+function sumSel(){
+  const c = window.__DASH_CUTOFF__;
+  if(!c) return { m:null, w:null, mLatest:true, wLatest:true };
+  const m = S.sumM==null ? c.month : Math.min(Math.max(S.sumM,1), c.month);
+  const w = S.sumW==null ? c.week  : Math.min(Math.max(S.sumW,1), c.week);
+  return { m, w, mLatest: m===c.month, wLatest: w===c.week };
+}
+function viewEnt(e){
+  const c = window.__DASH_CUTOFF__;
+  if(!e || !c) return e;
+  const sel = sumSel();
+  if(sel.mLatest && sel.wLatest) return e;   /* 기본 상태: 원본 그대로(동일 객체) */
+  const mId = monthId(c.year, sel.m), wId = 'W'+sel.w;
+  const cut = (arr, id) => { const i=(arr||[]).findIndex(r=>r.id===id); return i<0 ? (arr||[]) : arr.slice(0,i+1); };
+  const v = Object.assign({}, e, { month: cut(e.month, mId), week: cut(e.week, wId), _src: e });
+  if(e.rawOrg){
+    const cutRaw = (o) => ({ month:(o.month||[]).filter(x=>x.id<=sel.m), week:(o.week||[]).filter(x=>x.id<=sel.w) });
+    v.rawOrg = { bo: cutRaw(e.rawOrg.bo), bd: cutRaw(e.rawOrg.bd) };
+  }
+  return v;
+}
+function sumStep(kind, d){
+  const c = window.__DASH_CUTOFF__; if(!c) return;
+  const sel = sumSel();
+  if(kind==='m'){ const v = sel.m + d; if(v<1 || v>c.month) return; S.sumM = v; }
+  else { const v = sel.w + d; if(v<1 || v>c.week) return; S.sumW = v; }
+  render();
+}
 /* 2026-09-16: 케이프라이드/MS팀 특정/MS팀/I팀은 모두 케이프라이드 소속이므로, 전체 요약
    화면의 표 머리말 색상은 넷 다 케이프라이드 주황색으로 통일한다(각 엔티티 고유 브랜드색
    자체는 그대로 두고, 이 표 헤더 색만 별도로 매핑). */
 function sumHeaderColor(entity){
+  if(entity && entity._src) entity = entity._src;   /* viewEnt()가 만든 복제본이면 원본으로 비교 */
   if(entity===D.kp || entity===KSUB.ms_t || entity===KSUB.ms || entity===KSUB.it) return D.kp.color;
   return entity.color;
 }
@@ -2284,7 +2343,7 @@ function summaryCostCardSy(e){
   </div>`;
 }
 function summaryCostCard(id){
-  const e = D[id];
+  const e = viewEnt(D[id]);
   const mArr = e.month||[], wArr = e.week||[];
   const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
   const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
@@ -2641,8 +2700,9 @@ function chanLegendHtmlV3(entity){
 }
 function summarySectionV3Body(entity){
   const cutoff = window.__DASH_CUTOFF__;
-  const monthBig = cutoff ? `${cutoff.month}월` : '';
-  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  const sel = sumSel();
+  const monthBig = cutoff ? `${sel.m}월` : '';
+  const weekBig = cutoff ? `${sel.w}주차` : '';
   const color = sumHeaderColor(entity);
   const monthKpi = kpiCardV3(entity, entity.month, '월', monthBig);
   const weekKpi = kpiCardV3(entity, entity.week, '주', weekBig);
@@ -2674,7 +2734,14 @@ function buildSummaryPdfPageV3(group){
    (.hogprice)와 PDF 제목줄(.sumtitle-hp) 양쪽에서 그대로 재사용한다. 전주대비 표기는
    화살표가 숫자 앞, +,- 부호 없음(다른 상단요약 증감과 동일한 규칙, 웹/PDF 모두 적용). */
 function hogPriceParts(){
-  const hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
+  /* [2026-10-06] 전체요약에서 고른 주차의 돈가(없으면 –). 기본(최신 주차)은 기존 값 그대로. */
+  const sel = sumSel();
+  const c = window.__DASH_CUTOFF__;
+  let hp = window.__DASH_HOGPRICE__ || {price:null, wow:null};
+  if(c && sel.w!=null && sel.w!==c.week){
+    const byW = window.__DASH_HOGPRICE_BY_WEEK__ || {};
+    hp = byW[sel.w] || {price:null, wow:null};
+  }
   const priceStr = hp.price!=null ? hp.price.toLocaleString('ko-KR')+'원' : '–';
   const wowUp = hp.wow!=null && hp.wow>=0;
   const wowColor = hp.wow==null ? '#a8b0bb' : (wowUp ? '#1F8A5B' : '#D64545');
@@ -2697,11 +2764,17 @@ function hogPriceParts(){
    웹 "전체요약" 화면에서만 쓰이고, 월/주차 제목(.sumcol-h)만 그린다. */
 function summaryTitleRow(){
   const cutoff = window.__DASH_CUTOFF__;
-  const monthBig = cutoff ? `${cutoff.month}월` : '';
-  const weekBig = cutoff ? `${cutoff.week}주차` : '';
+  const sel = sumSel();
+  const monthBig = cutoff ? `${sel.m}월` : '';
+  const weekBig = cutoff ? `${sel.w}주차` : '';
+  /* [2026-10-06] 월/주차 옆 ▲▼ — ▲=다음(더 최근), ▼=이전. 범위 끝에서는 흐리게 비활성. */
+  const arrows = (kind, cur, max) => `<span class="sumstep">
+      <button type="button" class="sumstep-b" onclick="sumStep('${kind}',1)" ${cur>=max?'disabled':''} aria-label="${kind==='m'?'다음 월':'다음 주차'}">▲</button>
+      <button type="button" class="sumstep-b" onclick="sumStep('${kind}',-1)" ${cur<=1?'disabled':''} aria-label="${kind==='m'?'이전 월':'이전 주차'}">▼</button>
+    </span>`;
   return `<div class="sumtitlerow">
-    <div class="sumcol-h">${monthBig}</div>
-    <div class="sumcol-h">${weekBig}</div>
+    <div class="sumcol-h"><span class="sumcol-t">${monthBig}</span>${cutoff?arrows('m', sel.m, cutoff.month):''}</div>
+    <div class="sumcol-h"><span class="sumcol-t">${weekBig}</span>${cutoff?arrows('w', sel.w, cutoff.week):''}</div>
   </div>`;
 }
 
@@ -2713,7 +2786,7 @@ function summaryTitleRow(){
 function buildSummaryScreen(g, navHtml){
   const {priceStr, wowStr, wowColor} = hogPriceParts();
 
-  const sections = SUMMARY_ENTITIES().map(e=>summarySection(e)).join('');
+  const sections = SUMMARY_ENTITIES().map(e=>summarySection(viewEnt(e))).join('');
 
   return `
   <div class="fixed-zone">
@@ -2734,7 +2807,7 @@ function buildSummaryScreen(g, navHtml){
     </div>
   </div>
   ${navHtml}
-  <div class="kbar kbar-sum">${summaryCostCardSy(D.sy)}${summaryCostCard('kp')}</div>
+  <div class="kbar kbar-sum">${summaryCostCardSy(viewEnt(D.sy))}${summaryCostCard('kp')}</div>
   ${summaryTitleRow()}
   </div>
   <div class="sumcard"><div class="sumscroll"><div class="sumwrap">
@@ -3022,10 +3095,11 @@ window.addEventListener('load', fit);
      축소(transform:scale) 로직과 같은 원리로 .sumwrap 전체를 실측해서 필요하면 통째로
      줄여 반드시 한 페이지(1920×1082) 안에 담는 안전장치는 그대로 유지된다. */
 function pdfEntityFor(key){
-  if(key==='ms_t') return KSUB.ms_t;
-  if(key==='ms') return KSUB.ms;
-  if(key==='it') return KSUB.it;
-  return D[key];
+  /* [2026-10-06] 화면(전체요약)에서 고른 월/주차 그대로 PDF에 반영 — viewEnt()는 기본 상태면 원본을 그대로 돌려준다. */
+  if(key==='ms_t') return viewEnt(KSUB.ms_t);
+  if(key==='ms') return viewEnt(KSUB.ms);
+  if(key==='it') return viewEnt(KSUB.it);
+  return viewEnt(D[key]);
 }
 /* 2026-09-22: 법인/팀당 1페이지, 5페이지 순서.
    [식육 병합, 2026-09-23] 백두가 보담에 통합되며 보담 자리를 식육사업본부가 대신한다 —
@@ -3161,7 +3235,10 @@ async function exportSummaryPdf(){
 
     const t = new Date();
     const ymd = `${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-    doc.save(`주간매출자료_전체요약_${ymd}.pdf`);
+    /* 월/주차를 최신이 아닌 값으로 골랐다면 파일명에 표시해서 헷갈리지 않게 한다. */
+    const sel = sumSel();
+    const selTag = (sel.mLatest && sel.wLatest) ? '' : `_${sel.m}월_${sel.w}주차`;
+    doc.save(`주간매출자료_전체요약_${ymd}${selTag}.pdf`);
   }catch(err){
     console.error('[대시보드] PDF 생성 실패:', err);
     alert('PDF 생성 중 문제가 발생했습니다: ' + ((err&&err.message)||err));
