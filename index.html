@@ -1133,7 +1133,8 @@ function readFixedCurrent(wb, key, cutoff){
   const chT = chanTargets(rows, 16, def.chans);
   const chLaborTotM = opt.chDetail ? chanLaborTotals(rows, 16, def.chans, opt.chDetail) : null;
   const chLaborTotW = opt.chDetail ? chanLaborTotals(rows, 74, def.chans, opt.chDetail) : null;
-  return {month, week, chT, chLaborTotM, chLaborTotW};
+  const tTot = numAt(cellAt(rows, 16, colNum('B')));
+  return {month, week, chT, tTot, chLaborTotM, chLaborTotW};
 }
 
 /* ---------- 전년(YYYY년-XX) 비교 시트 — 라벨/서브헤더 텍스트로 직접 찾아 읽는다 (열 고정 X) ---------- */
@@ -1207,7 +1208,8 @@ function readLabelBlock(rows, labelRow, chans, cutoff, opt){
   const chT = chanTargets(rows, totalMRow, chans);
   const chLaborTotM = opt.chDetail ? chanLaborTotals(rows, totalMRow, chans, opt.chDetail) : null;
   const chLaborTotW = opt.chDetail ? chanLaborTotals(rows, labelRow+73, chans, opt.chDetail) : null;
-  return {month, week, chT, chLaborTotM, chLaborTotW};
+  const tTot = numAt(cellAt(rows, totalMRow, colNum(opt.tCol||'B')));
+  return {month, week, chT, tTot, chLaborTotM, chLaborTotW};
 }
 /* 직납 블록 + 온라인 블록을 하나의 "MS팀"으로 합친다 — t/s는 더하고 채널은 이어붙인다 */
 function mergeBlocks(a, b){
@@ -1215,7 +1217,7 @@ function mergeBlocks(a, b){
     const r1 = rb[i];
     return { id:r0.id, t:(r0.t||0)+(r1.t||0), s:(r0.s||0)+(r1.s||0), ch:r0.ch.concat(r1.ch) };
   });
-  return { month: mergeRows(a.month,b.month), week: mergeRows(a.week,b.week), chT: a.chT.concat(b.chT) };
+  return { month: mergeRows(a.month,b.month), week: mergeRows(a.week,b.week), chT: a.chT.concat(b.chT), tTot: (a.tTot||0)+(b.tTot||0) };
 }
 function readKsubCurrent(wb, cutoff){
   const rows = aoa(wb, '케이MS');
@@ -1305,7 +1307,7 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
     id:key, name, color,
     chans: def.chans.map(([n,c])=>({n,c})),
     chDetail: def.detailNames ? def.chans.map(c=>def.detailNames.includes(c[0])) : null,
-    chT: curData.chT, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null,
+    chT: curData.chT, tTot: curData.tTot, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null,
     month, week, prevM, prevW:{}
   };
 }
@@ -1329,7 +1331,7 @@ function buildKsubEntity(name, color, hasLoan, chansSpec, cur, curData, legacyDa
     if(hasLoan){ row.loan = r.loan!=null? r.loan : null; row.chLoan = r.chLoan || null; row.chLabor = r.chLabor || null; }
     return row;
   });
-  const out = { name, color, chans: chansSpec.map(([n,c])=>({n,c})), chT: curData.chT, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null, month, week };
+  const out = { name, color, chans: chansSpec.map(([n,c])=>({n,c})), chT: curData.chT, tTot: curData.tTot, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null, month, week };
   if(hasLoan){ out.hasLoan = true; out.chDetail = chansSpec.map(()=>true); }
   return out;
 }
@@ -2007,17 +2009,18 @@ function table(rs, chans, prev, e, curId, title, toggle){
 
   /* [2026-10-12] 합계 행 = "지금 표에 보이는 줄들의 합"이 아니라 올해(2026년) 합계 — 월별 표는 트레일링
      12개월(전년 11~12월 포함)이 같이 들어 있어서 그대로 더하면 전년분이 섞인다. 월별은 올해 1월~기준월,
-     주별은 1주~기준주만 더한다. 목표도 같은 기간(올해 행들)의 목표 합, 채널 목표는 표의 채널 월/주
-     목표(연간÷12, ÷52)를 그 행 수만큼 곱한 값이라 행 단위 표시와 항상 같은 기준이다. */
+     주별은 1주~기준주만 더한다. */
   const cutY = window.__DASH_CUTOFF__ ? String(window.__DASH_CUTOFF__.year) : null;
   const ytd = isM() ? (e.month||[]).filter(r=>!cutY || String(r.id).startsWith(cutY)) : (e.week||[]);
-  const T=sum(ytd.map(r=>r.t)), Sm=sum(ytd.map(r=>r.s)), L=sum(ytd.map(r=>r.loan));
+  /* [2026-10-12 2차] 합계 행은 엑셀 '총합' 행과 같은 기준 — 매출/대출은 올해 누적, 목표는 올해 연간 목표
+     (총합 행의 총목표/채널 목표)라서 달성율도 '올해 누적 매출 ÷ 올해 연간 목표'다. */
+  const T = e.tTot!=null ? e.tTot : sum(ytd.map(r=>r.t)), Sm=sum(ytd.map(r=>r.s)), L=sum(ytd.map(r=>r.loan));
   const totMid = showLoan
     ? `<td>${n2(L)}</td><td>${pct(Sm>0?(Sm-L)/Sm*100:null)}</td><td>${pct(ach(T,Sm))}</td>`
     : `<td>${pct(ach(T,Sm))}</td>${showCost?'<td>–</td>':''}`;
   body += `<tr class="tot"><td>합계</td><td>${n0(T)}</td><td class="sale">${n2(Sm)}</td>${totMid}
     ${chans.map((c,j)=>{
-      const ct = chTarget(e,j), t = ct ? ct*ytd.length : null, v = sum(ytd.map(r=>r.ch?r.ch[j]:0));
+      const t = (e.chT && e.chT[j]) ? e.chT[j] : null, v = sum(ytd.map(r=>r.ch?r.ch[j]:0));
       if(det(j)){
         const l = sum(ytd.map(r=>r.chLoan?r.chLoan[j]:0));
         /* 합계 인건비율은 엑셀 총합행 값을 그대로 쓴다(전체 인건비÷올해 누적 매출 — 매출 0인 달의 인건비 포함). */
