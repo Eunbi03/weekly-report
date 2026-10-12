@@ -1052,11 +1052,31 @@ function readRow(rows, r, chans, opt){
   const out = {t,s};
   if(opt.cCol){ const raw = numAt(cellAt(rows,r,colNum(opt.cCol))); out.c = raw!=null ? raw*100 : null; }
   if(opt.loanCol){ out.loan = numAt(cellAt(rows,r,colNum(opt.loanCol))); }
+  /* [2026-10-12] "상세 채널"(opt.chDetail[i]===true)은 목표열 기준 6칸 — +0 목표, +1 매출, +2 대출,
+     +3 대익율, +4 달성율, +5 인건비율(비율, 0~1 → ×100). 대익율은 (매출-대출)/매출로 화면에서
+     계산하므로 읽지 않는다. 상세가 아닌 채널은 null. */
+  if(opt.chDetail){
+    out.chLoan = chans.map(([,,tgtL],i)=> (opt.chDetail[i] && tgtL) ? numAt(cellAt(rows, r, colNum(tgtL)+2)) : null);
+    out.chLabor = chans.map(([,,tgtL],i)=>{
+      if(!(opt.chDetail[i] && tgtL)) return null;
+      const raw = numAt(cellAt(rows, r, colNum(tgtL)+5));
+      return raw!=null ? raw*100 : null;
+    });
+  }
   out.ch = chans.map(([,,tgtL,salesL])=>{
     if(tgtL) return numAt(cellAt(rows, r, colNum(tgtL)+1));
     return numAt(cellAt(rows, r, colNum(salesL)));
   });
   return out;
+}
+/* [2026-10-12] 상세 채널의 총합행 인건비율(목표열+5, 0~1 → %) — 엑셀이 '전체 인건비÷올해 누적 매출'로
+   이미 계산해 둔 값이라 다시 계산하지 않고 그대로 읽는다. */
+function chanLaborTotals(rows, totalRow, chans, chDetail){
+  return chans.map(([,,tgtL],i)=>{
+    if(!(chDetail && chDetail[i] && tgtL)) return null;
+    const raw = numAt(cellAt(rows, totalRow, colNum(tgtL)+5));
+    return raw!=null ? raw*100 : null;
+  });
 }
 function chanTargets(rows, totalRow, chans){
   return chans.map(([,,tgtL])=> tgtL ? numAt(cellAt(rows, totalRow, colNum(tgtL))) : null);
@@ -1087,9 +1107,13 @@ const ORG_CELLMAP = {
      958.12+174.18+0+66.36+3186.18+256.60+2390.00 = 7031.45(종합 매출과 정확히 일치).
      [2026-10-06] 40주차부터 식육통합에 '신세계 특정' 블록(X목표/Y매출/Z대출/AA대익율/AB달성율)이
      익스프레스 다음에 끼어들어 도소매/기타가 X→AC, F&B가 AD→AI로 밀렸다. 2025년 시트엔 해당
-     채널이 없어 legacyChans는 null. 실측 검산: 10월 428.91, 40주 932.00 채널합=총매출. */
+     채널이 없어 legacyChans는 null. 실측 검산: 10월 428.91, 40주 932.00 채널합=총매출.
+     [2026-10-12] 41주차 파일에서 '신세계 특정' 블록이 6칸(X목표/Y매출/Z대출/AA대익율/AB달성율/
+     AC인건비율)으로 늘어 도소매/기타가 AC→AD, F&B가 AI→AJ로 한 번 더 밀렸다. detailNames에 든
+     채널은 표에서 대출/대익율/인건비율까지 보여주므로 readRow가 목표열+2(대출)/+5(인건비율)도 읽는다. */
   sy: { sheet:'식육통합', legacySheet:y=>`${y}년-식육`, cCol:'E',
-        chans:[['이마트','#F6B76A','F'],['온라인','#7FA6F3','I'],['에브리','#A4ACBA','L'],['쿠팡','#76D0ED','O'],['하이퍼','#ED9272','R'],['익스프레스','#8AA8D8','U'],['신세계 특정','#CE655A','X'],['도소매/기타','#D5D5D5','AC'],['F&B','#CF8A72','AI']],
+        chans:[['이마트','#F6B76A','F'],['온라인','#7FA6F3','I'],['에브리','#A4ACBA','L'],['쿠팡','#76D0ED','O'],['하이퍼','#ED9272','R'],['익스프레스','#8AA8D8','U'],['신세계 특정','#CE655A','X'],['도소매/기타','#D5D5D5','AD'],['F&B','#CF8A72','AJ']],
+        detailNames:['신세계 특정'],
         legacyChans:[['이마트','이마트'],['온라인','에스에스지닷컴(온라인)'],['에브리','에브리'],['쿠팡','쿠팡'],['하이퍼','하이퍼'],['익스프레스','익스'],['신세계 특정',null],['도소매/기타','도소매/기타'],['F&B',null]] },
   kp: { sheet:'케이통합', legacySheet:y=>`${y}년-케이`, cCol:'E',
         chans:[['MS팀 특정','#8C82B7','F'],['MS팀','#729BD5','K'],['I팀','#73C19A','N'],['임가공','#BBB09E',null,'Q'],['OEM','#8E6C4B',null,'R']],
@@ -1102,11 +1126,14 @@ function readFixedCurrent(wb, key, cutoff){
   const def = ORG_CELLMAP[key];
   const rows = aoa(wb, def.sheet);
   const opt = def.cCol ? {cCol:def.cCol} : {};
+  if(def.detailNames) opt.chDetail = def.chans.map(c=>def.detailNames.includes(c[0]));
   const month=[], week=[];
   for(let m=1;m<=Math.min(cutoff.month,12);m++){ const r=Object.assign({id:m}, readRow(rows,3+m,def.chans,opt)); warnIfMismatch(`${def.sheet} ${m}월`, r); month.push(r); }
   for(let w=1;w<=Math.min(cutoff.week,53);w++){ const r=Object.assign({id:w}, readRow(rows,20+w,def.chans,opt)); warnIfMismatch(`${def.sheet} ${w}주`, r); week.push(r); }
   const chT = chanTargets(rows, 16, def.chans);
-  return {month, week, chT};
+  const chLaborTotM = opt.chDetail ? chanLaborTotals(rows, 16, def.chans, opt.chDetail) : null;
+  const chLaborTotW = opt.chDetail ? chanLaborTotals(rows, 74, def.chans, opt.chDetail) : null;
+  return {month, week, chT, chLaborTotM, chLaborTotW};
 }
 
 /* ---------- 전년(YYYY년-XX) 비교 시트 — 라벨/서브헤더 텍스트로 직접 찾아 읽는다 (열 고정 X) ---------- */
@@ -1178,7 +1205,9 @@ function readLabelBlock(rows, labelRow, chans, cutoff, opt){
   for(let m=1;m<=Math.min(cutoff.month,12);m++){ const r=Object.assign({id:m}, readRow(rows, monthRow(m), chans, opt)); warnIfMismatch(`케이MS ${m}월`, r); month.push(r); }
   for(let w=1;w<=Math.min(cutoff.week,53);w++){ const r=Object.assign({id:w}, readRow(rows, weekRow(w), chans, opt)); warnIfMismatch(`케이MS ${w}주`, r); week.push(r); }
   const chT = chanTargets(rows, totalMRow, chans);
-  return {month, week, chT};
+  const chLaborTotM = opt.chDetail ? chanLaborTotals(rows, totalMRow, chans, opt.chDetail) : null;
+  const chLaborTotW = opt.chDetail ? chanLaborTotals(rows, labelRow+73, chans, opt.chDetail) : null;
+  return {month, week, chT, chLaborTotM, chLaborTotW};
 }
 /* 직납 블록 + 온라인 블록을 하나의 "MS팀"으로 합친다 — t/s는 더하고 채널은 이어붙인다 */
 function mergeBlocks(a, b){
@@ -1196,7 +1225,7 @@ function readKsubCurrent(wb, cutoff){
   if(msTRow==null) throw new Error('케이MS 시트에서 "특정" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
   if(jiknapRow==null) throw new Error('케이MS 시트에서 "직납" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
   if(onlineRow==null) throw new Error('케이MS 시트에서 "온라인 및 그 외" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
-  const msT = readLabelBlock(rows, msTRow, MS_T_CHANS, cutoff, {tCol:'B', sCol:'C', loanCol:'D'});
+  const msT = readLabelBlock(rows, msTRow, MS_T_CHANS, cutoff, {tCol:'B', sCol:'C', loanCol:'D', chDetail:MS_T_CHANS.map(()=>true)});
   const jiknap = readLabelBlock(rows, jiknapRow, MS_JIKNAP_CHANS, cutoff, {tCol:'B', sCol:'C'});
   const online = readLabelBlock(rows, onlineRow, MS_ONLINE_CHANS, cutoff, {tCol:'B', sCol:'C'});
   return { msT, ms: mergeBlocks(jiknap, online) };
@@ -1259,7 +1288,7 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
   }
   for(let m=1;m<=cur.month;m++){
     const rec = pickMonth(curData.month, m);
-    month.push(rec ? {id:monthId(cur.year,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id:monthId(cur.year,m), t:null, s:null, c:null, ch:null});
+    month.push(rec ? {id:monthId(cur.year,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch, chLoan:rec.chLoan||null, chLabor:rec.chLabor||null} : {id:monthId(cur.year,m), t:null, s:null, c:null, ch:null});
   }
   /* 2026-09-09: 예전엔 "최근 3개월"만 전년 비교 데이터를 채워서, 그래프에서 다른 달로
      이동하면(예: 8월로) 비교 막대가 2개/1개로 줄어드는 문제가 있었다. 막대그래프 쪽에서
@@ -1271,11 +1300,12 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
     const rec = pickMonth(legacyData, m);
     if(rec) prevM[monthId(cur.year,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
   }
-  const week = curData.week.map(r=>({id:'W'+r.id, t:r.t, s:r.s, c:r.c, ch:r.ch}));
+  const week = curData.week.map(r=>({id:'W'+r.id, t:r.t, s:r.s, c:r.c, ch:r.ch, chLoan:r.chLoan||null, chLabor:r.chLabor||null}));
   return {
     id:key, name, color,
     chans: def.chans.map(([n,c])=>({n,c})),
-    chT: curData.chT,
+    chDetail: def.detailNames ? def.chans.map(c=>def.detailNames.includes(c[0])) : null,
+    chT: curData.chT, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null,
     month, week, prevM, prevW:{}
   };
 }
@@ -1291,16 +1321,16 @@ function buildKsubEntity(name, color, hasLoan, chansSpec, cur, curData, legacyDa
   for(let m=1;m<=cur.month;m++){
     const rec = pickMonth(curData.month, m);
     const row = { id: monthId(cur.year,m), t: rec?rec.t:null, s: rec?rec.s:null, ch: rec?rec.ch:null };
-    if(hasLoan) row.loan = rec && rec.loan!=null ? rec.loan : null;
+    if(hasLoan){ row.loan = rec && rec.loan!=null ? rec.loan : null; row.chLoan = rec && rec.chLoan ? rec.chLoan : null; row.chLabor = rec && rec.chLabor ? rec.chLabor : null; }
     month.push(row);
   }
   const week = curData.week.map(r=>{
     const row = {id:'W'+r.id, t:r.t, s:r.s, ch:r.ch};
-    if(hasLoan) row.loan = r.loan!=null? r.loan : null;
+    if(hasLoan){ row.loan = r.loan!=null? r.loan : null; row.chLoan = r.chLoan || null; row.chLabor = r.chLabor || null; }
     return row;
   });
-  const out = { name, color, chans: chansSpec.map(([n,c])=>({n,c})), chT: curData.chT, month, week };
-  if(hasLoan) out.hasLoan = true;
+  const out = { name, color, chans: chansSpec.map(([n,c])=>({n,c})), chT: curData.chT, chLaborTotM: curData.chLaborTotM||null, chLaborTotW: curData.chLaborTotW||null, month, week };
+  if(hasLoan){ out.hasLoan = true; out.chDetail = chansSpec.map(()=>true); }
   return out;
 }
 
@@ -1936,43 +1966,74 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePop(); });
 function table(rs, chans, prev, e, curId, title, toggle){
   const showCost = !e.hasLoan && rs.some(r=>r.c!=null);
   const showLoan = !!e.hasLoan;
-  const base = 4 + (showCost?1:0) + (showLoan?1:0);
+  /* [2026-10-12] 상세 채널(e.chDetail[j]) — 엑셀 케이MS "특정"/식육통합 "신세계 특정"처럼 목표/매출/대출/
+     대익율/달성율/인건비율 6칸을 갖는 채널. 나머지 채널은 기존대로 목표/매출/달성율 3칸. 대출/대익율/
+     인건비율이 있는 조직(MS팀 특정)은 전체 칸도 목표/매출액/대출/대익율/달성율/인건비율. */
+  const det = j => !!(e.chDetail && e.chDetail[j]);
+  const subN = j => det(j) ? 6 : 3;
+  const mgOf = (s,l) => (s>0 && l!=null) ? (s-l)/s*100 : null;
+  /* 인건비율은 엑셀에도 채널별 열만 있고 전체(종합) 열은 없다 — 매출이 0인 달은 인건비율이 '-'라
+     채널 값으로 전체를 역산하면 그 달 인건비가 빠져 틀리므로, 전체 칸에는 인건비율을 넣지 않는다. */
   const head = `<tr>
-    <th rowspan="2">구분</th><th rowspan="2">목표</th><th rowspan="2">매출액</th><th rowspan="2">달성율</th>
+    <th rowspan="2">구분</th><th rowspan="2">목표</th><th rowspan="2">매출액</th>${showLoan?'<th rowspan="2">대출</th><th rowspan="2">대익율</th>':''}<th rowspan="2">달성율</th>
     ${showCost?'<th rowspan="2">매출원가율</th>':''}
-    ${showLoan?'<th rowspan="2">대익율</th>':''}
-    ${chans.map(x=>`<th class="g sep" colspan="3" style="color:${x.c}">${x.n}</th>`).join('')}</tr>
-    <tr>${chans.map(()=>`<th class="r2 sep">목표</th><th class="r2">매출</th><th class="r2">달성율</th>`).join('')}</tr>`;
+    ${chans.map((x,j)=>`<th class="g sep" colspan="${subN(j)}" style="color:${x.c}">${x.n}</th>`).join('')}</tr>
+    <tr>${chans.map((x,j)=> det(j)
+      ? `<th class="r2 sep">목표</th><th class="r2">매출</th><th class="r2">대출</th><th class="r2">대익율</th><th class="r2">달성율</th><th class="r2">인건비율</th>`
+      : `<th class="r2 sep">목표</th><th class="r2">매출</th><th class="r2">달성율</th>`).join('')}</tr>`;
 
   const cells = r => chans.map((c,j)=>{
     const t = chTarget(e,j), v = r.ch?r.ch[j]:null;
+    if(det(j)){
+      const l = r.chLoan ? r.chLoan[j] : null, lr = r.chLabor ? r.chLabor[j] : null;
+      return `<td class="sep mut">${t?n0(t):'–'}</td><td>${v!=null?n2(v):'–'}</td>
+            <td>${l!=null?n2(l):'–'}</td><td>${pct(mgOf(v,l))}</td>
+            <td>${t&&v!=null?pct(ach(t,v)):'–'}</td><td>${pct(lr!=null?lr:null)}</td>`;
+    }
     return `<td class="sep mut">${t?n0(t):'–'}</td><td>${v!=null?n2(v):'–'}</td>
             <td>${t&&v!=null?pct(ach(t,v)):'–'}</td>`;}).join('');
 
   let body = rs.map(r=>{
-    const mg = showLoan && r.s>0 && r.loan!=null ? (r.s-r.loan)/r.s*100 : null;
     const isEst = r.est===true;
+    let mid;
+    if(showLoan){
+      mid = `<td>${r.loan!=null?n2(r.loan):'–'}</td><td>${pct(mgOf(r.s,r.loan))}</td><td>${pct(ach(r.t,r.s))}</td>`;
+    } else {
+      mid = `<td>${pct(ach(r.t,r.s))}</td>${showCost?`<td class="${r.c>=100?'hot':(r.c<70?'cool':'')}">${pct(r.c)}</td>`:''}`;
+    }
     return `<tr class="${r.id===curId?'cur':''}${isEst?' est':''}"><td>${labOf(r)}${isEst?'*':''}</td>
-      <td class="mut">${n0(r.t)}</td><td class="sale">${n2(r.s)}</td><td>${pct(ach(r.t,r.s))}</td>
-      ${showCost?`<td class="${r.c>=100?'hot':(r.c<70?'cool':'')}">${pct(r.c)}</td>`:''}
-      ${showLoan?`<td>${pct(mg)}</td>`:''}
+      <td class="mut">${n0(r.t)}</td><td class="sale">${n2(r.s)}</td>${mid}
       ${cells(r)}</tr>`;}).join('');
 
-  const T=sum(rs.map(r=>r.t)), Sm=sum(rs.map(r=>r.s)), L=sum(rs.map(r=>r.loan));
-  body += `<tr class="tot"><td>합계</td><td>${n0(T)}</td><td class="sale">${n2(Sm)}</td><td>${pct(ach(T,Sm))}</td>
-    ${showCost?'<td>–</td>':''}
-    ${showLoan?`<td>${pct(Sm>0?(Sm-L)/Sm*100:null)}</td>`:''}
-    ${chans.map((c,j)=>{const t=e.chT?e.chT[j]/(isM()?1:52/12):null, v=sum(rs.map(r=>r.ch?r.ch[j]:0));
+  /* [2026-10-12] 합계 행 = "지금 표에 보이는 줄들의 합"이 아니라 올해(2026년) 합계 — 월별 표는 트레일링
+     12개월(전년 11~12월 포함)이 같이 들어 있어서 그대로 더하면 전년분이 섞인다. 월별은 올해 1월~기준월,
+     주별은 1주~기준주만 더한다. 목표도 같은 기간(올해 행들)의 목표 합, 채널 목표는 표의 채널 월/주
+     목표(연간÷12, ÷52)를 그 행 수만큼 곱한 값이라 행 단위 표시와 항상 같은 기준이다. */
+  const cutY = window.__DASH_CUTOFF__ ? String(window.__DASH_CUTOFF__.year) : null;
+  const ytd = isM() ? (e.month||[]).filter(r=>!cutY || String(r.id).startsWith(cutY)) : (e.week||[]);
+  const T=sum(ytd.map(r=>r.t)), Sm=sum(ytd.map(r=>r.s)), L=sum(ytd.map(r=>r.loan));
+  const totMid = showLoan
+    ? `<td>${n2(L)}</td><td>${pct(Sm>0?(Sm-L)/Sm*100:null)}</td><td>${pct(ach(T,Sm))}</td>`
+    : `<td>${pct(ach(T,Sm))}</td>${showCost?'<td>–</td>':''}`;
+  body += `<tr class="tot"><td>합계</td><td>${n0(T)}</td><td class="sale">${n2(Sm)}</td>${totMid}
+    ${chans.map((c,j)=>{
+      const ct = chTarget(e,j), t = ct ? ct*ytd.length : null, v = sum(ytd.map(r=>r.ch?r.ch[j]:0));
+      if(det(j)){
+        const l = sum(ytd.map(r=>r.chLoan?r.chLoan[j]:0));
+        /* 합계 인건비율은 엑셀 총합행 값을 그대로 쓴다(전체 인건비÷올해 누적 매출 — 매출 0인 달의 인건비 포함). */
+        const lt = isM() ? (e.chLaborTotM||[])[j] : (e.chLaborTotW||[])[j];
+        return `<td class="sep">${t?n0(t):'–'}</td><td>${n2(v)}</td><td>${n2(l)}</td><td>${pct(v>0?(v-l)/v*100:null)}</td><td>${t?pct(ach(t,v)):'–'}</td><td>${pct(lt!=null?lt:null)}</td>`;
+      }
       return `<td class="sep">${t?n0(t):'–'}</td><td>${n2(v)}</td><td>${t?pct(ach(t,v)):'–'}</td>`;}).join('')}</tr>`;
 
   const p = prev && prev[curId];
   if(p){
-    const colspan = 4 + (showCost?1:0) + (showLoan?1:0) + chans.length*3;
+    const colspan = 4 + (showCost?1:0) + (showLoan?2:0) + chans.reduce((a,x,j)=>a+subN(j),0);
     body += `<tr class="spacer"><td colspan="${colspan}"></td></tr>`;
     body += `<tr class="py"><td>전년 ${labOf({id:curId})}</td><td>${n0(p.t)}</td>
-    <td class="sale">${n2(p.s)}</td><td>${pct(ach(p.t,p.s))}</td>
-    ${showCost?`<td>${pct(p.c)}</td>`:''}${showLoan?'<td>–</td>':''}
-    ${chans.map((c,j)=>`<td class="sep">–</td><td>${p.ch?n2(p.ch[j]):'–'}</td><td>–</td>`).join('')}</tr>`;
+    <td class="sale">${n2(p.s)}</td>${showLoan?'<td>–</td><td>–</td>':''}<td>${pct(ach(p.t,p.s))}</td>
+    ${showCost?`<td>${pct(p.c)}</td>`:''}
+    ${chans.map((c,j)=>`<td class="sep">–</td><td>${p.ch?n2(p.ch[j]):'–'}</td>${det(j)?'<td>–</td><td>–</td>':''}<td>–</td>${det(j)?'<td>–</td>':''}`).join('')}</tr>`;
   }
 
   return `<div class="card tcard"><div class="chd"><h2>${title||''}</h2>${toggle||''}</div><div class="tw"><table><thead>${head}</thead><tbody>${body}</tbody></table></div></div>`;
