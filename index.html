@@ -183,7 +183,7 @@ button{font-family:inherit;border:none;cursor:pointer}
    같은 폭 기준으로 맞추려 하지 않고, 매출액·달성율 줄 자체를 없애고 그 텍스트를 각자의
    .kc-sum-item 안, 그 값(.kc-sum-main) 바로 아래에 넣는 구조로 바꿨다 — 이제 두 블록의
    너비가 얼마든 그 블록 자신의 아래에 자기 매출액·달성율이 그대로 붙어서 항상 맞는다. */
-.kbar-sum{flex:0 0 168px}
+.kbar-sum{flex:0 0 auto;min-height:168px}
 .kc-sum{flex:1;min-width:0;padding:14px 26px;display:flex;flex-direction:column;justify-content:center;gap:8px}
 .kc-sum .l{font-size:21px;color:#15181d;font-weight:700;white-space:nowrap}
 /* 2026-09-18(피드백 3차): item5(두 개의 "상자") 요청을 실제 테두리 있는 박스 UI로
@@ -198,6 +198,24 @@ button{font-family:inherit;border:none;cursor:pointer}
    1:1로 맞춘다(매출원가율측 kc-sum-row/kc-sum-item 자체 스타일은 손대지 않음). 타이틀도
    "식육사업본부"와 같은 줄, 같은 크기(.l)로 나란히 둔다. */
 .kc-sum-wide{flex:2}
+/* [2026-10-19] 전체요약 상단 카드 V4 — 왼쪽 월 / 오른쪽 주 */
+.kc-sum2{flex:1;gap:6px;padding:12px 26px 12px}
+.kc-sum2-sy{flex:1.2}
+.kc2-halves{display:flex;flex:1;min-width:0}
+.kc2-half{flex:1;min-width:0;display:flex;flex-direction:column}
+.kc2-half+.kc2-half{border-left:1px solid #d8dce3;margin-left:22px;padding-left:22px}
+.kc2-ptitle{font-size:15px;font-weight:700;color:#a8b0bb;margin-bottom:4px}
+.kc2-cols{display:flex;gap:28px;align-items:flex-start}
+.kc2-col{min-width:0}
+.kc2-lab{font-size:15px;font-weight:700;color:#8b93a0;margin-bottom:2px;white-space:nowrap}
+.kc2-v{font-size:32px;font-weight:800;letter-spacing:-.6px;line-height:1.15;white-space:nowrap;display:flex;align-items:baseline;gap:5px;color:#15181d}
+.kc2-v small{font-size:15px;font-weight:700;margin-left:-2px}
+.kc2-v .kc-sum-delta{font-size:18px;font-weight:700;margin-left:4px;letter-spacing:0}
+.kc2-ln{font-size:20px;font-weight:800;line-height:1.35;white-space:nowrap;color:#15181d}
+.kc2-ln b{display:inline-block;width:46px;font-weight:800;font-size:inherit}
+.kc2-ft{font-size:16px;color:#8b93a0;margin-top:auto;padding-top:7px;border-top:1px solid #f0f2f5;white-space:nowrap}
+.kc2-half .kc2-cols{margin-bottom:8px}
+.kc2-ft span+span::before{content:' · '}
 .kc-sum-head{display:flex;align-items:baseline;gap:16px;margin-bottom:4px}
 .kc-sum-head .l{flex:1;min-width:0}
 /* 2026-09-27 피드백: "보담-백두 매출액" 타이틀은 크기만 .l(21px/800)과 맞추고, 색은
@@ -212,18 +230,34 @@ button{font-family:inherit;border:none;cursor:pointer}
    오른쪽 구역 시작점과 정렬되게 한다. 식육사업본부·케이프라이드 카드가 같은 규칙을 쓰므로 둘의 모양이 같다. */
 .kc-sum-wide .kc-sum-head{gap:33px}
 .kc-sum-wide .kc-sum-head .l:first-child{flex:1.8 1 0}
-.kc-sum-wide .kc-sum-head .l:last-child{flex:1 1 0}
 .kc-sum-div-mid{background:#d8dce3}
+/* [2026-10-19] 식육사업본부 카드 3구역 — [원가율 월|주] [원재료비율 월/주] [보담·백두 월/주 4줄].
+   보담·백두가 4줄(세로)이 되며 오른쪽 구역이 좁아져 생긴 가로 공간을 원재료비율 구역이 쓴다.
+   머리말 제목 3개도 같은 비율·같은 간격(33px)으로 맞춰 각 구역 시작점과 정렬한다. */
+/* 월·주 원가율 구역은 남는 폭을 전부, 오른쪽 구역(원재료비율/보담·백두)은 내용 폭에 맞춘 고정 폭 — 예전처럼 비율(flex)로
+   나누면 주 블록의 '매출액 … · 달성율 …' 줄이 오른쪽 구역을 침범한다. 머리말 제목도 같은 폭으로 맞춘다. */
+.kc-sum-wide .kc-sum-split>.kc-sum-row{flex:1 1 0}
+.kc-sum-wide .kc-sum-head .l:first-child{flex:1 1 0}
+.kc-sum-wide .kc-sum-head .l:not(:first-child){flex:0 0 150px}
+.kc-sum-wide .kc-sum-rawc{flex:0 0 150px}
+.kc-sum-wide .kc-sum-bobd{flex:0 0 165px}
+.kc-sum-tri .kc-sum-head .l:last-child{flex:0 0 165px}
+.kc-sum-rawc{gap:4px}
+.kc-sum-rawc .kc-sum-item{gap:0}
+.kc-sum-rawc .kc-sum-item b{font-size:28px}
+.kc-sum-rawc .kc-sum-item .hp-delta{font-size:16px}
+.kc-sum-wide.kc-sum-tri{flex:2.2}
+.kc-sum-raw::before{content:none}
 /* 2026-09-28 피드백: 세로 중앙정렬(center)이라 매출원가율 숫자보다 아래로 처져 보였다 —
    맨 위(flex-start)로 맞춰서 "87.7%/84.8%" 첫 줄과 "보담" 줄이 같은 높이에서 시작하게 한다. */
 .kc-sum-raw{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-start;gap:8px}
-.kc-sum-raw-row{display:flex;align-items:baseline;gap:14px}
+.kc-sum-raw-row{display:flex;align-items:flex-start;gap:14px}
 /* 보담/백두 라벨·매출액 숫자 = 매출원가율의 증감율 텍스트(.kc-sum-delta, 19px/800)와 동일 크기 */
-.kc-sum-raw-nm{font-size:19px;font-weight:800;flex:0 0 44px}
+.kc-sum-raw-nm{font-size:19px;font-weight:800;flex:0 0 44px;line-height:1.25}
 /* 2026-09-27 피드백: "월"/"주" 라벨과 바로 뒤 매출액 값 사이 간격을 매출원가율 쪽
    (.kc-sum-main, gap:10px)과 같은 간격으로 좁힌다 — 월 블록/주 블록 사이(바깥) 간격은
    그대로 16px 유지, 각 블록 "안쪽"(라벨-값)만 kc-sum-raw-pair로 묶어 10px로 좁힌다. */
-.kc-sum-raw-v{font-size:21px;font-weight:800;color:#15181d;display:flex;gap:16px;align-items:baseline}
+.kc-sum-raw-v{font-size:19px;font-weight:800;color:#15181d;display:flex;flex-direction:column;gap:2px;align-items:flex-start;line-height:1.25}
 .kc-sum-raw-pair{display:flex;gap:10px;align-items:baseline}
 /* "월"/"주" 라벨 = 매출원가율의 "월"/"주" 텍스트(.kc-sum-item .u, 15px/700/#a8b0bb)와 동일 크기 */
 .kc-sum-raw-v .u{font-size:15px;color:#a8b0bb;font-weight:700}
@@ -386,6 +420,17 @@ button{font-family:inherit;border:none;cursor:pointer}
    결과적으로 식육사업본부 3카드는 매출액:원가율:보담·백두 = 1:1:1로 균등. */
 .kpiv3-card-narrow{flex:1}
 .kpiv3-card-raworg{flex:1.0;min-width:200px}
+/* [2026-10-19] 식육사업본부 PDF — 카드 4장(매출액/원가율/원재료비율/보담·백두)이 한 줄에 들어가도록 글자·여백을 줄인다 */
+.kpiv3-cards-4{gap:8px}
+.kpiv3-cards-4 .kpiv3-card-single{padding:14px 12px;gap:6px}
+.kpiv3-cards-4 .kpiv3-card-raworg{min-width:0}
+.kpiv3-cards-4 .kpiv3-lab{font-size:15px}
+.kpiv3-cards-4 .kpiv3-line1{gap:6px}
+.kpiv3-cards-4 .kpiv3-val{font-size:25px}
+.kpiv3-cards-4 .kpiv3-val small{font-size:13px}
+.kpiv3-cards-4 .kpiv3-delta-chip,.kpiv3-cards-4 .kpiv3-sub{font-size:15px}
+.kpiv3-cards-4 .kpiv3-raworg-nm{font-size:16px}
+.kpiv3-cards-4 .kpiv3-raworg-v{font-size:20px}
 .kpiv3-sc-lab{font-size:18px;color:#8b93a0;font-weight:600}
 .kpiv3-divider-a{height:1px;background:#e7eaef;margin:2px 0 2px}
 /* [MOCKUP C] 카드를 법인색으로 진하게 채운 버전 — MOCKUP B의 분리카드 구조 위에
@@ -531,6 +576,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 .sc-ovl{position:absolute;top:18px;left:4px;right:4px;bottom:0;pointer-events:none;z-index:3}
 .sc-dotlab{position:absolute;font-size:15px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
+.sc-dotlab.dl-r{transform:translate(-50%,30%)}
 /* item6 수정으로 .sc-plot과 같은 grid 열(2번째)에 놓인다 — .sc-bars와 같은 gap(8px)만
    유지하면 칸 경계가 자동으로 막대와 일치한다. */
 .sc-xax{grid-column:2;grid-row:2;display:flex;gap:8px;margin-top:6px}
@@ -590,9 +636,30 @@ button{font-family:inherit;border:none;cursor:pointer}
 #stage.portrait .kc-sum-head .l{flex:none}
 #stage.portrait .kc-sum-split{flex-direction:column;gap:8px}
 #stage.portrait .kc-sum-raw{padding-top:6px;border-top:1px solid #e7eaef}
+/* [2026-10-19] 모바일: 머리말의 보조 제목(원재료비율/보담-백두 매출액)은 숨기고 각 구역 맨 위에 작게 붙인다 */
+#stage.portrait .kc-sum-head .l:not(:first-child){display:none}
+/* [2026-10-19] 모바일: 상단 카드는 한 장 폭을 쓰고(세로로 쌓임), 카드 안은 월 | 주 두 칸, 칸 안 항목은 위아래로 */
+#stage.portrait .kbar-sum{grid-template-columns:1fr}
+#stage.portrait .kc-sum2{padding:12px 14px}
+#stage.portrait .kc2-name{font-size:15px}
+#stage.portrait .kc2-half+.kc2-half{margin-left:10px;padding-left:10px}
+#stage.portrait .kc2-cols{flex-direction:column;gap:7px}
+#stage.portrait .kc2-v{font-size:23px;flex-wrap:wrap;row-gap:0}
+#stage.portrait .kc2-v small{font-size:11.5px}
+#stage.portrait .kc2-v .kc-sum-delta{font-size:12px}
+#stage.portrait .kc2-lab,#stage.portrait .kc2-ptitle{font-size:11.5px}
+#stage.portrait .kc2-ln{font-size:13px}
+#stage.portrait .kc2-ln b{width:34px;font-size:13px}
+#stage.portrait .kc2-ft{font-size:11.5px;white-space:normal}
+#stage.portrait .kc2-ft span{display:block}
+#stage.portrait .kc2-ft span+span::before{content:none}
+#stage.portrait .kc-sum-wide .kc-sum-split>.kc-sum-row,#stage.portrait .kc-sum-wide .kc-sum-rawc,#stage.portrait .kc-sum-wide .kc-sum-bobd{flex:none}
+#stage.portrait .kc-sum-raw[data-t]::before{content:attr(data-t);font-size:12px;font-weight:700;color:#8b93a0}
+#stage.portrait .kc-sum-rawc{flex-direction:row;flex-wrap:wrap;gap:4px 22px}
+#stage.portrait .kc-sum-rawc::before{flex:0 0 100%}
 #stage.portrait .kc-sum-raw-row{flex-wrap:wrap;row-gap:2px}
 #stage.portrait .kc-sum-raw-nm{font-size:13px;flex:0 0 34px}
-#stage.portrait .kc-sum-raw-v{font-size:13px;gap:8px;flex-wrap:wrap;row-gap:2px}
+#stage.portrait .kc-sum-raw-v{font-size:13px;gap:2px}
 #stage.portrait .kc-sum-raw-pair{gap:6px}
 #stage.portrait .kc-sum-raw-v .u{font-size:11.5px}
 #stage.portrait .sumcard{padding:0;margin-top:2px}
@@ -640,6 +707,8 @@ button{font-family:inherit;border:none;cursor:pointer}
 .ovl{position:absolute;inset:0;pointer-events:none;z-index:3;padding:0 5px}
 .dotlab{position:absolute;font-size:18px;font-weight:700;color:#15181d;white-space:nowrap;
   background:rgba(255,255,255,.88);padding:0 3px;border-radius:3px;transform:translate(-50%,-125%)}
+/* [2026-10-19] 원재료비율(k:'r') 선 라벨은 점 "아래"가 기본 — 매출원가율 라벨(점 위)과 안 겹치게 */
+.dotlab.dl-r{transform:translate(-50%,30%)}
 .xax{display:flex;gap:7px;padding:0 5px;margin-top:7px}
 .xax div{flex:1;text-align:center;min-width:0}
 .xax b{display:block;font-size:15px;font-weight:600;color:#7a828d}
@@ -828,6 +897,7 @@ body.mob .mval b{font-size:11.5px}
 .hbar-lbl{font-size:15px;font-weight:800;color:#15181d}
 .hbar-row.on .hbar-lbl{color:#2A6FDB}
 .hbar-cost{font-size:12px;font-weight:700;color:#c8842a}
+.hbar-cost.hbar-raw{color:#0B7A75}
 .hbar-yoy{font-size:12px;font-weight:700;color:#9aa3af}
 .hbar-track-wrap{position:relative}
 .hbar-track{position:relative;height:32px;border-radius:2.5px;background:#f0f2f6;overflow:hidden;
@@ -1133,10 +1203,13 @@ const ORG_CELLMAP = {
      채널이 없어 legacyChans는 null. 실측 검산: 10월 428.91, 40주 932.00 채널합=총매출.
      [2026-10-12] 41주차 파일에서 '신세계 특정' 블록이 6칸(X목표/Y매출/Z대출/AA대익율/AB달성율/
      AC인건비율)으로 늘어 도소매/기타가 AC→AD, F&B가 AI→AJ로 한 번 더 밀렸다. detailNames에 든
-     채널은 표에서 대출/대익율/인건비율까지 보여주므로 readRow가 목표열+2(대출)/+5(인건비율)도 읽는다. */
+     채널은 표에서 대출/대익율/인건비율까지 보여주므로 readRow가 목표열+2(대출)/+5(인건비율)도 읽는다.
+     [2026-10-19] 42주차 파일 — 식육통합 F열에 '원재료비율'이 끼어들어(케이통합과 동일) 모든 채널 열이 한 칸씩
+     밀렸고(이마트 F→G … 도소매/기타 AD, F&B AJ), 오른쪽에 기초재고액~경비율(AM~AS)이 생겼다. 전년 시트(2025년-식육
+     G열, 2025년-케이 H열)에도 '원재료비율'이 추가됐다. ratioCols:true로 3행 라벨에서 원재료비율·경비율 열을 찾는다. */
   sy: { sheet:'식육통합', legacySheet:y=>`${y}년-식육`, cCol:'E',
-        chans:[['이마트','#F6B76A','F'],['온라인','#7FA6F3','I'],['에브리','#A4ACBA','L'],['쿠팡','#76D0ED','O'],['하이퍼','#ED9272','R'],['익스프레스','#8AA8D8','U'],['신세계 특정','#CE655A','X'],['도소매/기타','#D5D5D5','AC'],['F&B','#CF8A72','AI']],
-        detailNames:['신세계 특정'], autoCols:true, labels:{'온라인':'에스에스지닷컴(온라인)'},
+        chans:[['이마트','#F6B76A','G'],['온라인','#7FA6F3','J'],['에브리','#A4ACBA','M'],['쿠팡','#76D0ED','P'],['하이퍼','#ED9272','S'],['익스프레스','#8AA8D8','V'],['신세계 특정','#CE655A','Y'],['도소매/기타','#D5D5D5','AD'],['F&B','#CF8A72','AJ']],
+        detailNames:['신세계 특정'], autoCols:true, ratioCols:true, labels:{'온라인':'에스에스지닷컴(온라인)'},
         legacyChans:[['이마트','이마트'],['온라인','에스에스지닷컴(온라인)'],['에브리','에브리'],['쿠팡','쿠팡'],['하이퍼','하이퍼'],['익스프레스','익스'],['신세계 특정',null],['도소매/기타','도소매/기타'],['F&B',null]] },
   /* [2026-10-13] 케이통합에 F열 '원재료비율'이 끼어들어(MS팀 특정 G~K 5칸 = 목표/매출/대출/대익률/달성율,
      MS팀 L~N, I팀 O~Q, 임가공비 R, OEM S, 기초재고액 T~경비율 X) 열이 한 칸씩 밀렸다.
@@ -1240,6 +1313,8 @@ function readLegacySheet(rows, chanNameMap){
   const totT = findTextCol(rows, subRow, 2, firstLabelCol, '목표');
   const totS = findTextCol(rows, subRow, 2, firstLabelCol, '매출');
   const totC = findTextCol(rows, subRow, 2, firstLabelCol, '매출원가율');
+  /* [2026-10-19] 전년 시트에도 '원재료비율' 열이 생겼다(2025년-식육 G, 2025년-케이 H) — 없으면 null(옛 파일 호환) */
+  const totR = findTextCol(rows, subRow, 2, firstLabelCol, '원재료비율');
   const chanCols = {};
   labels.forEach((lb,i)=>{
     const nextCol = labels[i+1] ? labels[i+1].col : (rows[subRow-1]||[]).length+1;
@@ -1251,6 +1326,7 @@ function readLegacySheet(rows, chanNameMap){
     const t = totT? numAt(cellAt(rows,r,totT)) : null;
     const s = totS? numAt(cellAt(rows,r,totS)) : null;
     const cRaw = totC? numAt(cellAt(rows,r,totC)) : null;
+    const rRaw = totR? numAt(cellAt(rows,r,totR)) : null;
     const ch = chanNameMap.map(([,legacyLabel,directCol])=>{
       if(directCol) return numAt(cellAt(rows, r, colNum(directCol)));
       if(!legacyLabel) return null;
@@ -1258,7 +1334,7 @@ function readLegacySheet(rows, chanNameMap){
       if(!cc || cc.s==null) return null;
       return numAt(cellAt(rows, r, cc.s));
     });
-    out.push({ id:i+1, t, s, c: cRaw!=null?cRaw*100:null, ch });
+    out.push({ id:i+1, t, s, c: cRaw!=null?cRaw*100:null, raw: rRaw!=null?rRaw*100:null, ch });
   }
   return out;
 }
@@ -1373,7 +1449,7 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
   for(let m=1;m<=12;m++){
     const y = cur.year-1;
     const rec = pickMonth(legacyData, m);
-    month.push(rec ? {id:monthId(y,m), t:rec.t, s:rec.s, c:rec.c, ch:rec.ch} : {id:monthId(y,m), t:null, s:null, c:null, ch:null});
+    month.push(rec ? {id:monthId(y,m), t:rec.t, s:rec.s, c:rec.c, raw:rec.raw!=null?rec.raw:null, ch:rec.ch} : {id:monthId(y,m), t:null, s:null, c:null, raw:null, ch:null});
   }
   for(let m=1;m<=cur.month;m++){
     const rec = pickMonth(curData.month, m);
@@ -1387,7 +1463,7 @@ function buildOrgEntity(key, name, color, cur, curData, legacyData){
   const prevM = {};
   for(let m=1; m<=12; m++){
     const rec = pickMonth(legacyData, m);
-    if(rec) prevM[monthId(cur.year,m)] = {t:rec.t, s:rec.s, c:rec.c, ch:rec.ch};
+    if(rec) prevM[monthId(cur.year,m)] = {t:rec.t, s:rec.s, c:rec.c, raw:rec.raw!=null?rec.raw:null, ch:rec.ch};
   }
   const week = curData.week.map(r=>({id:'W'+r.id, t:r.t, s:r.s, c:r.c, ch:r.ch, chLoan:r.chLoan||null, chLabor:r.chLabor||null, chTgt:r.chTgt||null, raw:r.raw!=null?r.raw:null, ovh:r.ovh!=null?r.ovh:null}));
   return {
@@ -1472,7 +1548,7 @@ const WEEKMAP = [
 function legacyMonthVal(key, mm){
   const arr = window.__DASH_LEGACY__ && window.__DASH_LEGACY__[key];
   const rec = arr ? arr.find(r=>r.id===mm) : null;
-  return rec ? {s:rec.s, c:rec.c} : null;
+  return rec ? {s:rec.s, c:rec.c, raw:rec.raw!=null?rec.raw:null} : null;
 }
 function buildYear(key){
   const src = D[key];
@@ -1482,10 +1558,10 @@ function buildYear(key){
   for(const [mm,a,b] of WEEKMAP){
     const rec = legacyMonthVal(key, +mm);
     const n = b-a+1;
-    for(let w=a; w<=b; w++) out.push({ w, yr:priorYear, s: rec? rec.s/n : null, c: rec? rec.c : null, est:true });
+    for(let w=a; w<=b; w++) out.push({ w, yr:priorYear, s: rec? rec.s/n : null, c: rec? rec.c : null, raw: rec? rec.raw : null, est:true });
   }
   (src.week||[]).forEach(r=>{ const w=+r.id.slice(1);
-    out.push({ w, yr:cutoff.year, s:r.s, c:r.c!=null?r.c:null, est:false }); });
+    out.push({ w, yr:cutoff.year, s:r.s, c:r.c!=null?r.c:null, raw:r.raw!=null?r.raw:null, est:false }); });
   return out;
 }
 function fullWeeks(eObj){
@@ -1533,6 +1609,20 @@ const ACC='#2A6FDB', GRN='#1F8A5B', RED='#D64545';
 /* 매출원가율 선그래프 오른쪽 보조축의 범위 — 조직마다 다르게 계산하지 않고 항상 고정
    (0/50/100/150/200%), barChart와 yearLine 둘 다 이 값을 쓴다. */
 const COST_AXIS_MAX = 200;
+/* [2026-10-19] 선그래프 시리즈 — 매출원가율(k:'c', 주황) + 원재료비율(k:'r', 청록, 식육사업본부·케이프라이드 전사만).
+   MS팀 특정은 대익율 하나(k:'c'). 두 선 모두 같은 0~200% 오른쪽 축을 쓴다. 점/라벨/선은 data-k로 구분해
+   alignLine·adjustDotLabels(막대차트)와 alignSummaryLines·adjustSummaryDotLabels(요약/PDF)가 시리즈별로 맞춘다. */
+const COST_LINE_COLOR = '#FF6A00', RAW_LINE_COLOR = '#0B7A75';
+function lineSeriesOf(rs, e){
+  const out = [];
+  if(e && e.hasLoan){
+    out.push({k:'c', name:'대익율', color:COST_LINE_COLOR, vals:rs.map(r=> r.s>0 && r.loan!=null ? (r.s-r.loan)/r.s*100 : null)});
+    return out;
+  }
+  if(rs.some(r=>r.c!=null)) out.push({k:'c', name:'매출원가율', color:COST_LINE_COLOR, vals:rs.map(r=> r.c!=null ? r.c : null)});
+  if(e && e.hasRaw && rs.some(r=>r.raw!=null)) out.push({k:'r', name:'원재료비율', color:RAW_LINE_COLOR, vals:rs.map(r=> r.raw!=null ? r.raw : null)});
+  return out;
+}
 const isM=()=>S.mode==='month';
 const idx=()=>isM()?S.mi:S.wi;
 const niceMax=v=>{if(v<=0)return 1;const e=Math.pow(10,Math.floor(Math.log10(v)));return Math.ceil(v/e*2)/2*e;};
@@ -1603,11 +1693,9 @@ function barChart(rs, chans, prev, e, curIdx, orgSplit){
      범위는 조직마다 다르게 계산하지 않고 0/50/100/150/200%로 항상 고정한다(백두 기준).
      2026-09-29(피드백): MS팀 특정의 선그래프 지표를 대출액(금액)에서 대익율(%, (매출-대출)/매출)로
      변경 — 매출원가율과 똑같이 퍼센트 축을 공유한다. */
-  const lineKind = e.hasLoan ? 'mg' : (rs.some(r=>r.c!=null) ? 'cost' : null);
-  const lineName = lineKind==='mg' ? '대익율' : '매출원가율';
-  const isCostPct = lineKind==='cost' || lineKind==='mg';
-  const line = rs.map(r=> lineKind==='mg' ? (r.s>0 && r.loan!=null ? (r.s-r.loan)/r.s*100 : null)
-                        : lineKind==='cost' ? (r.c!=null? r.c : null) : null);
+  const LS = lineSeriesOf(rs, e);
+  const lineKind = LS.length ? 'pct' : null;
+  const isCostPct = LS.length>0;
   const mxCost = COST_AXIS_MAX;
   const ticks=[0,1,2,3,4];
   const cap = (isM() && e.id && YCAP[e.id]) ? YCAP[e.id] : null;
@@ -1648,21 +1736,23 @@ function barChart(rs, chans, prev, e, curIdx, orgSplit){
   const totalW = weights.reduce((a,b)=>a+b,0);
   const centers = []; let acc=0;
   for(let i=0;i<n;i++){ centers.push((acc+weights[i]/2)/totalW*100); acc+=weights[i]; }
-  const pts = line.map((v,i)=> v==null?null:`${centers[i].toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
+  const ptsOf = vals => vals.map((v,i)=> v==null?null:`${centers[i].toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
   /* 점 위 라벨: 대익율/매출원가율 둘 다 이미 line[] 안에 퍼센트 값이 들어있으므로 그대로 pct()로 표시.
      2026-09-14: "막대 꼭대기(매출액) 라벨과 겹치나"는 barFrac/lineFrac(서로 다른 축 기준 비율)
      비교만으론 실제 화면 겹침과 안 맞을 수 있어서(매출원가율이 자기만의 %축을 쓰게 되면서),
      일단 기본(선 위)으로 그려두고 render() 이후 adjustDotLabels()가 실제 렌더된
      .blab/.dotlab의 getBoundingClientRect()를 재서 진짜 겹칠 때만 아래로 내린다. */
-  const dotLabel = (v,i) => pct(v);
-  const dots = line.map((v,i)=> v==null?'':
+  const dotsOf = L => L.vals.map((v,i)=> v==null?'':
     (()=>{
       const top = (100-v/lineMax*100).toFixed(3);
-      return `<div class="dotpt" data-i="${i}" style="position:absolute;left:${centers[i].toFixed(3)}%;top:${top}%;
+      return `<div class="dotpt" data-i="${i}" data-k="${L.k}" style="position:absolute;left:${centers[i].toFixed(3)}%;top:${top}%;
       width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;
-      background:#FF6A00;border:2px solid #fff"></div>
-     <div class="dotlab" data-i="${i}" style="left:${centers[i].toFixed(3)}%;top:${top}%">${dotLabel(v,i)}</div>`;
+      background:${L.color};border:2px solid #fff"></div>
+     <div class="dotlab dl-${L.k}" data-i="${i}" data-k="${L.k}" style="left:${centers[i].toFixed(3)}%;top:${top}%${L.k==='r'?`;color:${L.color}`:''}">${pct(v)}</div>`;
     })()).join('');
+  const dots = LS.map(dotsOf).join('');
+  const polys = LS.map(L=>`<polyline data-k="${L.k}" points="${ptsOf(L.vals)}" fill="none" stroke="${L.color}" stroke-width="2.4"
+          vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline>`).join('');
 
   CTX = { rs, chans, prev, e };
   const visibleN = isM() ? 5 : 8;  /* 모바일 세로 기본 노출 개수: 월별=5개(최근달 포함 5개월, 그 중 뒤 3개는 전년비교), 주별=8개 */
@@ -1674,9 +1764,7 @@ function barChart(rs, chans, prev, e, curIdx, orgSplit){
       ${ticks.map(i=>`<div class="gl" style="top:${i/4*100}%"></div>`).join('')}
       <div class="bars">${bars}</div>
       ${(lineKind && !orgSplit)?`<div class="ovl"><svg class="lnsvg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
-        viewBox="0 0 100 100" preserveAspectRatio="none">
-        <polyline points="${pts}" fill="none" stroke="#FF6A00" stroke-width="2.4"
-          vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>${dots}</div>`:''}
+        viewBox="0 0 100 100" preserveAspectRatio="none">${polys}</svg>${dots}</div>`:''}
     </div>
     <div class="xax">${rs.map((r,i)=>`<div class="${i===(curIdx!=null?curIdx:rs.length-1)?'on':''}" style="flex:${weights[i]}"><b>${labOf(r)}</b>
       ${prev&&prev[r.id]&&last3.has(r.id)?`<u>전년비 ${pct(r.s/prev[r.id].s*100)}</u>`:''}</div>`).join('')}</div>
@@ -1687,7 +1775,7 @@ function barChart(rs, chans, prev, e, curIdx, orgSplit){
     ${orgSplit
       ? `<span><i style="background:${CO.bo}"></i>보담</span><span><i style="background:${CO.bd}"></i>백두</span>`
       : chans.map(x=>`<span><i style="background:${x.c}"></i>${x.n}</span>`).join('')}
-    ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
+    ${LS.map(L=>`<span><i class="ln" style="border-color:${L.color}"></i>${L.name}</span>`).join('')}
   </div>`;
 }
 
@@ -1721,6 +1809,7 @@ function barChartMobile(rs, chans, prev, e, curIdx, orgSplit){
   const cap = (isM() && e.id && YCAP[e.id]) ? YCAP[e.id] : null;
   const mx = (cap && mx0<=cap) ? cap : niceCap(mx0);
   const lineKind = e.hasLoan ? 'mg' : (rs.some(r=>r.c!=null) ? 'cost' : null);
+  const showRawM = !!e.hasRaw && rs.some(r=>r.raw!=null);
   const cols=chans.map(x=>x.c), colsL=chans.map(x=>light(x.c));
 
   const seg=(vals,tot,cs)=> (!vals||!vals.length||tot<=0)
@@ -1747,10 +1836,11 @@ function barChartMobile(rs, chans, prev, e, curIdx, orgSplit){
     const mg = r.s>0 && r.loan!=null ? (r.s-r.loan)/r.s*100 : null;
     const costLine = lineKind==='mg' ? `<span class="hbar-cost">대익율 ${pct(mg)}</span>`
                   : lineKind==='cost' && r.c!=null ? `<span class="hbar-cost">원가율 ${pct(r.c)}</span>` : '';
+    const rawLine = showRawM && r.raw!=null ? `<span class="hbar-cost hbar-raw">원재료 ${pct(r.raw)}</span>` : '';
     const org = orgSplit ? findRawOrg(e, r) : null;
     const orgB = org ? orgBarMobile(r.s, org, mx) : null;
     return `<div class="hbar-row${i===curIdx?' on':''}" onclick="openPop(${i})">
-      <div class="hbar-head"><span class="hbar-lbl">${labOf(r)}</span>${costLine}${yoy}</div>
+      <div class="hbar-head"><span class="hbar-lbl">${labOf(r)}</span>${costLine}${rawLine}${yoy}</div>
       <div class="hbar-track-wrap">
         ${orgB ? orgB.track : `<div class="hbar-track" style="width:${wPct}%">${seg(r.ch, sum(r.ch)||r.s, cols)}</div>`}
         ${orgB ? orgB.labels : `<span class="hbar-track-val">${n2(r.s)}</span>`}
@@ -1775,6 +1865,9 @@ function yearLine(key, color){
   const mx = niceMax(Math.max(...ys.map(r=>r.s))*1.12);
   const cv = ys.map(r=>r.c).filter(v=>v!=null);
   const hasCost = cv.length>0;
+  /* [2026-10-19] 원재료비율 선 — 식육사업본부·케이프라이드 전사(buildYear가 raw를 실어준다). 전년 구간은
+     '2025년-식육'/'2025년-케이'의 월별 원재료비율을 같은 주 배분 방식으로 쓴다. */
+  const hasRawLn = !!(D[key] && D[key].hasRaw) && ys.some(r=>r.raw!=null);
   /* 2026-09-14: barChart와 동일하게, 매출원가율은 매출액(mx) 축이 아니라 자기만의
      퍼센트 축(mxCost)으로 그린다 — 오른쪽에 그 범위를 따로 표시하고, 조직과 무관하게
      항상 0/50/100/150/200%로 고정한다. */
@@ -1792,6 +1885,8 @@ function yearLine(key, color){
       (show(i)?`<div style="position:absolute;left:${x}%;top:10px;transform:translateX(-50%);
         font-size:10.5px;color:#9aa3af;font-weight:600;white-space:nowrap">${r.yr}년 ${r.w}주</div>`:'');
   }).join('');
+  const p3 = hasRawLn ? ys.map((r,i)=> r.raw==null?null
+      :`${(i/(n-1)*100).toFixed(3)},${(100-r.raw/mxCost*100).toFixed(3)}`).filter(Boolean).join(' ') : '';
   const visibleN = 15;  /* 모바일에서 한 화면에 보이는 주 수 — 나머지는 좌우로 스크롤해서 본다 */
   const widthPct = isPortrait() ? Math.round(n/visibleN*100) : 100;
   const rightAxis = hasCost ? `<div class="yax yax-r" style="height:${H}px">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
@@ -1804,15 +1899,18 @@ function yearLine(key, color){
         <polyline points="${p1}" fill="none" stroke="${color}" stroke-width="2.2"
           vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
         ${hasCost?`<polyline points="${p2}" fill="none" stroke="#C8842A" stroke-width="1.8"
-          vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-dasharray="5 4"></polyline>`:''}</svg>
-      ${ys.map((r,i)=>`<div title="${r.yr}년 ${r.w}주 · 매출 ${n2(r.s)}${r.c!=null?' · 매출원가율 '+pct(r.c):''}"
+          vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-dasharray="5 4"></polyline>`:''}
+        ${hasRawLn?`<polyline points="${p3}" fill="none" stroke="${RAW_LINE_COLOR}" stroke-width="1.8"
+          vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-dasharray="2 3"></polyline>`:''}</svg>
+      ${ys.map((r,i)=>`<div title="${r.yr}년 ${r.w}주 · 매출 ${n2(r.s)}${r.c!=null?' · 매출원가율 '+pct(r.c):''}${r.raw!=null&&hasRawLn?' · 원재료비율 '+pct(r.raw):''}"
         style="position:absolute;left:${(i/(n-1)*100).toFixed(3)}%;top:0;bottom:0;width:${(100/n).toFixed(2)}%;
         transform:translateX(-50%)"></div>`).join('')}
     </div><div style="position:relative;height:26px;margin-top:8px">${marks}</div></div></div>
     ${rightAxis}
   </div>
   <div class="lgd"><span><i class="ln" style="border-color:${color}"></i>매출액</span>
-    ${hasCost?`<span><i class="ln" style="border-color:#C8842A"></i>매출원가율</span>`:''}</div>`;
+    ${hasCost?`<span><i class="ln" style="border-color:#C8842A"></i>매출원가율</span>`:''}
+    ${hasRawLn?`<span><i class="ln" style="border-color:${RAW_LINE_COLOR}"></i>원재료비율</span>`:''}</div>`;
 }
 
 /* ══════════════════════ 팝업 ══════════════════════ */
@@ -2061,7 +2159,8 @@ function table(rs, chans, prev, e, curId, title, toggle){
   const showLoan = !!e.hasLoan;
   /* [2026-10-13] 케이프라이드 전사 표 — 매출원가율 오른쪽에 원재료비율, 맨 오른쪽(OEM 다음)에 제조경비율 */
   const showRaw = !!e.hasRaw && rs.some(r=>r.raw!=null);
-  const showOvh = !!e.hasOvh && rs.some(r=>r.ovh!=null);
+  /* [2026-10-19] 식육사업본부 표에는 원재료비율 열만 추가(요청) — 제조경비율 열은 케이프라이드 전사 표에만 둔다 */
+  const showOvh = !!e.hasOvh && e.id==='kp' && rs.some(r=>r.ovh!=null);
   /* [2026-10-12] 상세 채널(e.chDetail[j]) — 엑셀 케이MS "특정"/식육통합 "신세계 특정"처럼 목표/매출/대출/
      대익율/달성율/인건비율 6칸을 갖는 채널. 나머지 채널은 기존대로 목표/매출/달성율 3칸. 대출/대익율/
      인건비율이 있는 조직(MS팀 특정)은 전체 칸도 목표/매출액/대출/대익율/달성율/인건비율. */
@@ -2133,7 +2232,7 @@ function table(rs, chans, prev, e, curId, title, toggle){
     body += `<tr class="spacer"><td colspan="${colspan}"></td></tr>`;
     body += `<tr class="py"><td>전년 ${labOf({id:curId})}</td><td>${n0(p.t)}</td>
     <td class="sale">${n2(p.s)}</td>${showLoan?'<td>–</td><td>–</td>':''}<td>${pct(ach(p.t,p.s))}</td>
-    ${showCost?`<td>${pct(p.c)}</td>`:''}${showRaw?'<td>–</td>':''}
+    ${showCost?`<td>${pct(p.c)}</td>`:''}${showRaw?`<td>${pct(p.raw)}</td>`:''}
     ${chans.map((c,j)=>`<td class="sep">–</td><td>${p.ch?n2(p.ch[j]):'–'}</td>${det(j)?'<td>–</td><td>–</td>':''}<td>–</td>${labOn(j)?'<td>–</td>':''}`).join('')}${showOvh?'<td class="sep">–</td>':''}</tr>`;
   }
 
@@ -2229,9 +2328,10 @@ function kbar(rs, e, ci){
        (cur.c가 null이면 dp()도 자동으로 inline:null을 주므로 화살표 증감도 자연히 안 뜬다). */
     : (()=>{ const dr = dp(cur.c, pr?pr.c:null);
         return cell(`${periodLabel} 매출원가율`, `${cur.c!=null?cur.c.toFixed(1):'–'}<small>%</small>`, {inline:dr.inline}); })();
-  /* [2026-10-13] 케이프라이드 전사 + 주별 보기에서만 4번째 카드(맨 오른쪽): 원재료비율 + 아래 회색 제조경비율.
-     4장 모두 .kc{flex:1}이라 가로 폭이 같다. 월별 보기는 기존 3장 그대로. */
-  if(e.id==='kp' && !isM() && e.hasRaw){
+  /* [2026-10-13] 케이프라이드 전사 4번째 카드(맨 오른쪽): 원재료비율 + 아래 회색 제조경비율.
+     4장 모두 .kc{flex:1}이라 가로 폭이 같다.
+     [2026-10-19] 식육사업본부도 같은 카드를 쓰고, 월별 보기에서도 보인다(월 원재료비율·월 제조경비율). */
+  if((e.id==='kp' || e.id==='sy') && e.hasRaw){
     const rv = cur.raw!=null ? cur.raw.toFixed(1) : '–';
     const ov = cur.ovh!=null ? cur.ovh.toFixed(1)+'%' : '–';
     const c4 = cell(`${periodLabel} 원재료비율`, `${rv}<small>%</small>`, {note:`제조경비율 ${ov}`});
@@ -2474,85 +2574,48 @@ function findRawOrgPY(entity, r){
    "보담-백두 매출액" 타이틀은 "식육사업본부"와 같은 줄·크기(회색), 보담/백두 라벨·값은
    증감율 텍스트(19px/800)와, "월"/"주"는 원가율 쪽 "월"/"주"(15px)와 같은 크기, 맨 위
    (flex-start)로 정렬해 원가율 첫 줄과 높이를 맞춘다. */
-function summaryCostCardSy(e){
-  const mArr = e.month||[], wArr = e.week||[];
-  const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
-  const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
-  const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
-  const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
-  const raw = e.rawOrg || {bo:{month:[],week:[]}, bd:{month:[],week:[]}};
-  const bo = rawOrgLatest(raw.bo), bd = rawOrgLatest(raw.bd);
-  const rawRow = (label,color,r) => `<div class="kc-sum-raw-row"><span class="kc-sum-raw-nm" style="color:${color}">${label}</span>
-    <span class="kc-sum-raw-v">
-      <span class="kc-sum-raw-pair"><span class="u">월</span>${r.m!=null?n2(r.m):'–'}</span>
-      <span class="kc-sum-raw-pair"><span class="u">주</span>${r.w!=null?n2(r.w):'–'}</span>
-    </span></div>`;
-  return `<div class="card kc-sum kc-sum-wide" style="border-top:3px solid ${e.color}">
-    <div class="kc-sum-head">
-      <span class="l">${e.name}</span>
-      <span class="l kc-sum-raw-headtitle">보담-백두 매출액</span>
+/* [2026-10-19] 전체요약 상단 카드(식육사업본부·케이프라이드) — 아래 섹션·PDF와 같은 구조: 왼쪽 = 월, 오른쪽 = 주.
+   각 칸은 [매출원가율 + 증감] [원재료비율] [보담·백두(식육만)] 세 열과, 맨 아래 한 줄
+   '매출액 · 달성율 · 제조경비율'. 칸 제목은 선택한 월/주차(▲▼)를 그대로 따른다.
+   보담·백두는 칸마다 2줄(월 칸=월 값, 주 칸=주 값). 원재료비율 열은 엑셀에 그 열이 있을 때만(e.hasRaw). */
+function summaryHalfV4(e, unit, last, prev, bobd, title){
+  const c = last && last.c!=null ? last.c.toFixed(1) : '–';
+  const hasRaw = !!e.hasRaw;
+  const rv = last && last.raw!=null ? last.raw.toFixed(1) : '–';
+  const ov = last && last.ovh!=null ? last.ovh.toFixed(1)+'%' : '–';
+  const a = last ? ach(last.t, last.s) : null;
+  const rawCol = hasRaw ? `<div class="kc2-col"><div class="kc2-lab">원재료비율</div><div class="kc2-v">${rv}<small>%</small></div></div>` : '';
+  const boCol = bobd ? `<div class="kc2-col kc2-col-bobd"><div class="kc2-lab">보담·백두</div>
+      <div class="kc2-ln"><b style="color:#1566B2">보담</b>${bobd.bo!=null?n2(bobd.bo):'–'}</div>
+      <div class="kc2-ln"><b style="color:#259638">백두</b>${bobd.bd!=null?n2(bobd.bd):'–'}</div></div>` : '';
+  return `<div class="kc2-half">
+    <div class="kc2-ptitle">${title}</div>
+    <div class="kc2-cols">
+      <div class="kc2-col"><div class="kc2-lab">매출원가율</div><div class="kc2-v">${c}<small>%</small>${costPctDeltaInline(last&&last.c, prev&&prev.c)}</div></div>
+      ${rawCol}${boCol}
     </div>
-    <div class="kc-sum-split">
-      <div class="kc-sum-row">
-        <div class="kc-sum-item">
-          <div class="kc-sum-main"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
-          <div class="hp-delta">${costSalesSubText(mLast)}</div>
-        </div>
-        <div class="kc-sum-div"></div>
-        <div class="kc-sum-item">
-          <div class="kc-sum-main"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
-          <div class="hp-delta">${costSalesSubText(wLast)}</div>
-        </div>
-      </div>
-      <div class="kc-sum-div kc-sum-div-mid"></div>
-      <div class="kc-sum-raw">
-        ${rawRow('보담','#1566B2',bo)}
-        ${rawRow('백두','#259638',bd)}
-      </div>
-    </div>
+    <div class="kc2-ft"><span>매출액 ${last&&last.s!=null?n2(last.s):'–'}</span><span>달성율 ${a!=null?a.toFixed(1)+'%':'–'}</span>${hasRaw?`<span>제조경비율 ${ov}</span>`:''}</div>
   </div>`;
 }
-/* [2026-10-13] 전체요약 상단 — 케이프라이드 카드를 식육사업본부 카드와 같은 2배폭(.kc-sum-wide)으로 맞추고,
-   월/주 매출원가율 오른쪽 절반에 'NN주차 원재료비율'(회색 제목) + 퍼센트 + 그 아래 회색 제조경비율을 둔다.
-   선택한 주차(▲▼)를 그대로 따른다 — viewEnt가 주 배열을 그 주차까지 잘라 주므로 마지막 행이 곧 선택 주차. */
-function summaryCostCardKp(){
-  const e = viewEnt(D.kp);
+function summaryCardV4(e, withOrg){
   const mArr = e.month||[], wArr = e.week||[];
   const mLast = mArr[mArr.length-1], mPrev = mArr[mArr.length-2];
   const wLast = wArr[wArr.length-1], wPrev = wArr[wArr.length-2];
-  const mc = mLast && mLast.c!=null ? mLast.c.toFixed(1) : '–';
-  const wc = wLast && wLast.c!=null ? wLast.c.toFixed(1) : '–';
   const sel = sumSel();
-  const wk = sel.w!=null ? sel.w : (wLast ? +String(wLast.id).slice(1) : '');
-  const rv = wLast && wLast.raw!=null ? wLast.raw.toFixed(1) : '–';
-  const ov = wLast && wLast.ovh!=null ? wLast.ovh.toFixed(1)+'%' : '–';
-  return `<div class="card kc-sum kc-sum-wide" style="border-top:3px solid ${e.color}">
-    <div class="kc-sum-head">
-      <span class="l">${e.name}</span>
-      <span class="l kc-sum-raw-headtitle">${wk}주차 원재료비율</span>
-    </div>
-    <div class="kc-sum-split">
-      <div class="kc-sum-row">
-        <div class="kc-sum-item">
-          <div class="kc-sum-main"><span class="u">월</span><b>${mc}<small>%</small></b>${costPctDeltaInline(mLast&&mLast.c, mPrev&&mPrev.c)}</div>
-          <div class="hp-delta">${costSalesSubText(mLast)}</div>
-        </div>
-        <div class="kc-sum-div"></div>
-        <div class="kc-sum-item">
-          <div class="kc-sum-main"><span class="u">주</span><b>${wc}<small>%</small></b>${costPctDeltaInline(wLast&&wLast.c, wPrev&&wPrev.c)}</div>
-          <div class="hp-delta">${costSalesSubText(wLast)}</div>
-        </div>
-      </div>
-      <div class="kc-sum-div kc-sum-div-mid"></div>
-      <div class="kc-sum-raw">
-        <div class="kc-sum-item">
-          <div class="kc-sum-main"><b>${rv}<small>%</small></b></div>
-          <div class="hp-delta">제조경비율 ${ov}</div>
-        </div>
-      </div>
-    </div>
+  const mT = sel.m!=null ? `${sel.m}월` : '월', wT = sel.w!=null ? `${sel.w}주차` : '주';
+  let bm = null, bw = null;
+  if(withOrg){
+    const raw = e.rawOrg || {bo:{month:[],week:[]}, bd:{month:[],week:[]}};
+    const bo = rawOrgLatest(raw.bo), bd = rawOrgLatest(raw.bd);
+    bm = {bo:bo.m, bd:bd.m}; bw = {bo:bo.w, bd:bd.w};
+  }
+  return `<div class="card kc-sum kc-sum2${withOrg?' kc-sum2-sy':''}" style="border-top:3px solid ${e.color}">
+    <div class="l kc2-name">${e.name}</div>
+    <div class="kc2-halves">${summaryHalfV4(e,'월',mLast,mPrev,bm,mT)}${summaryHalfV4(e,'주',wLast,wPrev,bw,wT)}</div>
   </div>`;
 }
+function summaryCostCardSy(e){ return summaryCardV4(e, true); }
+function summaryCostCardKp(){ return summaryCardV4(viewEnt(D.kp), false); }
 function summaryCostCard(id){
   const e = viewEnt(D[id]);
   const mArr = e.month||[], wArr = e.week||[];
@@ -2611,13 +2674,11 @@ function sumChart(entity, win, showLegend){
   const chans = entity.chans;
   const mx = Math.max(1, ...win.map(r=>r.s||0));
   const n = win.length || 1;
-  const lineKind = entity.hasLoan ? 'mg' : (win.some(r=>r.c!=null) ? 'cost' : null);
-  const lineName = lineKind==='mg' ? '대익율' : '매출원가율';
-  const isCostPct = lineKind==='cost' || lineKind==='mg';
+  const LS = lineSeriesOf(win, entity);
+  const lineKind = LS.length ? 'pct' : null;
+  const isCostPct = LS.length>0;
   const mxCost = COST_AXIS_MAX;
   const lineMax = isCostPct ? mxCost : mx;
-  const line = win.map(r=> lineKind==='mg' ? (r.s>0 && r.loan!=null ? (r.s-r.loan)/r.s*100 : null)
-                        : lineKind==='cost' ? (r.c!=null? r.c : null) : null);
   const ticks=[0,1,2,3,4];
 
   const bars = win.map((r,i)=>{
@@ -2628,15 +2689,16 @@ function sumChart(entity, win, showLegend){
       <b class="sc-lab">${n2(r.s)}</b><div class="sc-stk">${segs}</div></div></div>`;
   }).join('');
 
-  const dotLabel = (v,i) => pct(v);
-  const dots = line.map((v,i)=> v==null?'':(()=>{
+  const dotsOf = L => L.vals.map((v,i)=> v==null?'':(()=>{
     const top = (100-v/lineMax*100).toFixed(3);
     const left = ((i+.5)/n*100).toFixed(3); /* 초기값 — alignSummaryLines()가 실제 막대 중심으로 다시 맞춘다 */
-    return `<div class="sc-dotpt" data-i="${i}" style="position:absolute;left:${left}%;top:${top}%;
-      width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#FF6A00;border:2px solid #fff"></div>
-     <div class="sc-dotlab" data-i="${i}" style="left:${left}%;top:${top}%">${dotLabel(v,i)}</div>`;
+    return `<div class="sc-dotpt" data-i="${i}" data-k="${L.k}" style="position:absolute;left:${left}%;top:${top}%;
+      width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:${L.color};border:2px solid #fff"></div>
+     <div class="sc-dotlab dl-${L.k}" data-i="${i}" data-k="${L.k}" style="left:${left}%;top:${top}%${L.k==='r'?`;color:${L.color}`:''}">${pct(v)}</div>`;
   })()).join('');
-  const initPts = line.map((v,i)=> v==null?null:`${((i+.5)/n*100).toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ');
+  const dots = LS.map(dotsOf).join('');
+  const polys = LS.map(L=>`<polyline data-k="${L.k}" points="${L.vals.map((v,i)=> v==null?null:`${((i+.5)/n*100).toFixed(3)},${(100-v/lineMax*100).toFixed(3)}`).filter(Boolean).join(' ')}" fill="none" stroke="${L.color}" stroke-width="2"
+            vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline>`).join('');
 
   const leftAxis = `<div class="sc-yax">${ticks.map(i=>`<span>${n0(mx*(4-i)/4)}</span>`).join('')}</div>`;
   const rightAxis = isCostPct ? `<div class="sc-yax sc-yax-r">${ticks.map(i=>`<span>${pct(mxCost*(4-i)/4)}</span>`).join('')}</div>` : '';
@@ -2649,15 +2711,13 @@ function sumChart(entity, win, showLegend){
       <div class="sc-plot">
         <div class="sc-bars">${bars}</div>
         ${lineKind?`<div class="sc-ovl"><svg class="sc-lnsvg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"
-          viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polyline points="${initPts}" fill="none" stroke="#FF6A00" stroke-width="2"
-            vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"></polyline></svg>${dots}</div>`:''}
+          viewBox="0 0 100 100" preserveAspectRatio="none">${polys}</svg>${dots}</div>`:''}
       </div>
       ${rightAxis}
       <div class="sc-xax">${xax}</div>
     </div>
     ${showLegend?`<div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
-      ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
+      ${LS.map(L=>`<span><i class="ln" style="border-color:${L.color}"></i>${L.name}</span>`).join('')}
     </div>`:''}
   </div>`;
 }
@@ -2883,18 +2943,21 @@ function kpiCardV3(entity, rs, unitLabel, periodBig){
       <div class="kpiv3-line1"><span class="kpiv3-lab">${secondLab}</span><span class="kpiv3-val">${secondValHtml}</span></div>
       ${secondDiffHtml}
     </div>`;
-  let card3 = raworgHtml ? `<div class="kpiv3-card-single kpiv3-card-raworg kc-fill ${textCls}" style="--kc:${color}">${raworgHtml}</div>` : '';
-  /* [2026-10-13] 케이프라이드 전사 PDF의 '주' 카드만 — 원가율 카드 오른쪽에 원재료비율 카드(같은 폭, flex:1),
-     증감 칩 자리에는 제조경비율. 월 카드는 그대로 2장. */
-  if(entity.id==='kp' && unitLabel==='주' && entity.hasRaw){
+  const raworgCard = raworgHtml ? `<div class="kpiv3-card-single kpiv3-card-raworg kc-fill ${textCls}" style="--kc:${color}">${raworgHtml}</div>` : '';
+  /* [2026-10-13] 케이프라이드 전사 PDF — 원가율 카드 오른쪽에 원재료비율 카드(같은 폭, flex:1), 증감 칩 자리에는 제조경비율.
+     [2026-10-19] 월 카드에도 넣고, 식육사업본부도 같은 카드를 넣는다 — 식육사업본부는 매출액>원가율>원재료비율>
+     보담-백두 매출액 순서(월·주 모두). 원재료비율 카드 아래 줄은 제조경비율. */
+  let rawCard = '';
+  if((entity.id==='kp' || entity.id==='sy') && entity.hasRaw){
     const rv = cur && cur.raw!=null ? `${cur.raw.toFixed(1)}<small>%</small>` : '–';
     const ov = cur && cur.ovh!=null ? cur.ovh.toFixed(1)+'%' : '–';
-    card3 = `<div class="kpiv3-card-single kc-fill ${textCls}" style="--kc:${color}">
+    rawCard = `<div class="kpiv3-card-single kc-fill ${textCls}" style="--kc:${color}">
       <div class="kpiv3-line1"><span class="kpiv3-lab">원재료비율</span><span class="kpiv3-val">${rv}</span></div>
       <div class="kpiv3-sub">제조경비율 ${ov}</div>
     </div>`;
   }
-  return `<div class="kpiv3-cards-row">${card1}${card2}${card3}</div>`;
+  const four = !!(rawCard && raworgCard);
+  return `<div class="kpiv3-cards-row${four?' kpiv3-cards-4':''}">${card1}${card2}${rawCard}${raworgCard}</div>`;
 }
 function pageHeaderV3(entity, showHogPrice){
   let hp = '';
@@ -2913,10 +2976,9 @@ function pageHeaderV3(entity, showHogPrice){
 function chanLegendHtmlV3(entity){
   const chans = entity.chans;
   const rs = (entity.month && entity.month.length) ? entity.month : entity.week;
-  const lineKind = entity.hasLoan ? 'mg' : ((rs||[]).some(r=>r.c!=null) ? 'cost' : null);
-  const lineName = lineKind==='mg' ? '대익율' : '매출원가율';
+  const LS = lineSeriesOf(rs||[], entity);
   return `<div class="sc-lgd sc-lgd-v3">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
-    ${lineKind?`<span><i class="ln" style="border-color:#FF6A00"></i>${lineName}</span>`:''}
+    ${LS.map(L=>`<span><i class="ln" style="border-color:${L.color}"></i>${L.name}</span>`).join('')}
   </div>`;
 }
 function summarySectionV3Body(entity){
@@ -3160,54 +3222,63 @@ function alignLine(root){
   const canvas = svg.closest('.canvas'); if(!canvas) return;
   const cvRect = canvas.getBoundingClientRect();
   if(cvRect.width<=0) return;
-  const poly = svg.querySelector('polyline');
-  const pts = [];
+  const pts = {};
   root.querySelectorAll('.dotpt[data-i]').forEach(dot=>{
-    const i = dot.getAttribute('data-i');
+    const i = dot.getAttribute('data-i'), k = dot.getAttribute('data-k')||'c';
     const bar = canvas.querySelector(`.bwrap[data-cur="${i}"]`);
     if(!bar) return;
     const bRect = bar.getBoundingClientRect();
     const xPct = ((bRect.left + bRect.width/2) - cvRect.left) / cvRect.width * 100;
     dot.style.left = xPct.toFixed(3)+'%';
-    const lab = root.querySelector(`.dotlab[data-i="${i}"]`);
+    const lab = root.querySelector(`.dotlab[data-i="${i}"][data-k="${k}"]`);
     if(lab) lab.style.left = xPct.toFixed(3)+'%';
-    pts.push([+i, xPct, dot.style.top]);
+    (pts[k] = pts[k]||[]).push([+i, xPct, dot.style.top]);
   });
-  if(poly && pts.length){
-    pts.sort((a,b)=>a[0]-b[0]);
-    poly.setAttribute('points', pts.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
-  }
+  Object.keys(pts).forEach(k=>{
+    const poly = svg.querySelector(`polyline[data-k="${k}"]`) || svg.querySelector('polyline');
+    if(!poly) return;
+    const a = pts[k].sort((x,y)=>x[0]-y[0]);
+    poly.setAttribute('points', a.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
+  });
 }
-/* 선(매출원가율/대출액) 점 라벨이 같은 막대의 매출액 라벨(.blab)과 실제로 겹치면 아래로 내린다.
+/* [2026-10-19] 선 점 라벨 배치 공통 — 매출원가율(k:'c') 라벨은 점 위, 원재료비율(k:'r') 라벨은 점 아래가 기본이라
+   두 선이 가까워도 서로 안 겹친다. 막대 꼭대기 값 라벨(obstacles)이나 먼저 놓인 다른 선 라벨과 실제로 겹치면
+   반대쪽(위↔아래)으로 옮기고, 그래도 겹치면 막대 라벨 아래로 실측한 만큼 더 내린다(예전 매출원가율 단독 로직과 동일). */
+function placeDotLabels(labs, obstaclesOf){
+  const hit=(a,b)=> !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
+  const ABOVE='translate(-50%,-125%)', BELOW='translate(-50%,30%)';
+  labs.sort((a,b)=> ((a.getAttribute('data-k')==='r')?1:0) - ((b.getAttribute('data-k')==='r')?1:0));
+  const placed = [];
+  labs.forEach(lab=>{
+    lab.style.transform = ''; lab.style.marginTop = '';
+    const isRaw = lab.getAttribute('data-k')==='r';
+    const obs = obstaclesOf(lab).map(o=>o.getBoundingClientRect());
+    const free = () => { const r = lab.getBoundingClientRect(); return !obs.some(o=>hit(r,o)) && !placed.some(p=>hit(r,p.getBoundingClientRect())); };
+    let ok = false;
+    for(const t of ['', isRaw?ABOVE:BELOW]){ lab.style.transform = t; if(free()){ ok = true; break; } }
+    if(!ok){
+      lab.style.transform = BELOW;
+      const lr = lab.getBoundingClientRect();
+      const still = obs.filter(o=>hit(lr,o));
+      if(still.length){
+        const extra = (Math.max(...still.map(o=>o.bottom)) - lr.top) + 4;
+        if(extra > 0) lab.style.marginTop = extra + 'px';
+      }
+    }
+    placed.push(lab);
+  });
+}
+/* 선(매출원가율/원재료비율/대익율) 점 라벨이 같은 막대의 매출액 라벨(.blab)과 실제로 겹치면 피한다.
    alignLine()과 같은 이유로 %계산이 아니라 실제 렌더된 DOM 사각형(getBoundingClientRect)을 잰다 —
-   원가율이 자기만의 축을 쓰게 되면서 "막대높이비율-선높이비율" 같은 간접 계산은 실제 화면 겹침과
-   안 맞을 수 있어서다. 매 render()마다 위치가 바뀌므로 항상 기본(선 위)으로 되돌린 뒤 다시 잰다. */
+   매 render()마다 위치가 바뀌므로 항상 기본 위치로 되돌린 뒤 다시 잰다. */
 function adjustDotLabels(root){
   root = root || document;
-  const hit=(a,b)=> !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
-  root.querySelectorAll('.dotlab[data-i]').forEach(lab=>{
-    lab.style.transform = ''; lab.style.marginTop = '';
-    const i = lab.getAttribute('data-i');
-    const canvas = lab.closest('.canvas');
+  const byI = {};
+  root.querySelectorAll('.dotlab[data-i]').forEach(lab=>{ (byI[lab.getAttribute('data-i')] = byI[lab.getAttribute('data-i')]||[]).push(lab); });
+  Object.keys(byI).forEach(i=>{
+    const canvas = byI[i][0].closest('.canvas');
     const bar = canvas && canvas.querySelector(`.bwrap[data-cur="${i}"]`);
-    if(!bar) return;
-    /* orgSplit ON일 땐 매출원가율 선(.dotlab 포함)이 아예 숨겨지므로, 이 충돌 검사는 항상
-       orgSplit OFF(일반 채널색 막대, .blab) 상황에서만 실행된다. */
-    const obstacles = Array.from(bar.querySelectorAll('.blab'));
-    if(!obstacles.length) return;
-    const hitsAny = r => obstacles.some(ob=>hit(r, ob.getBoundingClientRect()));
-    if(!hitsAny(lab.getBoundingClientRect())) return;
-    /* 1차: 선 위 대신 아래로 */
-    lab.style.transform = 'translate(-50%,30%)';
-    let lr = lab.getBoundingClientRect();
-    if(!hitsAny(lr)) return;
-    /* 2차: 막대(짧은 막대 등)와 원가율 점이 거의 같은 높이라 아래로 내려도 여전히 겹치면,
-       그때도 겹치는 장애물들 중 가장 아래(bottom이 가장 큰) 것 밑으로 확실히 빠져나갈 만큼만
-       실측한 만큼 추가로 내린다. */
-    const stillHit = obstacles.map(ob=>ob.getBoundingClientRect()).filter(ob=>hit(lr, ob));
-    const maxBottom = Math.max(...stillHit.map(ob=>ob.bottom));
-    const extra = (maxBottom - lr.top) + 4;
-    if(extra > 0) lab.style.marginTop = extra + 'px';
+    placeDotLabels(byI[i], () => bar ? Array.from(bar.querySelectorAll('.blab')) : []);
   });
 }
 /* 2026-09-16: 전체 요약 화면의 간이 차트(sumChart)용 — alignLine()과 똑같은 이유(막대 사이
@@ -3221,43 +3292,42 @@ function alignSummaryLines(root){
     const plot = svg.closest('.sc-plot'); if(!plot) return;
     const svgRect = svg.getBoundingClientRect();
     if(svgRect.width<=0) return;
-    const poly = svg.querySelector('polyline');
-    const pts = [];
+    const pts = {};
     plot.querySelectorAll('.sc-dotpt[data-i]').forEach(dot=>{
-      const i = dot.getAttribute('data-i');
+      const i = dot.getAttribute('data-i'), k = dot.getAttribute('data-k')||'c';
       const bar = plot.querySelector(`.sc-bar[data-cur="${i}"]`);
       if(!bar) return;
       const bRect = bar.getBoundingClientRect();
       const xPct = ((bRect.left + bRect.width/2) - svgRect.left) / svgRect.width * 100;
       dot.style.left = xPct.toFixed(3)+'%';
-      const lab = plot.querySelector(`.sc-dotlab[data-i="${i}"]`);
+      const lab = plot.querySelector(`.sc-dotlab[data-i="${i}"][data-k="${k}"]`);
       if(lab) lab.style.left = xPct.toFixed(3)+'%';
-      pts.push([+i, xPct, dot.style.top]);
+      (pts[k] = pts[k]||[]).push([+i, xPct, dot.style.top]);
     });
-    if(poly && pts.length){
-      pts.sort((a,b)=>a[0]-b[0]);
-      poly.setAttribute('points', pts.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
-    }
+    Object.keys(pts).forEach(k=>{
+      const poly = svg.querySelector(`polyline[data-k="${k}"]`) || svg.querySelector('polyline');
+      if(!poly) return;
+      const a = pts[k].sort((x,y)=>x[0]-y[0]);
+      poly.setAttribute('points', a.map(p=>`${p[1].toFixed(3)},${parseFloat(p[2]).toFixed(3)}`).join(' '));
+    });
   });
 }
 /* adjustDotLabels()와 같은 로직을 sumChart의 .sc-dotlab/.sc-lab 쌍에 적용 */
 function adjustSummaryDotLabels(root){
   root = root || document;
-  const hit=(a,b)=> !(a.right<b.left || a.left>b.right || a.bottom<b.top || a.top>b.bottom);
+  const byPlot = new Map();
   root.querySelectorAll('.sc-dotlab[data-i]').forEach(lab=>{
-    lab.style.transform = ''; lab.style.marginTop = '';
-    const i = lab.getAttribute('data-i');
-    const plot = lab.closest('.sc-plot');
-    const bar = plot && plot.querySelector(`.sc-bar[data-cur="${i}"]`);
-    const blab = bar && bar.querySelector('.sc-lab');
-    if(!blab) return;
-    const br = blab.getBoundingClientRect();
-    if(!hit(lab.getBoundingClientRect(), br)) return;
-    lab.style.transform = 'translate(-50%,30%)';
-    let lr = lab.getBoundingClientRect();
-    if(!hit(lr, br)) return;
-    const extra = (br.bottom - lr.top) + 4;
-    if(extra > 0) lab.style.marginTop = extra + 'px';
+    const plot = lab.closest('.sc-plot'); if(!plot) return;
+    if(!byPlot.has(plot)) byPlot.set(plot, {});
+    const g = byPlot.get(plot), i = lab.getAttribute('data-i');
+    (g[i] = g[i]||[]).push(lab);
+  });
+  byPlot.forEach((g, plot)=>{
+    Object.keys(g).forEach(i=>{
+      const bar = plot.querySelector(`.sc-bar[data-cur="${i}"]`);
+      const blab = bar && bar.querySelector('.sc-lab');
+      placeDotLabels(g[i], () => blab ? [blab] : []);
+    });
   });
 }
 /* 모바일(세로): 축소 없이 실제 화면 폭 그대로, 세로로 자연스럽게 스크롤되는 레이아웃.
