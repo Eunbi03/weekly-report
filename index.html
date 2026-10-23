@@ -511,6 +511,15 @@ button{font-family:inherit;border:none;cursor:pointer}
    내용(채널 수)만큼의 자연 높이를 그대로 갖는다. */
 .sumsec-body{display:flex;gap:14px;align-items:flex-start}
 .sumtable{flex:0 0 44%;min-width:0}
+/* 2026-10-20(피드백): 전체 요약 화면 — ① 막대그래프(범례 포함) 세로 길이를 표 세로 길이에 맞춘다
+   (예전엔 320px 고정이라 표보다 짧았다) ② 표 칸 폭을 44% 고정 대신 "내용 폭"으로 두고, 월/주/모든 법인
+   표가 같은 폭이 되도록 equalizeSumTables()가 최대 폭으로 맞춘다 — 월 표가 더 넓어서 44%를 넘쳐
+   차트에 붙던 문제를 없애고 월·주 모두 표↔차트 간격(gap)이 같아진다. PDF(.sumsec-body-v2)와
+   모바일 세로(#stage.portrait)는 영향 없음. */
+.sumsec-body{align-items:stretch;gap:24px}
+.sumsec-body .sumtable{flex:0 0 auto}
+.sumsec-body .sumtable table{width:100%}
+.sumsec-body .sumchart{height:auto;align-self:stretch}
 /* 2026-09-17(item5): 표 글씨가 작다는 피드백으로 13px→14px */
 /* 2026-09-21(사이즈 체계, size5→size4): 표 본문 글씨 크기를 15px→18px로 키운다.
    굵기(td 기본 400, td.nm 600, tr.tot td 800 등)는 기존 그대로 유지. */
@@ -605,9 +614,13 @@ button{font-family:inherit;border:none;cursor:pointer}
    들어가므로, 모바일에서는 월 블록 위/주 블록 아래로 세로로 쌓는다. */
 #stage.portrait .sumsec-periods{flex-direction:column;gap:12px}
 #stage.portrait .sumsec-pdivider{display:none}
-#stage.portrait .sumsec-body{flex-direction:column}
-#stage.portrait .sumtable{flex:none;width:100%}
-#stage.portrait .sumchart{flex:none;width:100%;height:150px}
+#stage.portrait .sumsec-body{flex-direction:column;gap:14px}
+#stage.portrait .sumtable,#stage.portrait .sumsec-body .sumtable{flex:none;width:100%}
+#stage.portrait .sumchart,#stage.portrait .sumsec-body .sumchart{flex:none;width:100%;height:auto;align-self:auto}
+/* 2026-10-20(피드백): 모바일에서 범례가 여러 줄이면 고정 150px 안에서 막대와 겹쳤다 — 차트 영역(.sc)은
+   높이를 자동으로 두고, 막대+x축(.sc-grid)만 170px로 고정해 범례는 그 아래에 줄 수만큼 이어서 놓는다. */
+#stage.portrait .sumsec-body .sc{height:auto}
+#stage.portrait .sumsec-body .sc-grid{flex:none;height:170px}
 #stage.portrait .kc-sum b{font-size:23px}
 #stage.portrait .kc-sum .l{font-size:14px}
 #stage.portrait .kc-sum-item .kc-sum-delta{font-size:12px}
@@ -3163,6 +3176,25 @@ function buildScreenHtml(){
   </div>
   ${page.bodyHtml}`;
 }
+/* 2026-10-20(피드백): 전체 요약 화면 표 칸 폭 통일 — 모든 .sumsec-body의 표를 "내용 폭"으로 재서
+   그중 최대 폭으로 전부 맞춘다(월/주, 법인/팀 상관없이 표↔차트 간격이 같아짐). 모바일 세로는 제외. */
+function equalizeSumTables(){
+  const stage = document.getElementById('stage');
+  const tbs = Array.from(document.querySelectorAll('.sumsec-body .sumtable'));
+  if(!tbs.length) return;
+  tbs.forEach(el=>{ el.style.width=''; el.style.flex=''; });
+  if(stage && stage.classList.contains('portrait')) return;
+  tbs.forEach(el=>{ el.style.flex='0 0 auto'; el.style.width='max-content'; });
+  let mx = 0;
+  tbs.forEach(el=>{ mx = Math.max(mx, Math.ceil(el.getBoundingClientRect().width / (stageScale()||1))); });
+  tbs.forEach(el=>{ el.style.width = mx+'px'; });
+}
+function stageScale(){
+  const st = document.getElementById('stage');
+  if(!st) return 1;
+  const r = st.getBoundingClientRect();
+  return st.offsetWidth ? r.width/st.offsetWidth : 1;
+}
 function render(){
   document.getElementById('stage').innerHTML = buildScreenHtml();
   fit();
@@ -3193,10 +3225,15 @@ function render(){
   /* 막대그래프도 처음엔 가장 최근(오른쪽 끝)이 보이도록 */
   const areaEl = document.querySelector('.area');
   if(areaEl) areaEl.scrollLeft = areaEl.scrollWidth;
+  equalizeSumTables();
   alignLine();
   adjustDotLabels();
   alignSummaryLines();
   adjustSummaryDotLabels();
+  /* 웹폰트가 늦게 로드되면 글자 폭이 바뀌므로 로드 후 한 번 더 맞춘다 */
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{
+    equalizeSumTables(); alignSummaryLines(); adjustSummaryDotLabels();
+  });
 }
 /* 무대를 화면에 맞춰 축소 */
 /* 가로 볼 때는 기존 339:191 그대로. 세로(모바일 세로)일 때만 기기별(아이폰/갤럭시) 화면비로 --H를 바꾼다.
