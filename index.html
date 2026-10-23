@@ -1220,17 +1220,20 @@ const ORG_CELLMAP = {
      [2026-10-19] 42주차 파일 — 식육통합 F열에 '원재료비율'이 끼어들어(케이통합과 동일) 모든 채널 열이 한 칸씩
      밀렸고(이마트 F→G … 도소매/기타 AD, F&B AJ), 오른쪽에 기초재고액~경비율(AM~AS)이 생겼다. 전년 시트(2025년-식육
      G열, 2025년-케이 H열)에도 '원재료비율'이 추가됐다. ratioCols:true로 3행 라벨에서 원재료비율·경비율 열을 찾는다. */
+  /* [2026-10-23] 엑셀에서 식육통합의 '에브리'(작년·올해 매출 없음) 열 3칸을 삭제했고, 케이통합의 'OEM'(S열, 매출 없음)은
+     숨김 처리했다 — 둘 다 chans/legacyChans에서 뺐다(화면·PDF의 표/막대/선 전부 자동 제외). 열 문자는 폴백일 뿐이고 실제로는
+     라벨로 찾는다. 2025년-식육 시트엔 '에브리'가 그대로 남아 있지만 legacyChans에서 빠졌으므로 읽지 않는다. */
   sy: { sheet:'식육통합', legacySheet:y=>`${y}년-식육`, cCol:'E',
-        chans:[['이마트','#F6B76A','G'],['온라인','#7FA6F3','J'],['에브리','#A4ACBA','M'],['쿠팡','#76D0ED','P'],['하이퍼','#ED9272','S'],['익스프레스','#8AA8D8','V'],['신세계 특정','#CE655A','Y'],['도소매/기타','#D5D5D5','AD'],['F&B','#CF8A72','AJ']],
+        chans:[['이마트','#F6B76A','G'],['온라인','#7FA6F3','J'],['쿠팡','#76D0ED','M'],['하이퍼','#ED9272','P'],['익스프레스','#8AA8D8','S'],['신세계 특정','#CE655A','V'],['도소매/기타','#D5D5D5','AA'],['F&B','#CF8A72','AG']],
         detailNames:['신세계 특정'], autoCols:true, ratioCols:true, labels:{'온라인':'에스에스지닷컴(온라인)'},
-        legacyChans:[['이마트','이마트'],['온라인','에스에스지닷컴(온라인)'],['에브리','에브리'],['쿠팡','쿠팡'],['하이퍼','하이퍼'],['익스프레스','익스'],['신세계 특정',null],['도소매/기타','도소매/기타'],['F&B',null]] },
+        legacyChans:[['이마트','이마트'],['온라인','에스에스지닷컴(온라인)'],['쿠팡','쿠팡'],['하이퍼','하이퍼'],['익스프레스','익스'],['신세계 특정',null],['도소매/기타','도소매/기타'],['F&B',null]] },
   /* [2026-10-13] 케이통합에 F열 '원재료비율'이 끼어들어(MS팀 특정 G~K 5칸 = 목표/매출/대출/대익률/달성율,
      MS팀 L~N, I팀 O~Q, 임가공비 R, OEM S, 기초재고액 T~경비율 X) 열이 한 칸씩 밀렸다.
      열 문자는 폴백일 뿐 — 실제로는 2행 라벨/3행 헤더 텍스트로 매번 위치를 다시 찾는다(resolveDefCols). */
   kp: { sheet:'케이통합', legacySheet:y=>`${y}년-케이`, cCol:'E',
-        chans:[['MS팀 특정','#8C82B7','G'],['MS팀','#729BD5','L'],['I팀','#73C19A','O'],['임가공','#BBB09E',null,'R'],['OEM','#8E6C4B',null,'S']],
+        chans:[['MS팀 특정','#8C82B7','G'],['MS팀','#729BD5','L'],['I팀','#73C19A','O'],['임가공','#BBB09E',null,'R']],
         detailNames:['MS팀 특정'], autoCols:true, ratioCols:true, labels:{'임가공':'임가공비'},
-        legacyChans:[['MS팀 특정','MS팀 특정'],['MS팀','MS팀'],['I팀','I팀'],['임가공',null,'V'],['OEM',null,'AA']] },
+        legacyChans:[['MS팀 특정','MS팀 특정'],['MS팀','MS팀'],['I팀','I팀'],['임가공',null,'V']] },
   it: { sheet:'케이I', legacySheet:y=>`${y}년-케이I`, cCol:false,
         chans:[['급식','#1F8A5B','D'],['군납','#5FB08C','G'],['기타(도소매)','#D98A2B','J']],
         legacyChans:[['급식','급식'],['군납','군납'],['기타(도소매)','기타']] },
@@ -2652,6 +2655,18 @@ function summaryCostCard(id){
   </div>`;
 }
 
+/* 2026-10-23(피드백): 전체 요약(PC·모바일·PDF) 표에서 "전월·금월(전주·금주 포함)에 매출이 하나도 없는 거래처" 행을 뺀다.
+   월/주 표가 같은 거래처 목록을 갖도록 월·주 최근 2개 행을 합쳐서 판단한다. 막대그래프 범례는 "그래프에 실제로 그려지는 구간(win)에
+   매출이 한 번이라도 있는 거래처"만 남긴다(막대 조각 자체는 값이 0이면 원래 안 그려진다). 총액·원가율 등 합계는 그대로. */
+function sumNZ(v){ return v!=null && Math.abs(v)>1e-9; }
+function sumRowKeepIdx(entity){
+  const rows = [...(entity.month||[]).slice(-2), ...(entity.week||[]).slice(-2)];
+  return entity.chans.map((_,j)=>j).filter(j=>rows.some(r=>r && r.ch && sumNZ(r.ch[j])));
+}
+function sumChartKeepIdx(entity, wins){
+  const rows = [].concat(...wins.map(w=>w||[]));
+  return entity.chans.map((_,j)=>j).filter(j=>rows.some(r=>r && r.ch && sumNZ(r.ch[j])));
+}
 /* 거래처(채널)별 전월/금월(또는 전주/금주) 매출액 + 증감 — 증감은 감소=붉은색, 증가=푸른색 */
 function sumTable(entity, prevRow, curRow, unitLabel){
   const chans = entity.chans;
@@ -2661,7 +2676,8 @@ function sumTable(entity, prevRow, curRow, unitLabel){
     const cls = diff<0 ? 'dn' : (diff>0 ? 'up' : '');
     return `<td class="dcell ${cls}">${diff>=0?'+':''}${n2(diff)}</td>`;
   };
-  const rows = chans.map((c,j)=>{
+  const rows = sumRowKeepIdx(entity).map(j=>{
+    const c = chans[j];
     const pv = prevRow && prevRow.ch ? prevRow.ch[j] : null;
     const cv = curRow && curRow.ch ? curRow.ch[j] : null;
     return `<tr><td class="nm">${c.n}</td><td>${pv!=null?n2(pv):'–'}</td><td>${cv!=null?n2(cv):'–'}</td>${dcell(pv,cv)}</tr>`;
@@ -2682,8 +2698,9 @@ function sumTable(entity, prevRow, curRow, unitLabel){
    고정범위 0/50/100/150/200%)을 그대로 따른다. 다만 여기는 막대 폭이 전부 동일해서
    메인처럼 폭 가중치 계산은 필요 없고, 점의 가로 위치만 alignSummaryLines()가 실측으로
    보정한다(세로 위치는 .sc-bars/.sc-ovl의 padding을 맞춰뒀기 때문에 %계산만으로 정확하다). */
-function sumChart(entity, win, showLegend){
+function sumChart(entity, win, showLegend, keepIdx){
   if(showLegend===undefined) showLegend=true;
+  if(!keepIdx) keepIdx = sumChartKeepIdx(entity, [win]);
   const chans = entity.chans;
   const mx = Math.max(1, ...win.map(r=>r.s||0));
   const n = win.length || 1;
@@ -2729,7 +2746,7 @@ function sumChart(entity, win, showLegend){
       ${rightAxis}
       <div class="sc-xax">${xax}</div>
     </div>
-    ${showLegend?`<div class="sc-lgd">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
+    ${showLegend?`<div class="sc-lgd">${keepIdx.map(j=>chans[j]).map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
       ${LS.map(L=>`<span><i class="ln" style="border-color:${L.color}"></i>${L.name}</span>`).join('')}
     </div>`:''}
   </div>`;
@@ -2808,7 +2825,8 @@ function sumTableV2(entity, prevRow, curRow, unitLabel){
     const cls = diff<0 ? 'dn' : (diff>0 ? 'up' : '');
     return `<td class="dcell ${cls}">${diff>=0?'+':''}${n2(diff)}</td>`;
   };
-  const rowCount = chans.length + 1; /* +총액 행 */
+  const keepIdx = sumRowKeepIdx(entity);
+  const rowCount = keepIdx.length + 1; /* +총액 행 */
   const lineKind = entity.hasLoan ? 'mg' : ((curRow&&curRow.c!=null)||(prevRow&&prevRow.c!=null) ? 'cost' : null);
   const lineLabel = lineKind==='mg' ? '대익율' : '매출원가율';
   let costVal = '–';
@@ -2821,14 +2839,15 @@ function sumTableV2(entity, prevRow, curRow, unitLabel){
       <div class="ratecell-lab">${lineLabel}</div>
       <div class="ratecell-val">${costVal}</div>
     </td>`;
-  const rows = chans.map((c,j)=>{
+  const rows = keepIdx.map((j,ri)=>{
+    const c = chans[j];
     const pv = prevRow && prevRow.ch ? prevRow.ch[j] : null;
     const cv = curRow && curRow.ch ? curRow.ch[j] : null;
-    const extra = j===0 ? costCell : '';
+    const extra = ri===0 ? costCell : '';
     return `<tr><td class="nm">${c.n}</td><td>${pv!=null?n2(pv):'–'}</td><td>${cv!=null?n2(cv):'–'}</td>${dcell(pv,cv)}${extra}</tr>`;
   }).join('');
   const pT = prevRow?prevRow.s:null, cT = curRow?curRow.s:null;
-  const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}</tr>`;
+  const totRow = `<tr class="tot"><td>매출 총액</td><td>${pT!=null?n2(pT):'–'}</td><td>${cT!=null?n2(cT):'–'}</td>${dcell(pT,cT)}${keepIdx.length?'':costCell}</tr>`;
   const thStyle = `style="border-bottom:2px solid ${sumHeaderColor(entity)}"`;
   return `<table><thead><tr>
       <th ${thStyle}>구분</th><th ${thStyle}>전${unitLabel}</th><th ${thStyle}>금${unitLabel}</th><th ${thStyle}>전${unitLabel}대비</th><th ${thStyle}>${lineLabel}</th></tr></thead>
@@ -2844,7 +2863,7 @@ function summaryPeriodBlockV2(entity, rs, unitLabel, periodBig, showLegend, kpiC
     ${kpiCardHtml ? `${kpiCardHtml}<div class="kpiv3-divider-a"></div>` : ''}
     <div class="sumsec-body-v2">
       <div class="sumtable">${sumTableV2(entity, prev, cur, unitLabel)}</div>
-      <div class="sumchart">${sumChart(entity, win, showLegend)}</div>
+      <div class="sumchart">${sumChart(entity, win, showLegend, sumChartKeepIdx(entity, [(entity.month||[]).slice(-6),(entity.week||[]).slice(-6)]))}</div>
     </div>
   </div>`;
 }
@@ -2990,7 +3009,9 @@ function chanLegendHtmlV3(entity){
   const chans = entity.chans;
   const rs = (entity.month && entity.month.length) ? entity.month : entity.week;
   const LS = lineSeriesOf(rs||[], entity);
-  return `<div class="sc-lgd sc-lgd-v3">${chans.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
+  /* 2026-10-23(피드백): 공유 범례 — 최근 6개월(월)·6주(주) 그래프에 한 번도 매출이 없는 거래처는 뺀다 */
+  const keepIdx = sumChartKeepIdx(entity, [(entity.month||[]).slice(-6),(entity.week||[]).slice(-6)]);
+  return `<div class="sc-lgd sc-lgd-v3">${keepIdx.map(j=>chans[j]).map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('')}
     ${LS.map(L=>`<span><i class="ln" style="border-color:${L.color}"></i>${L.name}</span>`).join('')}
   </div>`;
 }
