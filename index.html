@@ -1365,11 +1365,14 @@ function readLegacyOrg(wb, key, cutoff){
    2026-09-03: "직납/온라인/기타"였던 단일 블록이 "직납"(4채널) + "온라인 및 그 외"(7채널, OEM 포함)
    두 블록으로 분리됐다 — 매주 xlsm 구조는 바뀔 수 있으니 라벨 텍스트로 찾고, 옛 이름도 폴백으로 남겨둔다. ---------- */
 const MS_T_CHANS = [['홈플러스','#61BB8F','F'],['하나로','#5CCDA9','L'],['에브리','#A4ACBA','R'],['현대','#728FB9','X'],['신세계','#CE655A','AD'],['롯데','#A78C7A','AJ'],['GS','#668FDD','AP'],['이마트','#F6B76A','AV'],['킴스','#C7C7C7','BB'],['위탁행사','#B1A897','BH'],['순회행사','#E1E1E1','BN']];
-const MS_JIKNAP_CHANS = [['이마트','#F6B76A','D'],['에브리데이','#A4ACBA','G'],['하이퍼','#ED9272','J'],['익스','#7FA6F3','M']];
-const MS_ONLINE_CHANS = [['쿠팡','#76D0ED','D'],['토스','#50A2EB','G'],['컬리','#9876B5','J'],['네이버','#5BC438','M'],['위탁채널','#B1A897','P'],['기타','#D5D5D5','S'],['OEM','#8E6C4B','V']];
+/* [2026-10-23] 43주차 파일 — 직납 블록에 '농협유통'(P목표/Q매출/R달성율)이 새로 생겼고(9월 1.70, 37~40주 실매출 있음),
+   온라인 블록의 'OEM'은 사라졌다(엑셀에서 제외). 열 문자는 폴백일 뿐 — readKsubCurrent가 블록 머리글(라벨행+1)의
+   채널명으로 열을 다시 찾는다(resolveBlockChans). 전년(2025년-케이MS)엔 농협유통이 없어 null, OEM은 올해 엑셀에서 빠져 읽지 않는다. */
+const MS_JIKNAP_CHANS = [['이마트','#F6B76A','D'],['에브리데이','#A4ACBA','G'],['하이퍼','#ED9272','J'],['익스','#7FA6F3','M'],['농협유통','#C06C9B','P']];
+const MS_ONLINE_CHANS = [['쿠팡','#76D0ED','D'],['토스','#50A2EB','G'],['컬리','#9876B5','J'],['네이버','#5BC438','M'],['위탁채널','#B1A897','P'],['기타','#D5D5D5','S']];
 const MS_T_LEGACY = [['홈플러스','하이퍼'],['하나로','하나로'],['에브리','에브리데이'],['현대','현대'],['신세계','신세계'],['롯데','롯데'],['GS',null],['이마트','이마트'],['킴스','킴스'],['위탁행사','위탁행사'],['순회행사','순회행사']];
 /* 전년(2025년-케이MS) 시트는 아직 직납/온라인이 한 블록으로 합쳐져 있어서, 현재 11채널(직납4+온라인7) 순서에 맞춰 매핑 */
-const MS_LEGACY = [['이마트',null],['에브리데이',null],['하이퍼','하이퍼 직납'],['익스','익스 직납'],['쿠팡','쿠팡'],['토스',null],['컬리',null],['네이버',null],['위탁채널','위탁채널'],['기타','기타'],['OEM',null,'X']];
+const MS_LEGACY = [['이마트',null],['에브리데이',null],['하이퍼','하이퍼 직납'],['익스','익스 직납'],['농협유통',null],['쿠팡','쿠팡'],['토스',null],['컬리',null],['네이버',null],['위탁채널','위탁채널'],['기타','기타']];
 
 function findLabelRow(rows, label){
   for(let r=1;r<=rows.length;r++){
@@ -1377,6 +1380,31 @@ function findLabelRow(rows, label){
     for(let c=1;c<=row.length;c++){ if(typeof row[c-1]==='string' && row[c-1].trim()===label) return r; }
   }
   return null;
+}
+/* [2026-10-23] 케이MS 블록(특정/직납/온라인)도 채널명 머리글(라벨행+1)로 열 위치를 매번 다시 찾는다 — 엑셀에서 채널(킴스·OEM 등)을
+   지우거나 끼워 넣어도 뒤 채널 값이 한 칸씩 어긋나 읽히지 않게. 못 찾으면 열을 'ZZ'(빈 열)로 돌려 값 없음으로 두고 경고한다. */
+function resolveBlockChans(rows, labelRow, chans, tag){
+  const hdr = rows[labelRow]||[];   /* labelRow+1행 (rows는 0-based) */
+  const pos = {};
+  hdr.forEach((v,i)=>{ if(typeof v==='string' && i+1>2){ const k=v.trim(); if(k && k!=='종합' && !(k in pos)) pos[k]=i+1; } });
+  const enc = n => XLSX.utils.encode_col(n-1);
+  return chans.map(ch=>{
+    const [name,color,tgtL,salesL] = ch;
+    const col = pos[name];
+    const fb = tgtL || salesL;
+    if(col==null){
+      console.warn(`[대시보드] 케이MS ${tag}: '${name}' 채널을 머리글에서 찾지 못해 값 없음으로 처리합니다(엑셀에서 빠진 채널일 수 있음)`);
+      return tgtL ? [name,color,'ZZ'] : [name,color,null,'ZZ'];
+    }
+    const Lc = enc(col);
+    if(Lc!==fb) console.info(`[대시보드] 케이MS ${tag} '${name}' 열 위치 자동 감지: ${fb} → ${Lc}`);
+    return tgtL ? [name,color,Lc] : [name,color,null,Lc];
+  });
+}
+/* 머리글에 있는데 CELLMAP엔 없는 채널(새로 생긴 채널)은 콘솔에 알려 준다 */
+function warnNewBlockChans(rows, labelRow, chans, tag){
+  const known = new Set(chans.map(c=>c[0]));
+  (rows[labelRow]||[]).forEach((v,i)=>{ if(typeof v==='string' && i+1>2){ const k=v.trim(); if(k && k!=='종합' && !known.has(k)) console.warn(`[대시보드] 케이MS ${tag}: 엑셀에 새 채널 '${k}'이(가) 있는데 대시보드에 등록돼 있지 않습니다 — MS_*_CHANS에 추가 필요`); } });
 }
 function readLabelBlock(rows, labelRow, chans, cutoff, opt){
   const monthRow = m=>labelRow+2+m, totalMRow=labelRow+15, weekRow=w=>labelRow+19+w;
@@ -1406,12 +1434,13 @@ function readKsubCurrent(wb, cutoff){
   if(msTRow==null) throw new Error('케이MS 시트에서 "특정" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
   if(jiknapRow==null) throw new Error('케이MS 시트에서 "직납" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
   if(onlineRow==null) throw new Error('케이MS 시트에서 "온라인 및 그 외" 라벨을 찾지 못했습니다 — 시트 구조가 바뀐 것 같습니다');
-  const msT = readLabelBlock(rows, msTRow, MS_T_CHANS, cutoff, {tCol:'B', sCol:'C', loanCol:'D', chDetail:MS_T_CHANS.map(()=>true)});
-  const jiknap = readLabelBlock(rows, jiknapRow, MS_JIKNAP_CHANS, cutoff, {tCol:'B', sCol:'C'});
-  const online = readLabelBlock(rows, onlineRow, MS_ONLINE_CHANS, cutoff, {tCol:'B', sCol:'C'});
+  warnNewBlockChans(rows, msTRow, MS_T_CHANS, '특정'); warnNewBlockChans(rows, jiknapRow, MS_JIKNAP_CHANS, '직납'); warnNewBlockChans(rows, onlineRow, MS_ONLINE_CHANS, '온라인');
+  const msT = readLabelBlock(rows, msTRow, resolveBlockChans(rows, msTRow, MS_T_CHANS, '특정'), cutoff, {tCol:'B', sCol:'C', loanCol:'D', chDetail:MS_T_CHANS.map(()=>true)});
+  const jiknap = readLabelBlock(rows, jiknapRow, resolveBlockChans(rows, jiknapRow, MS_JIKNAP_CHANS, '직납'), cutoff, {tCol:'B', sCol:'C'});
+  const online = readLabelBlock(rows, onlineRow, resolveBlockChans(rows, onlineRow, MS_ONLINE_CHANS, '온라인'), cutoff, {tCol:'B', sCol:'C'});
   return { msT, ms: mergeBlocks(jiknap, online) };
 }
-const MS_ALL_CHANS = MS_JIKNAP_CHANS.concat(MS_ONLINE_CHANS); // 색상/이름 목록용(직납4+온라인7=11채널)
+const MS_ALL_CHANS = MS_JIKNAP_CHANS.concat(MS_ONLINE_CHANS); // 색상/이름 목록용(직납5+온라인6=11채널)
 function readLegacyKsub(wb, cutoff){
   const yy = cutoff.year-1;
   const tName = `${yy}년-케이MS특정`, mName = `${yy}년-케이MS`, iName = `${yy}년-케이I`;
